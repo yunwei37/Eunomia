@@ -22,6 +22,29 @@ struct {
 
 const volatile unsigned long long min_duration_ns = 0;
 
+static inline void fill_container_id(char *container_id) {
+  struct task_struct *curr_task;
+  struct css_set *css;
+  struct cgroup_subsys_state *sbs;
+  struct cgroup *cg;
+  struct kernfs_node *knode, *pknode;
+ 
+  curr_task = (struct task_struct *) bpf_get_current_task();
+  bpf_probe_read(&css, sizeof(void *), &curr_task->cgroups);
+  bpf_probe_read(&sbs, sizeof(void *), &css->subsys[0]);
+  bpf_probe_read(&cg,  sizeof(void *), &sbs->cgroup);
+ 
+  bpf_probe_read(&knode, sizeof(void *), &cg->kn);
+  bpf_probe_read(&pknode, sizeof(void *), &knode->parent);
+ 
+  if(pknode != NULL) {
+    char *aus;
+ 
+    bpf_probe_read(&aus, sizeof(void *), &knode->name);
+    bpf_probe_read_str(container_id, CONTAINER_ID_LEN, aus);
+  }
+}
+
 SEC("tp/sched/sched_process_exec")
 int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
 {
@@ -54,7 +77,8 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
 	bpf_get_current_comm(&e->comm, sizeof(e->comm));
 
 	fname_off = ctx->__data_loc_filename & 0xFFFF;
-	bpf_probe_read_str(&e->filename, sizeof(e->filename), (void *)ctx + fname_off);
+	bpf_probe_read_str(e->filename, sizeof(e->filename), (void *)ctx + fname_off);
+	fill_container_id(e->container_id);
 
 	/* successfully submit it to user-space for post-processing */
 	bpf_ringbuf_submit(e, 0);
@@ -104,6 +128,7 @@ int handle_exit(struct trace_event_raw_sched_process_template* ctx)
 	e->ppid = BPF_CORE_READ(task, real_parent, tgid);
 	e->exit_code = (BPF_CORE_READ(task, exit_code) >> 8) & 0xff;
 	bpf_get_current_comm(&e->comm, sizeof(e->comm));
+	fill_container_id(e->container_id);
 
 	/* send data to user-space for post-processing */
 	bpf_ringbuf_submit(e, 0);

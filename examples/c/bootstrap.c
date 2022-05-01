@@ -89,10 +89,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 		       ts, "EXIT", e->comm, e->pid, e->ppid, e->exit_code);
 		if (e->duration_ns)
 			printf(" (%llums)", e->duration_ns / 1000000);
-		printf("\n");
+		printf(" %s\n", e->container_id);
 	} else {
-		printf("%-8s %-5s %-16s %-7d %-7d %s\n",
-		       ts, "EXEC", e->comm, e->pid, e->ppid, e->filename);
+		printf("%-8s %-5s %-16s %-7d %-7d %s %s\n",
+		       ts, "EXEC", e->comm, e->pid, e->ppid, e->filename, e->container_id);
 	}
 
 	return 0;

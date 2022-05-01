@@ -51,6 +51,39 @@ CGroup 是将任意进程进行分组化管理的 Linux 内核功能。CGroup �
 
 CGroup 提供了一个 CGroup 虚拟文件系统，作为进行分组管理和各子系统设置的用户接口。要使用 CGroup，必须挂载 CGroup 文件系统。这时通过挂载选项指定使用哪个子系统。
 
+cgroups task_struct reference:
+
+https://www.infoq.cn/article/docker-kernel-knowledge-cgroups-resource-isolation/
+
+https://blog.csdn.net/punk_lover/article/details/78376430
+
+> cgroup 指针指向了一个 cgroup 结构，也就是进程属于的 cgroup。进程受到子系统的控制，实际上是通过加入到特定的 cgroup 实现的，因为 cgroup 在特定的层级上，而子系统又是附和到上面的。通过以上三个结构，进程就可以和 cgroup 连接起来了：task_struct->css_set->cgroup_subsys_state->cgroup。
+
+```c
+static void fill_container_id(char *container_id) {
+  struct task_struct *curr_task;
+  struct css_set *css;
+  struct cgroup_subsys_state *sbs;
+  struct cgroup *cg;
+  struct kernfs_node *knode, *pknode;
+ 
+  curr_task = (struct task_struct *) bpf_get_current_task();
+  css = curr_task->cgroups;
+  bpf_probe_read(&sbs, sizeof(void *), &css->subsys[0]);
+  bpf_probe_read(&cg,  sizeof(void *), &sbs->cgroup);
+ 
+  bpf_probe_read(&knode, sizeof(void *), &cg->kn);
+  bpf_probe_read(&pknode, sizeof(void *), &knode->parent);
+ 
+  if(pknode != NULL) {
+    char *aus;
+ 
+    bpf_probe_read(&aus, sizeof(void *), &knode->name);
+    bpf_probe_read_str(container_id, CONTAINER_ID_LEN, aus);
+  }
+}
+```
+
 ## build
 
 Makefile build:
@@ -63,8 +96,6 @@ $ make
 $ sudo ./bootstrap
 
 ```
-
-
 # reference 
 
 ## ebpf
@@ -77,16 +108,24 @@ $ sudo ./bootstrap
 
     https://blog.csdn.net/qq_32740107/article/details/110224623
 
-BumbleBee: Build, Ship, Run eBPF tools
-https://www.solo.io/blog/solo-announces-bumblebee/
+3. BumbleBee: Build, Ship, Run eBPF tools
 
-Container traffic visibility library based on eBPF
-https://github.com/ntop/libebpfflow
+    https://www.solo.io/blog/solo-announces-bumblebee/
 
-about libbpf
-https://nakryiko.com/posts/libbpf-bootstrap/#why-libbpf-bootstrap
-https://nakryiko.com/posts/bpf-core-reference-guide/
+4. Container traffic visibility library based on eBPF
 
-good intro for trace point
-https://www.iserica.com/posts/brief-intro-for-tracepoint/
-https://www.iserica.com/posts/brief-intro-for-kprobe/
+    https://github.com/ntop/libebpfflow
+
+5. about libbpf
+
+    https://nakryiko.com/posts/libbpf-bootstrap/#why-libbpf-bootstrap
+    https://nakryiko.com/posts/bpf-core-reference-guide/
+
+6. bcc to libbpf
+
+    https://nakryiko.com/posts/bcc-to-libbpf-howto-guide/#setting-up-user-space-parts
+
+6. good intro for trace point and kprobe in ebpf
+
+    https://www.iserica.com/posts/brief-intro-for-tracepoint/
+    https://www.iserica.com/posts/brief-intro-for-kprobe/

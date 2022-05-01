@@ -5,6 +5,7 @@
 
 #define TASK_COMM_LEN 16
 #define MAX_FILENAME_LEN 127
+#define CONTAINER_ID_LEN 127
 
 struct event {
 	int pid;
@@ -13,6 +14,7 @@ struct event {
 	unsigned long long duration_ns;
 	char comm[TASK_COMM_LEN];
 	char filename[MAX_FILENAME_LEN];
+	char container_id[CONTAINER_ID_LEN];
 	bool exit_event;
 };
 
