@@ -1,286 +1,92 @@
-ReadMe
-# Demo BPF applications
+# ebpf docker
 
-## Minimal
+## describe
 
-`minimal` is just that – a minimal practical BPF application example. It
-doesn't use or require BPF CO-RE, so should run on quite old kernels. It
-installs a tracepoint handler which is triggered once every second. It uses
-`bpf_printk()` BPF helper to communicate with the world. To see it's output,
-read `/sys/kernel/debug/tracing/trace_pipe` file as a root:
+容器是一种应用层抽象，用于将代码和依赖资源打包在一起。多个容器可以在同一台机器上运行，共享操作系统内核。这使得容器的隔离性相对较弱，带来安全上的风险，最严重时会导致容器逃逸，严重影响底层基础设施的保密性、完整性和可用性。
 
-```shell
-$ cd examples/c
-$ make minimal
-$ sudo ./minimal
-$ sudo cat /sys/kernel/debug/tracing/trace_pipe
-           <...>-3840345 [010] d... 3220701.101143: bpf_trace_printk: BPF triggered from PID 3840345.
-           <...>-3840345 [010] d... 3220702.101265: bpf_trace_printk: BPF triggered from PID 3840345.
-```
+eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事件的特定代码，可基于此开发性能分析工具**、网络数据包过滤、系统调用过滤，**系统观测和分析等诸多场景。eBPF可以由hook机制在系统调用被使用时触发，也可以通过kprobe或uprobe将eBPF程序附在内核/用户程序的任何地方。
 
-`minimal` is great as a bare-bones experimental playground to quickly try out
-new ideas or BPF features.
+这些机制让eBPF的跟踪技术可以有效地感知容器的各项行为，包括但不限于：
 
-## Bootstrap
+- 容器对文件的访问
+- 容器对系统的调用
+- 容器之间的互访
 
-`bootstrap` is an example of a simple (but realistic) BPF application. It
-tracks process starts (`exec()` family of syscalls, to be precise) and exits
-and emits data about filename, PID and parent PID, as well as exit status and
-duration of the process life. With `-d <min-duration-ms>` you can specify
-minimum duration of the process to log. In such mode process start
-(technically, `exec()`) events are not output (see example output below).
+请基于eBPF技术开发一个监控工具，该工具可以监控容器的行为，并生成报表（如json文件）将各个容器的行为分别记录下来以供分析。
 
-`bootstrap` was created in the similar spirit as
-[libbpf-tools](https://github.com/iovisor/bcc/tree/master/libbpf-tools) from
-BCC package, but is designed to be more stand-alone and with simpler Makefile
-to simplify adoption to user's particular needs. It demonstrates the use of
-typical BPF features:
-  - cooperating BPF programs (tracepoint handlers for process `exec` and `exit`
-    events, in this particular case);
-  - BPF map for maintaining the state;
-  - BPF ring buffer for sending data to user-space;
-  - global variables for application behavior parameterization.
-  - it utilizes BPF CO-RE and vmlinux.h to read extra process information from
-    kernel's `struct task_struct`.
+第一题：行为感知
 
-`bootstrap` is intended to be the starting point for your own BPF application,
-with things like BPF CO-RE and vmlinux.h, consuming BPF ring buffer data,
-command line arguments parsing, graceful Ctrl-C handling, etc. all taken care
-of for you, which are crucial but mundane tasks that are no fun, but necessary
-to be able to do anything useful. Just copy/paste and do simple renaming to get
-yourself started.
+编写eBPF程序，感知容器的各项行为。
 
-Here's an example output in minimum process duration mode:
+第二题：信息存储
 
-```shell
-$ sudo ./bootstrap -d 50
-TIME     EVENT COMM             PID     PPID    FILENAME/EXIT CODE
-19:18:32 EXIT  timeout          3817109 402466  [0] (126ms)
-19:18:32 EXIT  sudo             3817117 3817111 [0] (259ms)
-19:18:32 EXIT  timeout          3817110 402466  [0] (264ms)
-19:18:33 EXIT  python3.7        3817083 1       [0] (1026ms)
-19:18:38 EXIT  python3          3817429 3817424 [1] (60ms)
-19:18:38 EXIT  sh               3817424 3817420 [0] (79ms)
-19:18:38 EXIT  timeout          3817420 402466  [0] (80ms)
-19:18:43 EXIT  timeout          3817610 402466  [0] (70ms)
-19:18:43 EXIT  grep             3817619 3817617 [1] (271ms)
-19:18:43 EXIT  timeout          3817609 402466  [0] (321ms)
-19:18:44 EXIT  iostat           3817585 3817531 [0] (3006ms)
-19:18:44 EXIT  tee              3817587 3817531 [0] (3005ms)
-...
-```
+在第一题的基础上，令工具可以将采集到的数据以特定的格式保存在本地。
 
-## Uprobe
+（可选）第三题：权限推荐
 
-`uprobe` is an example of dealing with user-space entry and exit (return) probes,
-`uprobe` and `uretprobe` in libbpf lingo. It attached `uprobe` and `uretprobe`
-BPF programs to its own function (`uprobe_trigger()`) and logs input arguments
-and return result, respectively, using `bpf_printk()` macro. The user-space
-function is triggered once every second:
+Seccomp是Linux内核的特性，开发者可以通过seccomp限制容器的行为。capabilities则将进程作为root的权限分成了各项更小的权限，方便调控。这两个特性都有助于保障容器安全，但是因为业务执行的逻辑差异，准确配置权限最小集非常困难。请利用上面开发的监控工具，分析业务容器的行为记录报表，然后基于报表自动推荐精准的权限配置最小集。
 
-```shell
-$ sudo ./uprobe
-libbpf: loading object 'uprobe_bpf' from buffer
-...
-Successfully started!
-...........
-```
+## 可能的检测方式
 
-You can see `uprobe` demo output in `/sys/kernel/debug/tracing/trace_pipe`:
-```shell
-$ sudo cat /sys/kernel/debug/tracing/trace_pipe
-           <...>-461101 [018] d... 505432.345032: bpf_trace_printk: UPROBE ENTRY: a = 0, b = 1
-           <...>-461101 [018] d... 505432.345042: bpf_trace_printk: UPROBE EXIT: return = 1
-           <...>-461101 [018] d... 505433.345186: bpf_trace_printk: UPROBE ENTRY: a = 1, b = 2
-           <...>-461101 [018] d... 505433.345202: bpf_trace_printk: UPROBE EXIT: return = 3
-           <...>-461101 [018] d... 505434.345342: bpf_trace_printk: UPROBE ENTRY: a = 2, b = 3
-           <...>-461101 [018] d... 505434.345367: bpf_trace_printk: UPROBE EXIT: return = 5
-```
+确保容器运行时安全的关键点[1]：
 
-# Fentry
+- 使用 ebpf 跟踪技术自动生成容器访问控制权限。包括：容器对文件的可疑访问，容器对系统的可疑调用，容器之间的可疑互访，检测容器的异常进程，对可疑行为进行取证。例如：
 
-`fentry` is an example that uses fentry and fexit BPF programs for tracing. It
-attaches `fentry` and `fexit` traces to `do_unlinkat()` which is called when a
-file is deleted and logs the return value, PID, and filename to the
-trace pipe.
+- 检测容器运行时是否创建其他进程。
+- 检测容器运行时是否存在文件系统读取和写入的异常行为，例如在运行的容器中安装了新软件包或者更新配置。
+- 检测容器运行时是否打开了新的监听端口或者建立意外连接的异常网络活动。
+- 检测容器中用户操作及可疑的 shell 脚本的执行。
 
-Important differences, compared to kprobes, are improved performance and
-usability. In this example, better usability is shown with the ability to
-directly dereference pointer arguments, like in normal C, instead of using
-various read helpers. The big distinction between **fexit** and **kretprobe**
-programs is that fexit one has access to both input arguments and returned
-result, while kretprobe can only access the result.
+## docker 原理
 
-fentry and fexit programs are available starting from 5.5 kernels.
+### Cgroup
 
-```shell
-$ sudo ./fentry
-libbpf: loading object 'fentry_bpf' from buffer
-...
-Successfully started!
-..........
-```
+#### Cgroup介绍
 
-The `fentry` output in `/sys/kernel/debug/tracing/trace_pipe` should look
-something like this:
+CGroup 是 Control Groups 的缩写，是 Linux 内核提供的一种可以限制、记录、隔离进程组 (process groups) 所使用的物力资源 (如 cpu memory i/o 等等) 的机制。2007 年进入 Linux 2.6.24 内核，CGroups 不是全新创造的，它将进程管理从 cpuset 中剥离出来，作者是 Google 的 Paul Menage。CGroups 也是 LXC 为实现虚拟化所使用的资源管理手段。
 
-```shell
-$ sudo cat /sys/kernel/debug/tracing/trace_pipe
-              rm-9290    [004] d..2  4637.798698: bpf_trace_printk: fentry: pid = 9290, filename = test_file
-              rm-9290    [004] d..2  4637.798843: bpf_trace_printk: fexit: pid = 9290, filename = test_file, ret = 0
-              rm-9290    [004] d..2  4637.798698: bpf_trace_printk: fentry: pid = 9290, filename = test_file2
-              rm-9290    [004] d..2  4637.798843: bpf_trace_printk: fexit: pid = 9290, filename = test_file2, ret = 0
-```
+#### CGroup 功能及组成
 
-# Kprobe
+CGroup 是将任意进程进行分组化管理的 Linux 内核功能。CGroup 本身是提供将进程进行分组化管理的功能和接口的基础结构，I/O 或内存的分配控制等具体的资源管理功能是通过这个功能来实现的。这些具体的资源管理功能称为 CGroup 子系统或控制器。CGroup 子系统有控制内存的 Memory 控制器、控制进程调度的 CPU 控制器等。运行中的内核可以使用的 Cgroup 子系统由/proc/cgroup 来确认。
 
-`kprobe` is an example of dealing with kernel-space entry and exit (return)
-probes, `kprobe` and `kretprobe` in libbpf lingo. It attaches `kprobe` and
-`kretprobe` BPF programs to the `do_unlinkat()` function and logs the PID,
-filename, and return result, respectively, using `bpf_printk()` macro.
+CGroup 提供了一个 CGroup 虚拟文件系统，作为进行分组管理和各子系统设置的用户接口。要使用 CGroup，必须挂载 CGroup 文件系统。这时通过挂载选项指定使用哪个子系统。
 
-```shell
-$ sudo ./kprobe
-libbpf: loading object 'kprobe_bpf' from buffer
-...
-Successfully started!
-...........
-```
-
-The `kprobe` demo output in `/sys/kernel/debug/tracing/trace_pipe` should look
-something like this:
-
-```shell
-$ sudo cat /sys/kernel/debug/tracing/trace_pipe
-              rm-9346    [005] d..3  4710.951696: bpf_trace_printk: KPROBE ENTRY pid = 9346, filename = test1
-              rm-9346    [005] d..4  4710.951819: bpf_trace_printk: KPROBE EXIT: ret = 0
-              rm-9346    [005] d..3  4710.951852: bpf_trace_printk: KPROBE ENTRY pid = 9346, filename = test2
-              rm-9346    [005] d..4  4710.951895: bpf_trace_printk: KPROBE EXIT: ret = 0
-```
-
-# XDP
-
-`xdp` is an example written in Rust (using libbpf-rs). It attaches to
-the ingress path of networking device and logs the size of each packet,
-returning `XDP_PASS` to allow the packet to be passed up to the kernel’s
-networking stack.
-
-```shell
-$ sudo ./target/release/xdp 1
-..........
-```
-
-The `xdp` output in `/sys/kernel/debug/tracing/trace_pipe` should look
-something like this:
-
-```shell
-$ sudo cat /sys/kernel/debug/tracing/trace_pipe
-           <...>-823887  [000] d.s1 602386.079100: bpf_trace_printk: packet size: 75
-           <...>-823887  [000] d.s1 602386.079141: bpf_trace_printk: packet size: 66
-           <...>-2813507 [000] d.s1 602386.696702: bpf_trace_printk: packet size: 77
-           <...>-2813507 [000] d.s1 602386.696735: bpf_trace_printk: packet size: 66
-```
-
-# Building
-
-libbpf-bootstrap supports multiple build systems that do the same thing.
-This serves as a cross reference for folks coming from different backgrounds.
-
-## Install Dependencies
-
-You will need `clang`, `libelf` and `zlib` to build the examples.
-
-## C Examples
+## build
 
 Makefile build:
 
 ```shell
+
 $ git submodule update --init --recursive       # check out libbpf
 $ cd examples/c
 $ make
 $ sudo ./bootstrap
-TIME     EVENT COMM             PID     PPID    FILENAME/EXIT CODE
-00:21:22 EXIT  python3.8        4032353 4032352 [0] (123ms)
-00:21:22 EXEC  mkdir            4032379 4032337 /usr/bin/mkdir
-00:21:22 EXIT  mkdir            4032379 4032337 [0] (1ms)
-00:21:22 EXEC  basename         4032382 4032381 /usr/bin/basename
-00:21:22 EXIT  basename         4032382 4032381 [0] (0ms)
-00:21:22 EXEC  sh               4032381 4032380 /bin/sh
-00:21:22 EXEC  dirname          4032384 4032381 /usr/bin/dirname
-00:21:22 EXIT  dirname          4032384 4032381 [0] (1ms)
-00:21:22 EXEC  readlink         4032387 4032386 /usr/bin/readlink
-^C
+
 ```
 
-CMake build:
 
-```shell
-$ git submodule update --init --recursive       # check out libbpf
-$ mkdir build && cd build
-$ cmake ../examples/c
-$ make
-$ sudo ./bootstrap
-<...>
-```
+# reference 
 
-XMake build (Linux):
+## ebpf
 
-```shell
-$ git submodule update --init --recursive       # check out libbpf
-$ cd examples/c
-$ xmake
-$ xmake run bootstrap
-```
+1. 基于 eBPF 实现容器运行时安全
 
-XMake build (Android):
+    https://mp.weixin.qq.com/s/UiR8rjTt2SgJo5zs8n5Sqg
 
-```shell
-$ git submodule update --init --recursive       # check out libbpf
-$ cd examples/c
-$ xmake f -p android
-$ xmake
-```
+2. 基于ebpf统计docker容器网络流量
 
-Install [Xmake](https://github.com/xmake-io/xmake)
+    https://blog.csdn.net/qq_32740107/article/details/110224623
 
-```shell
-$ bash <(wget https://xmake.io/shget.text -O -)
-$ source ~/.xmake/profile
-```
+BumbleBee: Build, Ship, Run eBPF tools
+https://www.solo.io/blog/solo-announces-bumblebee/
 
-## Rust Examples
+Container traffic visibility library based on eBPF
+https://github.com/ntop/libebpfflow
 
-Install `libbpf-cargo`:
-```shell
-$ cargo install libbpf-cargo
-```
+about libbpf
+https://nakryiko.com/posts/libbpf-bootstrap/#why-libbpf-bootstrap
+https://nakryiko.com/posts/bpf-core-reference-guide/
 
-Build using `cargo`:
-```shell
-$ cd examples/rust
-$ cargo build --release
-$ sudo ./target/release/xdp 1
-<...>
-```
-
-# Troubleshooting
-
-Libbpf debug logs are quire helpful to pinpoint the exact source of problems,
-so it's usually a good idea to look at them before starting to debug or
-posting question online.
-
-`./minimal` is always running with libbpf debug logs turned on.
-
-For `./bootstrap`, run it in verbose mode (`-v`) to see libbpf debug logs:
-
-```shell
-$ sudo ./bootstrap -v
-libbpf: loading object 'bootstrap_bpf' from buffer
-libbpf: elf: section(2) tp/sched/sched_process_exec, size 384, link 0, flags 6, type=1
-libbpf: sec 'tp/sched/sched_process_exec': found program 'handle_exec' at insn offset 0 (0 bytes), code size 48 insns (384 bytes)
-libbpf: elf: section(3) tp/sched/sched_process_exit, size 432, link 0, flags 6, type=1
-libbpf: sec 'tp/sched/sched_process_exit': found program 'handle_exit' at insn offset 0 (0 bytes), code size 54 insns (432 bytes)
-libbpf: elf: section(4) license, size 13, link 0, flags 3, type=1
-libbpf: license of bootstrap_bpf is Dual BSD/GPL
-...
-```
+good intro for trace point
+https://www.iserica.com/posts/brief-intro-for-tracepoint/
+https://www.iserica.com/posts/brief-intro-for-kprobe/
