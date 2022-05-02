@@ -10,12 +10,9 @@
 struct event {
 	int pid;
 	int ppid;
-	unsigned exit_code;
-	unsigned long long duration_ns;
+	uint32_t syscall_id;
+	uint64_t mntns;
 	char comm[TASK_COMM_LEN];
-	char filename[MAX_FILENAME_LEN];
-	char container_id[CONTAINER_ID_LEN];
-	bool exit_event;
 };
 
 #endif /* __BOOTSTRAP_H */

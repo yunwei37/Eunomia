@@ -14,51 +14,6 @@ static struct env {
 	long min_duration_ms;
 } env;
 
-const char *argp_program_version = "bootstrap 0.0";
-const char *argp_program_bug_address = "<bpf@vger.kernel.org>";
-const char argp_program_doc[] =
-"BPF bootstrap demo application.\n"
-"\n"
-"It traces process start and exits and shows associated \n"
-"information (filename, process duration, PID and PPID, etc).\n"
-"\n"
-"USAGE: ./bootstrap [-d <min-duration-ms>] [-v]\n";
-
-static const struct argp_option opts[] = {
-	{ "verbose", 'v', NULL, 0, "Verbose debug output" },
-	{ "duration", 'd', "DURATION-MS", 0, "Minimum process duration (ms) to report" },
-	{},
-};
-
-static error_t parse_arg(int key, char *arg, struct argp_state *state)
-{
-	switch (key) {
-	case 'v':
-		env.verbose = true;
-		break;
-	case 'd':
-		errno = 0;
-		env.min_duration_ms = strtol(arg, NULL, 10);
-		if (errno || env.min_duration_ms <= 0) {
-			fprintf(stderr, "Invalid duration: %s\n", arg);
-			argp_usage(state);
-		}
-		break;
-	case ARGP_KEY_ARG:
-		argp_usage(state);
-		break;
-	default:
-		return ARGP_ERR_UNKNOWN;
-	}
-	return 0;
-}
-
-static const struct argp argp = {
-	.options = opts,
-	.parser = parse_arg,
-	.doc = argp_program_doc,
-};
-
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
 {
 	if (level == LIBBPF_DEBUG && !env.verbose)
@@ -84,16 +39,8 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 	tm = localtime(&t);
 	strftime(ts, sizeof(ts), "%H:%M:%S", tm);
 
-	if (e->exit_event) {
-		printf("%-8s %-5s %-16s %-7d %-7d [%u]",
-		       ts, "EXIT", e->comm, e->pid, e->ppid, e->exit_code);
-		if (e->duration_ns)
-			printf(" (%llums)", e->duration_ns / 1000000);
-		printf(" %s\n", e->container_id);
-	} else {
-		printf("%-8s %-5s %-16s %-7d %-7d %s %s\n",
-		       ts, "EXEC", e->comm, e->pid, e->ppid, e->filename, e->container_id);
-	}
+		printf("%-8s %-16s %-7d %-7d [%lu] %u\n",
+		       ts,  e->comm, e->pid, e->ppid, e->mntns, e->syscall_id);
 
 	return 0;
 }
@@ -105,10 +52,6 @@ int main(int argc, char **argv)
 	int err;
 
 	/* Parse command line arguments */
-	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
-	if (err)
-		return err;
-
 	libbpf_set_strict_mode(LIBBPF_STRICT_ALL);
 	/* Set up libbpf errors and debug info callback */
 	libbpf_set_print(libbpf_print_fn);
@@ -123,9 +66,6 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Failed to open and load BPF skeleton\n");
 		return 1;
 	}
-
-	/* Parameterize BPF code with minimum duration parameter */
-	skel->rodata->min_duration_ns = env.min_duration_ms * 1000000ULL;
 
 	/* Load & verify BPF programs */
 	err = bootstrap_bpf__load(skel);
@@ -142,7 +82,7 @@ int main(int argc, char **argv)
 	}
 
 	/* Set up ring buffer polling */
-	rb = ring_buffer__new(bpf_map__fd(skel->maps.rb), handle_event, NULL, NULL);
+	rb = ring_buffer__new(bpf_map__fd(skel->maps.events), handle_event, NULL, NULL);
 	if (!rb) {
 		err = -1;
 		fprintf(stderr, "Failed to create ring buffer\n");
@@ -151,7 +91,7 @@ int main(int argc, char **argv)
 
 	/* Process events */
 	printf("%-8s %-5s %-16s %-7s %-7s %s\n",
-	       "TIME", "EVENT", "COMM", "PID", "PPID", "FILENAME/EXIT CODE");
+	       "TIME", "EVENT", "COMM", "PID", "PPID", "SYSCALL_ID");
 	while (!exiting) {
 		err = ring_buffer__poll(rb, 100 /* timeout, ms */);
 		/* Ctrl-C will cause -EINTR */

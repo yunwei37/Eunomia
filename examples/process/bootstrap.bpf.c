@@ -30,12 +30,15 @@ static inline void fill_container_id(char *container_id) {
   struct kernfs_node *knode, *pknode;
  
   curr_task = (struct task_struct *) bpf_get_current_task();
-  bpf_probe_read(&css, sizeof(void *), &curr_task->cgroups);
-  bpf_probe_read(&sbs, sizeof(void *), &css->subsys[0]);
-  bpf_probe_read(&cg,  sizeof(void *), &sbs->cgroup);
+  knode = BPF_CORE_READ(curr_task, cgroups, subsys[0], cgroup, kn, parent);
+  
+  //bpf_probe_read(&css, sizeof(void *), &curr_task->cgroups);
+  //bpf_probe_read(&sbs, sizeof(void *), &css->subsys[0]);
+  //bpf_probe_read(&cg,  sizeof(void *), &sbs->cgroup);
  
-  bpf_probe_read(&knode, sizeof(void *), &cg->kn);
+  //bpf_probe_read(&knode, sizeof(void *), &cg->kn);
   bpf_probe_read(&pknode, sizeof(void *), &knode->parent);
+  
  
   if(pknode != NULL) {
     char *aus;
