@@ -129,3 +129,18 @@ $ sudo ./bootstrap
 
     https://www.iserica.com/posts/brief-intro-for-tracepoint/
     https://www.iserica.com/posts/brief-intro-for-kprobe/
+
+7. other
+
+    https://lockc-project.github.io/book/index.html
+    https://github.com/willfindlay/bpfcontain-rs
+
+8. user space uprobe
+
+    https://www.collabora.com/news-and-blog/blog/2019/05/14/an-ebpf-overview-part-5-tracing-user-processes/
+
+9. ebpf secomp
+
+    https://developers.redhat.com/articles/2021/12/16/secure-your-kubernetes-deployments-ebpf#how_does_the_bpf_recorder_work_
+
+    https://github.com/kubernetes-sigs/security-profiles-operator/blob/main/internal/pkg/daemon/bpfrecorder/bpf/recorder.bpf.c
