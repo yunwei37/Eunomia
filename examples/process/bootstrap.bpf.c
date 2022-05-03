@@ -8,44 +8,60 @@
 
 char LICENSE[] SEC("license") = "Dual BSD/GPL";
 
-struct {
+struct
+{
 	__uint(type, BPF_MAP_TYPE_HASH);
 	__uint(max_entries, 8192);
 	__type(key, pid_t);
 	__type(value, u64);
 } exec_start SEC(".maps");
 
-struct {
+struct
+{
 	__uint(type, BPF_MAP_TYPE_RINGBUF);
 	__uint(max_entries, 256 * 1024);
 } rb SEC(".maps");
 
 const volatile unsigned long long min_duration_ns = 0;
 
-static inline void fill_container_id(char *container_id) {
-  struct task_struct *curr_task;
-  struct css_set *css;
-  struct cgroup_subsys_state *sbs;
-  struct cgroup *cg;
-  struct kernfs_node *knode, *pknode;
- 
-  curr_task = (struct task_struct *) bpf_get_current_task();
-  knode = BPF_CORE_READ(curr_task, cgroups, subsys[0], cgroup, kn, parent);
-  
-  //bpf_probe_read(&css, sizeof(void *), &curr_task->cgroups);
-  //bpf_probe_read(&sbs, sizeof(void *), &css->subsys[0]);
-  //bpf_probe_read(&cg,  sizeof(void *), &sbs->cgroup);
- 
-  //bpf_probe_read(&knode, sizeof(void *), &cg->kn);
-  bpf_probe_read(&pknode, sizeof(void *), &knode->parent);
-  
- 
-  if(pknode != NULL) {
-    char *aus;
- 
-    bpf_probe_read(&aus, sizeof(void *), &knode->name);
-    bpf_probe_read_str(container_id, CONTAINER_ID_LEN, aus);
-  }
+/* Get the mount namespace id for the current task.
+ *
+ * return: Mount namespace id or 0 if we couldn't find it.
+ */
+static __always_inline u32 get_current_mnt_ns_id()
+{
+	struct task_struct *task = (struct task_struct *)bpf_get_current_task_btf();
+	return task->nsproxy->mnt_ns->ns.inum;
+}
+
+/* Get the pid namespace id for the current task.
+ *
+ * return: Pid namespace id or 0 if we couldn't find it.
+ */
+static __always_inline u32 get_current_pid_ns_id()
+{
+	struct task_struct *task = (struct task_struct *)bpf_get_current_task_btf();
+	return task->thread_pid->numbers[0].ns->ns.inum;
+}
+
+/* Get the user namespace id for the current task.
+ *
+ * return: user namespace id or 0 if we couldn't find it.
+ */
+static __always_inline u32 get_current_user_ns_id()
+{
+	struct task_struct *task = (struct task_struct *)bpf_get_current_task_btf();
+	return task->cred->user_ns->ns.inum;
+}
+
+static __always_inline void fill_event_basic(pid_t pid, struct task_struct *task, struct event *e)
+{
+	e->pid = pid;
+	e->ppid = BPF_CORE_READ(task, real_parent, tgid);
+	e->cgroup_id = bpf_get_current_cgroup_id();
+	e->user_namespace_id = get_current_user_ns_id();
+	e->pid_namespace_id = get_current_pid_ns_id();
+	e->mount_namespace_id = get_current_mnt_ns_id();
 }
 
 SEC("tp/sched/sched_process_exec")
@@ -73,15 +89,12 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
 
 	/* fill out the sample with data */
 	task = (struct task_struct *)bpf_get_current_task();
+	fill_event_basic(pid, task, e);
 
-	e->exit_event = false;
-	e->pid = pid;
-	e->ppid = BPF_CORE_READ(task, real_parent, tgid);
 	bpf_get_current_comm(&e->comm, sizeof(e->comm));
-
+	e->exit_event = false;
 	fname_off = ctx->__data_loc_filename & 0xFFFF;
 	bpf_probe_read_str(e->filename, sizeof(e->filename), (void *)ctx + fname_off);
-	fill_container_id(e->container_id);
 
 	/* successfully submit it to user-space for post-processing */
 	bpf_ringbuf_submit(e, 0);
@@ -89,13 +102,13 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
 }
 
 SEC("tp/sched/sched_process_exit")
-int handle_exit(struct trace_event_raw_sched_process_template* ctx)
+int handle_exit(struct trace_event_raw_sched_process_template *ctx)
 {
 	struct task_struct *task;
 	struct event *e;
 	pid_t pid, tid;
 	u64 id, ts, *start_ts, duration_ns = 0;
-	
+
 	/* get PID and TID of exiting thread/process */
 	id = bpf_get_current_pid_tgid();
 	pid = id >> 32;
@@ -124,17 +137,15 @@ int handle_exit(struct trace_event_raw_sched_process_template* ctx)
 
 	/* fill out the sample with data */
 	task = (struct task_struct *)bpf_get_current_task();
+	fill_event_basic(pid, task, e);
 
 	e->exit_event = true;
 	e->duration_ns = duration_ns;
-	e->pid = pid;
-	e->ppid = BPF_CORE_READ(task, real_parent, tgid);
+
 	e->exit_code = (BPF_CORE_READ(task, exit_code) >> 8) & 0xff;
 	bpf_get_current_comm(&e->comm, sizeof(e->comm));
-	fill_container_id(e->container_id);
 
 	/* send data to user-space for post-processing */
 	bpf_ringbuf_submit(e, 0);
 	return 0;
 }
-

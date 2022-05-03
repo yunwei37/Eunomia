@@ -144,3 +144,7 @@ $ sudo ./bootstrap
     https://developers.redhat.com/articles/2021/12/16/secure-your-kubernetes-deployments-ebpf#how_does_the_bpf_recorder_work_
 
     https://github.com/kubernetes-sigs/security-profiles-operator/blob/main/internal/pkg/daemon/bpfrecorder/bpf/recorder.bpf.c
+
+10. tools
+
+    https://github.com/iovisor/bcc/tree/master/libbpf-tools
