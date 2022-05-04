@@ -1,6 +1,8 @@
-# ebpf docker
+# 1.项目介绍
 
-## describe
+> 项目来源：[eBPF-based-monitor-for-container](https://github.com/oscomp/proj118-eBPF-based-monitor-for-container)
+
+## 1.1项目描述
 
 容器是一种应用层抽象，用于将代码和依赖资源打包在一起。多个容器可以在同一台机器上运行，共享操作系统内核。这使得容器的隔离性相对较弱，带来安全上的风险，最严重时会导致容器逃逸，严重影响底层基础设施的保密性、完整性和可用性。
 
@@ -14,32 +16,43 @@ eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事
 
 请基于eBPF技术开发一个监控工具，该工具可以监控容器的行为，并生成报表（如json文件）将各个容器的行为分别记录下来以供分析。
 
-第一题：行为感知
+- **第一题：行为感知**
 
-编写eBPF程序，感知容器的各项行为。
+  编写eBPF程序，感知容器的各项行为。
+- **第二题：信息存储**
 
-第二题：信息存储
+  在第一题的基础上，令工具可以将采集到的数据以特定的格式保存在本地。
+- **第三题：权限推荐（可选）**
 
-在第一题的基础上，令工具可以将采集到的数据以特定的格式保存在本地。
+  Seccomp是Linux内核的特性，开发者可以通过seccomp限制容器的行为。capabilities则将进程作为root的权限分成了各项更小的权限，方便			调控。这两个特性都有助于保障容器安全，但是因为业务执行的逻辑差异，准确配置权限最小集非常困难。请利用上面开发的监控工具，分析业务容器的行为记录报表，然后基于报表自动推荐精准的权限配置最小集。
 
-（可选）第三题：权限推荐
-
-Seccomp是Linux内核的特性，开发者可以通过seccomp限制容器的行为。capabilities则将进程作为root的权限分成了各项更小的权限，方便调控。这两个特性都有助于保障容器安全，但是因为业务执行的逻辑差异，准确配置权限最小集非常困难。请利用上面开发的监控工具，分析业务容器的行为记录报表，然后基于报表自动推荐精准的权限配置最小集。
-
-## 可能的检测方式
+## 1.2可能的检测方式
 
 确保容器运行时安全的关键点[1]：
 
 - 使用 ebpf 跟踪技术自动生成容器访问控制权限。包括：容器对文件的可疑访问，容器对系统的可疑调用，容器之间的可疑互访，检测容器的异常进程，对可疑行为进行取证。例如：
-
 - 检测容器运行时是否创建其他进程。
 - 检测容器运行时是否存在文件系统读取和写入的异常行为，例如在运行的容器中安装了新软件包或者更新配置。
 - 检测容器运行时是否打开了新的监听端口或者建立意外连接的异常网络活动。
 - 检测容器中用户操作及可疑的 shell 脚本的执行。
 
-## docker 原理
+# 2.项目目标
 
-### Cgroup
+# 3.项目产出
+
+# 4.基本概念介绍
+
+## 4.1 eBPF技术
+
+### 4.1.1 libbpf
+
+### 4.1.2 bcc
+
+## 4.2 docker原理：容器与进程
+
+### 4.2.1 Namespace
+
+### 4.2.2 Cgroup
 
 #### Cgroup介绍
 
@@ -84,7 +97,54 @@ static void fill_container_id(char *container_id) {
 }
 ```
 
-## build
+# 5.参考资料
+
+## ebpf
+
+1. 基于 eBPF 实现容器运行时安全
+
+   https://mp.weixin.qq.com/s/UiR8rjTt2SgJo5zs8n5Sqg
+2. 基于ebpf统计docker容器网络流量
+
+   https://blog.csdn.net/qq_32740107/article/details/110224623
+3. BumbleBee: Build, Ship, Run eBPF tools
+
+   https://www.solo.io/blog/solo-announces-bumblebee/
+4. Container traffic visibility library based on eBPF
+
+   https://github.com/ntop/libebpfflow
+5. about libbpf
+
+   https://nakryiko.com/posts/libbpf-bootstrap/#why-libbpf-bootstrap
+   https://nakryiko.com/posts/bpf-core-reference-guide/
+6. bcc to libbpf
+
+   https://nakryiko.com/posts/bcc-to-libbpf-howto-guide/#setting-up-user-space-parts
+7. good intro for trace point and kprobe in ebpf
+
+   https://www.iserica.com/posts/brief-intro-for-tracepoint/
+   https://www.iserica.com/posts/brief-intro-for-kprobe/
+8. other
+
+   https://lockc-project.github.io/book/index.html
+   https://github.com/willfindlay/bpfcontain-rs
+9. user space uprobe
+
+   https://www.collabora.com/news-and-blog/blog/2019/05/14/an-ebpf-overview-part-5-tracing-user-processes/
+10. ebpf secomp
+
+    https://developers.redhat.com/articles/2021/12/16/secure-your-kubernetes-deployments-ebpf#how_does_the_bpf_recorder_work_
+
+    https://github.com/kubernetes-sigs/security-profiles-operator/blob/main/internal/pkg/daemon/bpfrecorder/bpf/recorder.bpf.c
+11. tools
+
+    https://github.com/iovisor/bcc/tree/master/libbpf-tools
+
+# 6.使用说明
+
+### 6.1 安装教程
+
+**Build**
 
 Makefile build:
 
@@ -94,57 +154,14 @@ $ git submodule update --init --recursive       # check out libbpf
 $ cd examples/c
 $ make
 $ sudo ./bootstrap
-
 ```
-# reference 
 
-## ebpf
+### 6.2 目录结构
 
-1. 基于 eBPF 实现容器运行时安全
+### 6.3 其他
 
-    https://mp.weixin.qq.com/s/UiR8rjTt2SgJo5zs8n5Sqg
+**成员**
 
-2. 基于ebpf统计docker容器网络流量
+指导老师：程泽睿志（华为）李东昂（浙江大学）
 
-    https://blog.csdn.net/qq_32740107/article/details/110224623
-
-3. BumbleBee: Build, Ship, Run eBPF tools
-
-    https://www.solo.io/blog/solo-announces-bumblebee/
-
-4. Container traffic visibility library based on eBPF
-
-    https://github.com/ntop/libebpfflow
-
-5. about libbpf
-
-    https://nakryiko.com/posts/libbpf-bootstrap/#why-libbpf-bootstrap
-    https://nakryiko.com/posts/bpf-core-reference-guide/
-
-6. bcc to libbpf
-
-    https://nakryiko.com/posts/bcc-to-libbpf-howto-guide/#setting-up-user-space-parts
-
-6. good intro for trace point and kprobe in ebpf
-
-    https://www.iserica.com/posts/brief-intro-for-tracepoint/
-    https://www.iserica.com/posts/brief-intro-for-kprobe/
-
-7. other
-
-    https://lockc-project.github.io/book/index.html
-    https://github.com/willfindlay/bpfcontain-rs
-
-8. user space uprobe
-
-    https://www.collabora.com/news-and-blog/blog/2019/05/14/an-ebpf-overview-part-5-tracing-user-processes/
-
-9. ebpf secomp
-
-    https://developers.redhat.com/articles/2021/12/16/secure-your-kubernetes-deployments-ebpf#how_does_the_bpf_recorder_work_
-
-    https://github.com/kubernetes-sigs/security-profiles-operator/blob/main/internal/pkg/daemon/bpfrecorder/bpf/recorder.bpf.c
-
-10. tools
-
-    https://github.com/iovisor/bcc/tree/master/libbpf-tools
+学生：郑昱笙，濮雯旭，张典典
