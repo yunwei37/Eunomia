@@ -76,7 +76,7 @@ static void sig_handler(int sig)
 	exiting = true;
 }
 
-static int print_basic_info(const struct event *e)
+static void print_basic_info(const struct event *e)
 {
 	struct tm *tm;
 	char ts[32];
@@ -88,12 +88,10 @@ static int print_basic_info(const struct event *e)
 	/* format: [time] [pid] [ppid] [cgroup_id] [user_namespace_id] [pid_namespace_id] [mount_namespace_id] */
 	printf("%-8s %-7d %-7d %lu %u %u %u ",
 		   ts, e->pid, e->ppid, e->cgroup_id, e->user_namespace_id, e->pid_namespace_id, e->mount_namespace_id);
-	return 0;
 }
 
-static int handle_event(void *ctx, void *data, size_t data_sz)
+static void print_table_info(const struct event *e)
 {
-	const struct event *e = data;
 	print_basic_info(e);
 
 	if (e->exit_event)
@@ -109,7 +107,39 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 		printf("%-5s %-16s %s\n",
 			   "EXEC", e->comm, e->filename);
 	}
+}
 
+
+static void
+print_csv_header(void)
+{
+	printf("time,pid,ppi,cgroup_id,user_namespace_id,pid_namespace_id,mount_namespace_id,stat,comm,filename/exitcode,duration\n");
+}
+
+static void
+print_csv_data(const struct event *e)
+{
+	print_basic_info(e);
+
+	if (e->exit_event)
+	{
+		printf("%s,%s,%u,",
+			   "EXIT", e->comm, e->exit_code);
+		if (e->duration_ns)
+			printf("%llu", e->duration_ns / 1000000);
+		printf("\n");
+	}
+	else
+	{
+		printf("%s,%s,%s,\n",
+			   "EXEC", e->comm, e->filename);
+	}
+}
+
+static int handle_event(void *ctx, void *data, size_t data_sz)
+{
+	const struct event *e = data;
+	print_csv_data(e);
 	return 0;
 }
 
@@ -167,7 +197,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Failed to create ring buffer\n");
 		goto cleanup;
 	}
-
+	print_csv_header();
 	while (!exiting)
 	{
 		err = ring_buffer__poll(rb, 100 /* timeout, ms */);
