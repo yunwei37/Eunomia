@@ -168,6 +168,29 @@ $ sudo ./bootstrap
 
 ### 6.2 目录结构
 
+├── doc
+│   ├── contribution.md
+│   ├── course
+│   ├── Develop-Doc
+│   └── Labs
+├── examples
+│   ├── files
+│   ├── include
+│   ├── process
+│   │   ├── bootstrap.bpf.c
+│   │   ├── bootstrap.c
+│   │   ├── bootstrap.h
+│   │   └── Makefile
+│   └── syscall
+├── libbpf
+├── LICENSE
+├── README.md
+├── tools
+├── utils
+└── vmlinuxi
+
+- doc 
+- examples
 ### 6.3 其他
 
 **成员**
