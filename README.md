@@ -1,13 +1,32 @@
 # 0.概述
+
 本项目由两部分组成：
-- 理论：一个零基础入门eBPF技术的教程
-- 实践：一个基于eBPF技术实现的用于监控容器的工具
+
+* 理论：一个零基础入门eBPF技术的教程实践
+* 一个基于eBPF技术实现的用于监控容器的工具
 
 理论部分，目标旨在降低新手学习eBPF技术的门槛，试图通过大量的例程解释、丰富对eBPF、libbpf、bcc等内核技术的认知，该部分来自于学习实践过程中积累的各类学习资料、与开发者对eBPF技术逐步深化认知的过程。同时，结合本课题项目的来源，将实践部分拆分为X个实验Labs，配以详细丰富的踩坑经验。各Lab通过设置对操作系统不同主题的实验，进一步加深学生对操作系统中进程、线程、Tcp、文件系统等概念以及namespace、cgroup等内核机制的直观认知。
 
 实践部分，来源于下述课题，主要是以X语言通过XX技术实现了一个用于监控容器行为的工具。开发过程符合软件工程开发规范，过程文档详细充实，测试用例丰富。每行代码均有相关注释。
 
 旨在：作为操作系统课程、eBPF开发入门、docker机制学习的补充材料。
+
+---
+
+当前进度：
+
+1. 完成了基本的功能性代码：
+2. 构建了一个基于命令行程序的入口工具
+3. 完成了整体的文档框架
+4. 完成了多份文档：
+
+TODO:
+
+1. 继续丰富行为感知的功能性代码：
+2. 添加监控信息的可视化功能
+3. 补充、完善开发文档
+4. 编写ebpf教程与Labs
+
 # 1.项目介绍
 
 > 项目来源：[eBPF-based-monitor-for-container](https://github.com/oscomp/proj118-eBPF-based-monitor-for-container)
@@ -48,111 +67,112 @@ eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事
 
 # 2.项目目标
 
-# 3.项目产出
+1. 实现一个接近工业界的工具
+2. 输出一系列开发文档
 
-# 4.基本概念介绍
+* 开发工具的使用教程——环境搭建；工具说明书；
+* 开发工具的设计文档——设计架构、各模块详细设计、数据流程；
+* 开发工具的开发文档——各模块的作用、函数的注释；
+* 测试文档——测试环境的搭建教程；设计多种容器环境，进行测试；
+* 过程文档——时间段、分工、迭代版次&版本变化；
 
-## 4.1 eBPF技术
+3. 一份ebpf技术的入门教程与lab
 
-### 4.1.1 libbpf
+# 3.开发计划
 
-### 4.1.2 bcc
+阶段一：学习ebpf相关技术栈（3.10~4.2）
 
-## 4.2 docker原理：容器与进程
+* [X] 入门ebpf技术栈
+* [X] 调研、学习bcc
+* [X] 调研、学习libbpf、libbpf-bootstrap
+* [X] 调研、学习seccomp
+* [X] 输出调研文档
 
-### 4.2.1 Namespace
+阶段二：项目设计（4.3~4.10）
 
-### 4.2.2 Cgroup
+* [X] 与mentor讨论项目需求、并设计功能模块
+* [ ] 输出系统设计文档
+* [ ] 输出模块设计文档
 
-#### Cgroup介绍
+阶段三：开发迭代（4.10~6.1）
 
-CGroup 是 Control Groups 的缩写，是 Linux 内核提供的一种可以限制、记录、隔离进程组 (process groups) 所使用的物力资源 (如 cpu memory i/o 等等) 的机制。2007 年进入 Linux 2.6.24 内核，CGroups 不是全新创造的，它将进程管理从 cpuset 中剥离出来，作者是 Google 的 Paul Menage。CGroups 也是 LXC 为实现虚拟化所使用的资源管理手段。
+* [X] 实现进程信息监控（pid、ppid等）
+* [X] 实现系统调用信息监控
+* [X] 实现进程间通信监控
+* [X] 实现tcp（ipv4、ipv6）通信监控
+* [X] 实现监控信息存储功能（csv或json格式）
+* [ ] 基于上述功能，实现命令行调用，完成版本v0.1
+* [ ] 输出开发v0.1日志文档
+* [ ] 实现进程id与容器id映射，进程信息过滤
+* [ ] 添加“seccomp”功能
+* [ ] 基于上述新增功能，迭代版本v0.2
+* [ ] 输出开发v0.2日志文档
+* [ ] 添加可视化模块
+* [ ] 基于上述新增功能，迭代版本v0.3
+* [ ] 输出开发v0.3日志文档
+* [ ] 后续更新迭代
 
-#### CGroup 功能及组成
+阶段四：开发测试（6.2~6.16）
 
-CGroup 是将任意进程进行分组化管理的 Linux 内核功能。CGroup 本身是提供将进程进行分组化管理的功能和接口的基础结构，I/O 或内存的分配控制等具体的资源管理功能是通过这个功能来实现的。这些具体的资源管理功能称为 CGroup 子系统或控制器。CGroup 子系统有控制内存的 Memory 控制器、控制进程调度的 CPU 控制器等。运行中的内核可以使用的 Cgroup 子系统由/proc/cgroup 来确认。
+* [ ] 设计测试场景（分别针对基础功能、权限控制、安全逃逸场景）
+* [ ] 搭建测试环境
+* [ ] 测试-开发
+* [ ] 输出测试文档
 
-CGroup 提供了一个 CGroup 虚拟文件系统，作为进行分组管理和各子系统设置的用户接口。要使用 CGroup，必须挂载 CGroup 文件系统。这时通过挂载选项指定使用哪个子系统。
+阶段五：项目文档完善（6.17~7.1）
 
-cgroups task_struct reference:
+* [ ] 完善开发文档
+* [ ] 完善教程文档
+* [ ] 完善labs
 
-https://www.infoq.cn/article/docker-kernel-knowledge-cgroups-resource-isolation/
+# 4.使用说明
 
-https://blog.csdn.net/punk_lover/article/details/78376430
+### 4.1 目录结构
 
-> cgroup 指针指向了一个 cgroup 结构，也就是进程属于的 cgroup。进程受到子系统的控制，实际上是通过加入到特定的 cgroup 实现的，因为 cgroup 在特定的层级上，而子系统又是附和到上面的。通过以上三个结构，进程就可以和 cgroup 连接起来了：task_struct->css_set->cgroup_subsys_state->cgroup。
+* 项目的目录结构如下图所示
 
-```c
-static void fill_container_id(char *container_id) {
-  struct task_struct *curr_task;
-  struct css_set *css;
-  struct cgroup_subsys_state *sbs;
-  struct cgroup *cg;
-  struct kernfs_node *knode, *pknode;
- 
-  curr_task = (struct task_struct *) bpf_get_current_task();
-  css = curr_task->cgroups;
-  bpf_probe_read(&sbs, sizeof(void *), &css->subsys[0]);
-  bpf_probe_read(&cg,  sizeof(void *), &sbs->cgroup);
- 
-  bpf_probe_read(&knode, sizeof(void *), &cg->kn);
-  bpf_probe_read(&pknode, sizeof(void *), &knode->parent);
- 
-  if(pknode != NULL) {
-    char *aus;
- 
-    bpf_probe_read(&aus, sizeof(void *), &knode->name);
-    bpf_probe_read_str(container_id, CONTAINER_ID_LEN, aus);
-  }
-}
+```
+├── doc
+│   ├── contribution.md
+│   ├── Develop-Doc
+│   └── Labs
+├── examples
+│   ├── files
+│   ├── include
+│   ├── process
+│   │   ├── bootstrap.bpf.c
+│   │   ├── bootstrap.c
+│   │   ├── bootstrap.h
+│   │   └── Makefile
+│   ├── syscall
+│   ├── ipc
+│   └── tcp
+├── libbpf
+├── LICENSE
+├── README.md
+├── tools
+├── utils
+└── vmlinuxi
 ```
 
-# 5.参考资料
+目录说明
 
-## ebpf
+* doc：
+  * Develop-Doc：开发文档
+  * Labs：教程+Lab系列
+  * contribution.md：博客、社区贡献
+* examples：
+  * process：监控进程信息
+  * syscall：建通系统调用
+  * ipc：监控进程间通信
+  * tcp：抓取tcp通信两端的信息
+* libbpf：
+* tools：
+* utils：
+* vmlinuxi：
+* README.md
 
-1. 基于 eBPF 实现容器运行时安全
-
-   https://mp.weixin.qq.com/s/UiR8rjTt2SgJo5zs8n5Sqg
-2. 基于ebpf统计docker容器网络流量
-
-   https://blog.csdn.net/qq_32740107/article/details/110224623
-3. BumbleBee: Build, Ship, Run eBPF tools
-
-   https://www.solo.io/blog/solo-announces-bumblebee/
-4. Container traffic visibility library based on eBPF
-
-   https://github.com/ntop/libebpfflow
-5. about libbpf
-
-   https://nakryiko.com/posts/libbpf-bootstrap/#why-libbpf-bootstrap
-   https://nakryiko.com/posts/bpf-core-reference-guide/
-6. bcc to libbpf
-
-   https://nakryiko.com/posts/bcc-to-libbpf-howto-guide/#setting-up-user-space-parts
-7. good intro for trace point and kprobe in ebpf
-
-   https://www.iserica.com/posts/brief-intro-for-tracepoint/
-   https://www.iserica.com/posts/brief-intro-for-kprobe/
-8. other
-
-   https://lockc-project.github.io/book/index.html
-   https://github.com/willfindlay/bpfcontain-rs
-9. user space uprobe
-
-   https://www.collabora.com/news-and-blog/blog/2019/05/14/an-ebpf-overview-part-5-tracing-user-processes/
-10. ebpf secomp
-
-    https://developers.redhat.com/articles/2021/12/16/secure-your-kubernetes-deployments-ebpf#how_does_the_bpf_recorder_work_
-
-    https://github.com/kubernetes-sigs/security-profiles-operator/blob/main/internal/pkg/daemon/bpfrecorder/bpf/recorder.bpf.c
-11. tools
-
-    https://github.com/iovisor/bcc/tree/master/libbpf-tools
-
-# 6.使用说明
-
-### 6.1 安装教程
+### 4.2 安装教程
 
 **Build**
 
@@ -166,32 +186,7 @@ $ make
 $ sudo ./bootstrap
 ```
 
-### 6.2 目录结构
-
-├── doc
-│   ├── contribution.md
-│   ├── course
-│   ├── Develop-Doc
-│   └── Labs
-├── examples
-│   ├── files
-│   ├── include
-│   ├── process
-│   │   ├── bootstrap.bpf.c
-│   │   ├── bootstrap.c
-│   │   ├── bootstrap.h
-│   │   └── Makefile
-│   └── syscall
-├── libbpf
-├── LICENSE
-├── README.md
-├── tools
-├── utils
-└── vmlinuxi
-
-- doc 
-- examples
-### 6.3 其他
+### 4.3 其他
 
 **成员**
 
