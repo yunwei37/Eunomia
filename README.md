@@ -21,6 +21,11 @@
 4. 构建了一个基于命令行程序的入口工具
 5. 完成了整体的文档框架
 6. 完成了多份文档：
+```
+[调研文档](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/blob/master/doc/develop_doc/0_%E8%B0%83%E7%A0%94%E6%8A%A5%E5%91%8A.md)
+[系统设计](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/blob/master/doc/develop_doc/1_系统设计.md)
+[模块设计](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/blob/master/doc/develop_doc/2_模块设计.md)
+[开发计划](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/blob/master/doc/develop_doc/3_开发计划.md)
 
 TODO:
 
