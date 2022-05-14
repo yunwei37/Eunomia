@@ -6,27 +6,30 @@
 #include <time.h>
 #include <sys/resource.h>
 #include <bpf/libbpf.h>
-#include "bootstrap.h"
-#include "bootstrap.skel.h"
+#include "process.h"
+#include "process.skel.h"
+#include "output.h"
 
 static struct env
 {
 	bool verbose;
+	bool is_csv;
 	long min_duration_ms;
 } env;
 
-const char *argp_program_version = "bootstrap 0.0";
-const char *argp_program_bug_address = "<bpf@vger.kernel.org>";
+const char *argp_program_version = "process 1.0";
+const char *argp_program_bug_address = "<1067852565@qq.com>";
 const char argp_program_doc[] =
-	"BPF bootstrap demo application.\n"
+	"eBPF process tracing application.\n"
 	"\n"
 	"It traces process start and exits and shows associated \n"
 	"information (filename, process duration, PID and PPID, etc).\n"
 	"\n"
-	"USAGE: ./bootstrap [-d <min-duration-ms>] [-v]\n";
+	"USAGE: ./process [-d <min-duration-ms>] [-v]\n";
 
 static const struct argp_option opts[] = {
 	{"verbose", 'v', NULL, 0, "Verbose debug output"},
+	{"verbose", 'C', NULL, 0, "Output in the CSV format"},
 	{"duration", 'd', "DURATION-MS", 0, "Minimum process duration (ms) to report"},
 	{},
 };
@@ -76,23 +79,9 @@ static void sig_handler(int sig)
 	exiting = true;
 }
 
-static void print_basic_info(const struct event *e)
+static void print_table_data(const struct event *e)
 {
-	struct tm *tm;
-	char ts[32];
-	time_t t;
-
-	time(&t);
-	tm = localtime(&t);
-	strftime(ts, sizeof(ts), "%H:%M:%S", tm);
-	/* format: [time] [pid] [ppid] [cgroup_id] [user_namespace_id] [pid_namespace_id] [mount_namespace_id] */
-	printf("%-8s %-7d %-7d %lu %u %u %u ",
-		   ts, e->pid, e->ppid, e->cgroup_id, e->user_namespace_id, e->pid_namespace_id, e->mount_namespace_id);
-}
-
-static void print_table_info(const struct event *e)
-{
-	print_basic_info(e);
+	print_basic_info(e, false);
 
 	if (e->exit_event)
 	{
@@ -109,17 +98,16 @@ static void print_table_info(const struct event *e)
 	}
 }
 
-
 static void
-print_csv_header(void)
+print_header(void)
 {
-	printf("time,pid,ppi,cgroup_id,user_namespace_id,pid_namespace_id,mount_namespace_id,stat,comm,filename/exitcode,duration\n");
+	print_table_header(headers, env.is_csv);
 }
 
 static void
 print_csv_data(const struct event *e)
 {
-	print_basic_info(e);
+	print_basic_info(e, true);
 
 	if (e->exit_event)
 	{
@@ -139,14 +127,17 @@ print_csv_data(const struct event *e)
 static int handle_event(void *ctx, void *data, size_t data_sz)
 {
 	const struct event *e = data;
-	print_csv_data(e);
+	if (env.is_csv)
+		print_csv_data(e);
+	else
+		print_table_data(e);
 	return 0;
 }
 
 int main(int argc, char **argv)
 {
 	struct ring_buffer *rb = NULL;
-	struct bootstrap_bpf *skel;
+	struct process_bpf *skel;
 	int err;
 
 	/* Parse command line arguments */
@@ -163,7 +154,7 @@ int main(int argc, char **argv)
 	signal(SIGTERM, sig_handler);
 
 	/* Load and verify BPF application */
-	skel = bootstrap_bpf__open();
+	skel = process_bpf__open();
 	if (!skel)
 	{
 		fprintf(stderr, "Failed to open and load BPF skeleton\n");
@@ -174,7 +165,7 @@ int main(int argc, char **argv)
 	skel->rodata->min_duration_ns = env.min_duration_ms * 1000000ULL;
 
 	/* Load & verify BPF programs */
-	err = bootstrap_bpf__load(skel);
+	err = process_bpf__load(skel);
 	if (err)
 	{
 		fprintf(stderr, "Failed to load and verify BPF skeleton\n");
@@ -182,7 +173,7 @@ int main(int argc, char **argv)
 	}
 
 	/* Attach tracepoints */
-	err = bootstrap_bpf__attach(skel);
+	err = process_bpf__attach(skel);
 	if (err)
 	{
 		fprintf(stderr, "Failed to attach BPF skeleton\n");
@@ -197,7 +188,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Failed to create ring buffer\n");
 		goto cleanup;
 	}
-	print_csv_header();
+	print_header();
 	while (!exiting)
 	{
 		err = ring_buffer__poll(rb, 100 /* timeout, ms */);
@@ -217,7 +208,7 @@ int main(int argc, char **argv)
 cleanup:
 	/* Clean up */
 	ring_buffer__free(rb);
-	bootstrap_bpf__destroy(skel);
+	process_bpf__destroy(skel);
 
 	return err < 0 ? -err : 0;
 }

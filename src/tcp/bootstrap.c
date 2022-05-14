@@ -202,9 +202,6 @@ static void sig_int(int signo)
 static void print_count_ipv4(int map_fd)
 {
 	static struct ipv4_flow_key keys[MAX_ENTRIES];
-	__u32 value_size = sizeof(__u64);
-	__u32 key_size = sizeof(keys[0]);
-	static struct ipv4_flow_key zero;
 	static __u64 counts[MAX_ENTRIES];
 	char s[INET_ADDRSTRLEN];
 	char d[INET_ADDRSTRLEN];
@@ -231,9 +228,6 @@ static void print_count_ipv4(int map_fd)
 static void print_count_ipv6(int map_fd)
 {
 	static struct ipv6_flow_key keys[MAX_ENTRIES];
-	__u32 value_size = sizeof(__u64);
-	__u32 key_size = sizeof(keys[0]);
-	static struct ipv6_flow_key zero;
 	static __u64 counts[MAX_ENTRIES];
 	char s[INET6_ADDRSTRLEN];
 	char d[INET6_ADDRSTRLEN];

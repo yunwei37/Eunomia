@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef BPF_DOCKER_H
+#define BPF_DOCKER_H
 
 
 /* Get the mount namespace id for the current task.

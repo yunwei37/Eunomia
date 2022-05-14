@@ -4,7 +4,8 @@
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
 #include <bpf/bpf_core_read.h>
-#include "bootstrap.h"
+#include "process.h"
+#include "bpf_docker.h"
 
 char LICENSE[] SEC("license") = "Dual BSD/GPL";
 
@@ -23,46 +24,6 @@ struct
 } rb SEC(".maps");
 
 const volatile unsigned long long min_duration_ns = 0;
-
-/* Get the mount namespace id for the current task.
- *
- * return: Mount namespace id or 0 if we couldn't find it.
- */
-static __always_inline u32 get_current_mnt_ns_id()
-{
-	struct task_struct *task = (struct task_struct *)bpf_get_current_task_btf();
-	return task->nsproxy->mnt_ns->ns.inum;
-}
-
-/* Get the pid namespace id for the current task.
- *
- * return: Pid namespace id or 0 if we couldn't find it.
- */
-static __always_inline u32 get_current_pid_ns_id()
-{
-	struct task_struct *task = (struct task_struct *)bpf_get_current_task_btf();
-	return task->thread_pid->numbers[0].ns->ns.inum;
-}
-
-/* Get the user namespace id for the current task.
- *
- * return: user namespace id or 0 if we couldn't find it.
- */
-static __always_inline u32 get_current_user_ns_id()
-{
-	struct task_struct *task = (struct task_struct *)bpf_get_current_task_btf();
-	return task->cred->user_ns->ns.inum;
-}
-
-static __always_inline void fill_event_basic(pid_t pid, struct task_struct *task, struct event *e)
-{
-	e->pid = pid;
-	e->ppid = BPF_CORE_READ(task, real_parent, tgid);
-	e->cgroup_id = bpf_get_current_cgroup_id();
-	e->user_namespace_id = get_current_user_ns_id();
-	e->pid_namespace_id = get_current_pid_ns_id();
-	e->mount_namespace_id = get_current_mnt_ns_id();
-}
 
 SEC("tp/sched/sched_process_exec")
 int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
