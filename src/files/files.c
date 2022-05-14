@@ -1,12 +1,3 @@
-/* SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause) */
-
-/*
- * filetop Trace file reads/writes by process.
- * Copyright (c) 2021 Hengqi Chen
- *
- * Based on filetop(8) from BCC by Brendan Gregg.
- * 17-Jul-2021   Hengqi Chen   Created this.
- */
 #include <argp.h>
 #include <errno.h>
 #include <signal.h>
@@ -18,8 +9,8 @@
 
 #include <bpf/libbpf.h>
 #include <bpf/bpf.h>
-#include "bootstrap.h"
-#include "bootstrap.skel.h"
+#include "files.h"
+#include "files.skel.h"
 #include <bpf/libbpf.h>
 
 #define warn(...) fprintf(stderr, __VA_ARGS__)
@@ -44,9 +35,9 @@ static int interval = 1;
 static int count = 99999999;
 static bool verbose = false;
 
-const char *argp_program_version = "filetop 0.1";
+const char *argp_program_version = "filetop 1.0";
 const char *argp_program_bug_address =
-	"https://github.com/iovisor/bcc/tree/master/libbpf-tools";
+	"<1067852565@qq.com>";
 const char argp_program_doc[] =
 "Trace file reads/writes by process.\n"
 "\n"
@@ -179,7 +170,7 @@ static int sort_column(const void *obj1, const void *obj2)
 	}
 }
 
-static int print_stat(struct bootstrap_bpf *obj)
+static int print_stat(struct files_bpf *obj)
 {
 	FILE *f;
 	time_t t;
@@ -262,7 +253,7 @@ int main(int argc, char **argv)
 		.parser = parse_arg,
 		.doc = argp_program_doc,
 	};
-	struct bootstrap_bpf *obj;
+	struct files_bpf *obj;
 	int err;
 
 	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
@@ -272,7 +263,7 @@ int main(int argc, char **argv)
 	libbpf_set_strict_mode(LIBBPF_STRICT_ALL);
 	libbpf_set_print(libbpf_print_fn);
 
-	obj = bootstrap_bpf__open_opts(&open_opts);
+	obj = files_bpf__open_opts(&open_opts);
 	if (!obj) {
 		warn("failed to open BPF object\n");
 		return 1;
@@ -281,13 +272,13 @@ int main(int argc, char **argv)
 	obj->rodata->target_pid = target_pid;
 	obj->rodata->regular_file_only = regular_file_only;
 
-	err = bootstrap_bpf__load(obj);
+	err = files_bpf__load(obj);
 	if (err) {
 		warn("failed to load BPF object: %d\n", err);
 		goto cleanup;
 	}
 
-	err = bootstrap_bpf__attach(obj);
+	err = files_bpf__attach(obj);
 	if (err) {
 		warn("failed to attach BPF programs: %d\n", err);
 		goto cleanup;
@@ -318,7 +309,7 @@ int main(int argc, char **argv)
 	}
 
 cleanup:
-	bootstrap_bpf__destroy(obj);
+	files_bpf__destroy(obj);
 
 	return err != 0;
 }

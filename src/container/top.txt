@@ -1,4 +1,0 @@
-UID                 PID                 PPID                C                   STIME               TTY                 TIME                CMD
-root                4432                4411                0                   May05               ?                   00:00:00            sh run.sh
-root                4453                4432                0                   May05               ?                   00:00:07            python main.py
-root                4482                4453                0                   May05               ?                   01:36:51            /opt/conda/envs/tf/bin/python main.py

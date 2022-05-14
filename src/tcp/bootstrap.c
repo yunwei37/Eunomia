@@ -1,7 +1,3 @@
-// SPDX-License-Identifier: GPL-2.0
-// Copyright (c) 2020 Anton Protopopov
-//
-// Based on tcpconnect(8) from BCC by Brendan Gregg
 #include <sys/resource.h>
 #include <arpa/inet.h>
 #include <argp.h>

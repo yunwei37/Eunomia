@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
-/* Copyright (c) 2020 Facebook */
 #include <argp.h>
 #include <signal.h>
 #include <stdio.h>
@@ -14,6 +12,7 @@ static struct env
 {
 	bool verbose;
 	bool is_csv;
+	pid_t target_pid;
 	long min_duration_ms;
 } env;
 
@@ -28,18 +27,30 @@ const char argp_program_doc[] =
 	"USAGE: ./process [-d <min-duration-ms>] [-v]\n";
 
 static const struct argp_option opts[] = {
+	{ "pid", 'p', "PID", 0, "Process ID to trace" },
 	{"verbose", 'v', NULL, 0, "Verbose debug output"},
-	{"verbose", 'C', NULL, 0, "Output in the CSV format"},
+	{"csv", 'C', NULL, 0, "Output in the CSV format"},
+	{ NULL, 'h', NULL, OPTION_HIDDEN, "Show the full help" },
 	{"duration", 'd', "DURATION-MS", 0, "Minimum process duration (ms) to report"},
 	{},
 };
 
 static error_t parse_arg(int key, char *arg, struct argp_state *state)
-{
+{	
+	pid_t pid;
 	switch (key)
 	{
 	case 'v':
 		env.verbose = true;
+		break;
+	case 'p':
+		errno = 0;
+		pid = strtol(arg, NULL, 10);
+		if (errno || pid <= 0) {
+			fprintf(stderr, "Invalid PID: %s\n", arg);
+			argp_usage(state);
+		}
+		env.target_pid = pid;
 		break;
 	case 'd':
 		errno = 0;

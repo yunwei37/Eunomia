@@ -10,10 +10,10 @@ VMLINUX := ../../vmlinux/$(ARCH)/vmlinux.h
 # Use our own libbpf API headers and Linux UAPI headers distributed with
 # libbpf to avoid dependency on system-wide headers, which could be missing or
 # outdated
-INCLUDES := -I$(OUTPUT) -I../../libbpf/include/uapi -I$(dir $(VMLINUX))
-CFLAGS := -g -Wall
+INCLUDES := -I$(OUTPUT) -I../../libbpf/include/uapi -I../include -I$(dir $(VMLINUX))
+CFLAGS := -g -Wall -Wno-unused-function
 
-APPS = bootstrap
+APPS = files
 
 # Get Clang's default includes on this system. We'll explicitly add these dirs
 # to the includes list when compiling with `-target bpf` because otherwise some

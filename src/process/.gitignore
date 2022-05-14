@@ -1,6 +1,2 @@
 /.output
-/bootstrap
 /process
-/uprobe
-/kprobe
-/fentry

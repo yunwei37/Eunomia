@@ -7,11 +7,6 @@
 # This lists containers, their init PIDs, and namespace IDs. If container
 # namespaces equal the host namespace, they are colored red (this can be
 # disabled by setting color=0 below).
-#
-# Copyright 2017 Netflix, Inc.
-# Licensed under the Apache License, Version 2.0 (the "License")
-#
-# 10-Apr-2017   Brendan Gregg   Created this.
 
 namespaces="cgroup ipc mnt net pid user uts"
 color=1

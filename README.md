@@ -191,7 +191,7 @@ For example, run process:
 
 ```shell
 cd src/process
-sudo ./bootstrap
+sudo ./process
 ```
 
 ### 4.3 其他
