@@ -138,7 +138,7 @@ eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事
 │   ├── contribution.md
 │   ├── Develop-Doc
 │   └── tutorial
-├── examples
+├── src
 │   ├── files
 │   ├── include
 │   ├── process
@@ -163,15 +163,16 @@ eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事
   * Develop-Doc：开发文档
   * Labs：教程+Lab系列
   * contribution.md：博客、社区贡献
-* examples：
+* src：
   * process：监控进程信息
-  * syscall：建通系统调用
+  * syscall：监控系统调用
+  * files: 监控文件读取写入
   * ipc：监控进程间通信
   * tcp：抓取tcp通信两端的信息
 * libbpf：
 * tools：
 * utils：
-* vmlinuxi：
+* vmlinux：
 * README.md
 
 ### 4.2 安装教程
@@ -181,11 +182,15 @@ eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事
 Makefile build:
 
 ```shell
+git submodule update --init --recursive       # check out libbpf
+make
+```
 
-$ git submodule update --init --recursive       # check out libbpf
-$ cd examples/c
-$ make
-$ sudo ./bootstrap
+For example, run process:
+
+```shell
+cd src/process
+sudo ./bootstrap
 ```
 
 ### 4.3 其他
