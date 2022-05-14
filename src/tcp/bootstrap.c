@@ -10,8 +10,8 @@
 #include <unistd.h>
 #include <time.h>
 #include <bpf/bpf.h>
-#include "tcpconnect.h"
-#include "tcpconnect.skel.h"
+#include "bootstrap.h"
+#include "bootstrap.skel.h"
 #include "btf_helpers.h"
 #include "trace_helpers.h"
 //#include "map_helpers.h"
@@ -20,23 +20,23 @@
 
 static volatile sig_atomic_t exiting = 0;
 
-const char *argp_program_version = "tcpconnect 0.1";
+const char *argp_program_version = "bootstrap 0.1";
 const char *argp_program_bug_address =
 	"https://github.com/iovisor/bcc/tree/master/libbpf-tools";
 static const char argp_program_doc[] =
 	"\ntcpconnect: Count/Trace active tcp connections\n"
 	"\n"
 	"EXAMPLES:\n"
-	"    tcpconnect             # trace all TCP connect()s\n"
-	"    tcpconnect -t          # include timestamps\n"
-	"    tcpconnect -p 181      # only trace PID 181\n"
-	"    tcpconnect -P 80       # only trace port 80\n"
-	"    tcpconnect -P 80,81    # only trace port 80 and 81\n"
-	"    tcpconnect -U          # include UID\n"
-	"    tcpconnect -u 1000     # only trace UID 1000\n"
-	"    tcpconnect -c          # count connects per src, dest, port\n"
-	"    tcpconnect --C mappath # only trace cgroups in the map\n"
-	"    tcpconnect --M mappath # only trace mount namespaces in the map\n"
+	"    bootstrap             # trace all TCP connect()s\n"
+	"    bootstrap  -t          # include timestamps\n"
+	"    bootstrap -p 181      # only trace PID 181\n"
+	"    bootstrap -P 80       # only trace port 80\n"
+	"    bootstrap -P 80,81    # only trace port 80 and 81\n"
+	"    bootstrap -U          # include UID\n"
+	"    bootstrap -u 1000     # only trace UID 1000\n"
+	"    bootstrap -c          # count connects per src, dest, port\n"
+	"    bootstrap --C mappath # only trace cgroups in the map\n"
+	"    bootstrap --M mappath # only trace mount namespaces in the map\n"
 	;
 
 static int get_int(const char *arg, int *ret, int min, int max)
@@ -360,7 +360,7 @@ int main(int argc, char **argv)
 		.doc = argp_program_doc,
 		.args_doc = NULL,
 	};
-	struct tcpconnect_bpf *obj;
+	struct bootstrap_bpf *obj;
 	int i, err;
 
 	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
@@ -376,7 +376,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	obj = tcpconnect_bpf__open_opts(&open_opts);
+	obj = bootstrap_bpf__open_opts(&open_opts);
 	if (!obj) {
 		warn("failed to open BPF object\n");
 		return 1;
@@ -395,13 +395,13 @@ int main(int argc, char **argv)
 		}
 	}
 
-	err = tcpconnect_bpf__load(obj);
+	err = bootstrap_bpf__load(obj);
 	if (err) {
 		warn("failed to load BPF object: %d\n", err);
 		goto cleanup;
 	}
 
-	err = tcpconnect_bpf__attach(obj);
+	err = bootstrap_bpf__attach(obj);
 	if (err) {
 		warn("failed to attach BPF programs: %s\n", strerror(-err));
 		goto cleanup;
@@ -421,7 +421,7 @@ int main(int argc, char **argv)
 	}
 
 cleanup:
-	tcpconnect_bpf__destroy(obj);
+	bootstrap_bpf__destroy(obj);
 //	cleanup_core_btf(&open_opts);
 
 	return err != 0;

@@ -9,7 +9,7 @@
 #include <bpf/bpf_tracing.h>
 
 #include "maps.bpf.h"
-#include "tcpconnect.h"
+#include "bootstrap.h"
 
 SEC(".rodata") int filter_ports[MAX_PORTS];
 const volatile int filter_ports_len = 0;
