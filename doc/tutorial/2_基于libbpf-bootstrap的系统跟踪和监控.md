@@ -7,14 +7,18 @@
 当该进程被执行时，第一个挂载点下的执行函数将会被调用，记录信息后存入环形存储器。同样的，当有进程退出时，第二个
 挂载点下的执行函数也将被调用并执行相应的操作。
 
-## syscall追踪模块
+### syscall追踪模块
 &ensp;&ensp;&ensp;&ensp;对于系统调用的追踪模块设置了一个`tracepoint`挂载点，为`SEC("tracepoint/raw_syscalls/sys_enter")`。
 当有syscall发生时，我们书写的`int sys_enter(struct trace_event_raw_sys_enter *args){}`将会被调用，
 将相关信息存入map后供用户态读取。
 
-## file追踪模块
+### file追踪模块
 &ensp;&ensp;&ensp;&ensp;对于文件系统，我们设置了两个`kprobe`挂载点，分别是`SEC("kprobe/vfs_read")`和`SEC("kprobe/vfs_write")`。
 当发生了文件系统的读或写时，对应的函数会被调用并记录信息。
 
-## ipc追踪模块
+### ipc追踪模块
 &ensp;&ensp;&ensp;&ensp;对于进程间通信的追踪，我们使用了Linux自带的LSM模块的钩子，将函数挂载在`SEC("lsm/ipc_permission")`下
+
+### container模块
+&ensp;&ensp;&ensp;&ensp;对于容器相关信息的监控理论上需要涉及到`uprobe`追踪模块的内容，但目前使用
+现有的容器相关命令来实现类似功能。
