@@ -9,7 +9,7 @@ CFLAGS := -g -Wall -Wno-unused-function -Wno-unused-variable -std=c++20
 OBJECT := cmd.o
 APP := cmd
 
-.PHONY:ebpf clean
+.PHONY:ebpf clean fmt
 
 all: $(APP)
 
@@ -27,4 +27,6 @@ $(APP): %: $(OBJECT) $(LIBRARY_PATH)
 clean:
 	@make -C ../src clean
 	rm -f $(APP) $(OBJECT)
-	
+
+fmt:
+	clang-format -i *.cpp *.h	
