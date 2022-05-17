@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
 #include <argp.h>
 #include <signal.h>
 #include <stdio.h>

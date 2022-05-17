@@ -1,4 +1,4 @@
 .PHONY:all
 
 all:
-	@make -C ipc
+	@make -C src
