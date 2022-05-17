@@ -6,7 +6,10 @@
 #define MAX_FILENAME_LEN 127
 #define CONTAINER_ID_LEN 127
 
-struct event {
+#include <bpf/libbpf.h>
+
+struct syscall_event
+{
 	int pid;
 	int ppid;
 	uint32_t syscall_id;

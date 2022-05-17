@@ -1,9 +1,9 @@
 CXX := g++
 SRC := ../src
-OUTPUT := $(SRC)/process/.output
+OUTPUT_INCULDE := -I$(SRC)/process/.output -I$(SRC)/syscall/.output
 LIBRARY_PATH := $(SRC)/process/.output/libbpf.a
 VMLINUX := ../vmlinux/$(ARCH)/vmlinux.h
-INCLUDES := -I$(OUTPUT) -I../libbpf/include/uapi -I$(SRC)/include -I$(dir $(VMLINUX)) -I$(SRC)
+INCLUDES := $(OUTPUT_INCULDE) -I../libbpf/include/uapi -I$(SRC)/include -I$(dir $(VMLINUX)) -I$(SRC)
 CFLAGS := -g -Wall -Wno-unused-function -Wno-unused-variable -std=c++20
 APP := cmd
 

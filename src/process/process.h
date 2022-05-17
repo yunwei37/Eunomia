@@ -19,4 +19,4 @@ static const char *headers[] = {
 	"stat", "comm", "filename/exitcode", "duration",
 	NULL};
 
-#endif
+#endif /* PROCESS_H */

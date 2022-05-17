@@ -1,35 +1,46 @@
-#ifndef EBPF_H
-#define EBPF_H
+#ifndef PROCESS_CMD_H
+#define PROCESS_CMD_H
 
-extern "C" {
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include "libbpf_print.h"
+
+extern "C"
+{
 #include "process/process_tracker.h"
 }
 
-
-static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
+struct process_tracker
 {
-	return 0 && vfprintf(stderr, format, args);
-}
-
-static int handle_event(void *ctx, void *data, size_t data_sz)
-{
-	const struct common_event* e = (const struct common_event*)data;
-	print_basic_info(e, false);
-	return 0;
-}
-
-// thread example
-#include <iostream>       // std::cout
-#include <thread>         // std::thread
-
-volatile bool isexit = false;
-
-int start_process_thread() {
+	volatile bool exiting;
+	std::mutex mutex;
 	struct process_env env = {0};
-	env.exiting = &isexit;
-	std::cout << "start_process_thread\n";
-    return start_process_tracker(handle_event, libbpf_print_fn, env);
-}
-
+	process_tracker()
+	{
+		env = {0};
+		exiting = false;
+		env.exiting = &exiting;
+	}
+	process_tracker(pid_t target_pid,
+					long min_duration_ms)
+	{
+		exiting = false;
+		env = {0};
+		env.exiting = &exiting;
+		env.target_pid = target_pid;
+		env.min_duration_ms = min_duration_ms;
+	}
+	void start_process()
+	{
+		start_process_tracker(handle_event, libbpf_print_fn, env);
+	}
+	static int handle_event(void *ctx, void *data, size_t data_sz)
+	{
+		const struct common_event *e = (const struct common_event *)data;
+		print_basic_info(e, false);
+		return 0;
+	}
+};
 
 #endif

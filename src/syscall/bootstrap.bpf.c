@@ -69,8 +69,8 @@ int sys_enter(struct trace_event_raw_sys_enter *args)
     else
     {
         // New element, throw event
-        struct event *event =
-            bpf_ringbuf_reserve(&events, sizeof(struct event), 0);
+        struct syscall_event *event =
+            bpf_ringbuf_reserve(&events, sizeof(struct syscall_event), 0);
         if (!event)
         {
             // Not enough space within the ringbuffer
