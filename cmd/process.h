@@ -4,7 +4,10 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <string>
 #include "libbpf_print.h"
+#include <jsoncons/json.hpp>
+#include <jsoncons_ext/jsonpath/jsonpath.hpp>
 
 extern "C"
 {
@@ -35,10 +38,32 @@ struct process_tracker
 	{
 		start_process_tracker(handle_event, libbpf_print_fn, env);
 	}
+	static std::string to_json(const struct process_event* e) {
+		if (!e) {
+			return "";
+		}
+		std::string res;
+		jsoncons::json process_event(jsoncons::json_object_arg, {
+			{"type", "process"},
+			{"pid", e->common.pid},
+			{"ppid", e->common.ppid},
+			{"cgroup_id", e->common.cgroup_id},
+			{"user_namespace_id", e->common.user_namespace_id},
+			{"pid_namespace_id", e->common.pid_namespace_id},
+			{"mount_namespace_id", e->common.mount_namespace_id},
+			{"exit_code", e->exit_code},
+			{"duration_ns", e->duration_ns},
+			{"comm", e->comm},
+			{"filename", e->filename},
+			{"exit_event", e->exit_event}
+		});
+		process_event.dump(res);
+		return res;
+	}
 	static int handle_event(void *ctx, void *data, size_t data_sz)
 	{
-		const struct common_event *e = (const struct common_event *)data;
-		print_basic_info(e, false);
+		const struct process_event *e = (const struct process_event *)data;
+		std::cout<<to_json(e)<<std::endl;
 		return 0;
 	}
 };
