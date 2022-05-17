@@ -6,8 +6,8 @@
 #include <unistd.h>
 #include <sys/resource.h>
 #include <bpf/bpf.h>
-#include "bootstrap.h"
-#include "bootstrap.skel.h"
+#include "container.h"
+#include "container.skel.h"
 
 
 static const char hex_dec_arr[] = {'0','1','2','3','4','5','6','7','8',
@@ -34,7 +34,7 @@ static void sig_handler(int sig)
 
 static int handle_event(void *ctx, void *data, size_t data_sz)
 {
-	const struct event *e = data;
+	const struct container_event *e = data;
 	struct tm *tm;
 	char ts[32];
 	time_t t;
@@ -43,7 +43,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 	tm = localtime(&t);
 	strftime(ts, sizeof(ts), "%H:%M:%S", tm);
 
-	printf("%lu %u %u \n",  e->container_id, e->hpid, e->cpid);
+	printf("%-10u %-15u %lu \n", e->pid, e->ppid, e->container_id);
 
 	return 0;
 }
@@ -63,7 +63,7 @@ static int long_hex_to_str(unsigned long num, char *arr, int len) {
     return i;
 }
 
-static void exec_shell(struct bootstrap_bpf *skel, int processes_fd) {
+static void init_container_map(struct container_bpf *skel, int processes_fd) {
 	char *cmd = "./namespace.sh > container.txt";
 	system(cmd);
 
@@ -117,10 +117,10 @@ static void exec_shell(struct bootstrap_bpf *skel, int processes_fd) {
         pid_t c_pid, ppid;
         while(fscanf(f,"%s %d %d %*[^\n]\n", uid, &c_pid, &ppid) == 3) {
             // printf("%d, %d\n", c_pid, ppid);
-			struct event data = {
+			struct container_event data = {
 				.container_id = container_id,
-				.cpid = c_pid,
-				.hpid = ppid,
+				.pid = c_pid,
+				.ppid = ppid,
 			};
 			bpf_map_update_elem(processes_fd, &c_pid, &data, BPF_ANY);
         }
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
 	// char *dockerd_bin_path = "/usr/bin/dockerd";
 	// char *dockerd_func_name = "github.com/docker/docker/container.(*State).SetRunning";
 	struct ring_buffer *rb = NULL;
-	struct bootstrap_bpf *skel;
+	struct container_bpf *skel;
 	int err;
 	// long dockerd_addr = 0x2895370;
 
@@ -149,74 +149,62 @@ int main(int argc, char **argv)
 	signal(SIGTERM, sig_handler);
 
 	/* Load and verify BPF application */
-	skel = bootstrap_bpf__open();
+	skel = container_bpf__open();
 	if (!skel) {
 		fprintf(stderr, "Failed to open and load BPF skeleton\n");
 		return 1;
 	}
 
 	/* Load & verify BPF programs */
-	err = bootstrap_bpf__load(skel);
+	err = container_bpf__load(skel);
 	if (err) {
 		fprintf(stderr, "Failed to load and verify BPF skeleton\n");
 		goto cleanup;
 	}
 	/* execute shell to generate container data */
 	int processes_fd = bpf_map__fd(skel->maps.processes);
-	exec_shell(skel, processes_fd);
-	struct event tst;
-	int t_pid = 4432;
-
-	bpf_map_lookup_elem(processes_fd, &t_pid, &tst);
-	
-	printf("%lx, %d\n", tst.container_id, tst.hpid);
-	
-
-
-	/* Attach uprobes */
-	// dockerd_addr = get_symbol_path(dockerd_bin_path, dockerd_func_name);
-	// dockerd_addr = 
-	// skel->links.uprobe = bpf_program__attach_uprobe(skel->progs.uprobe,
-	// 						false,
-	// 						0,
-	// 						dockerd_bin_path,
-	// 						dockerd_addr
-	// 						);
-	// if (!skel->links.uprobe)
-	// {
-	// 	fprintf(stderr,"fail to link\n");
-	// 	goto cleanup;
-	// }
+	init_container_map(skel, processes_fd);
 	
 
 	/* Set up ring buffer polling */
-	// rb = ring_buffer__new(bpf_map__fd(skel->maps.events), handle_event, NULL, NULL);
-	// if (!rb) {
-	// 	err = -1;
-	// 	fprintf(stderr, "Failed to create ring buffer\n");
-	// 	goto cleanup;
-	// }
+	rb = ring_buffer__new(bpf_map__fd(skel->maps.events), handle_event, NULL, NULL);
+	if (!rb) {
+		err = -1;
+		fprintf(stderr, "Failed to create ring buffer\n");
+		goto cleanup;
+	}
 
 	/* Process events */
-	// printf("%-8s %-5s %-16s %-7s %-7s %s\n",
-	//        "TIME", "EVENT", "COMM", "PID", "PPID", "SYSCALL_ID");
-	// while (!exiting) {
-	// 	// err = ring_buffer__poll(rb, 100 /* timeout, ms */);
-	// 	/* Ctrl-C will cause -EINTR */
-	// 	if (err == -EINTR) {
-	// 		err = 0;
-	// 		break;
-	// 	}
-	// 	if (err < 0) {
-	// 		printf("Error polling perf buffer: %d\n", err);
-	// 		break;
-	// 	}
-	// }
+	printf("%-10s %-15s %s\n",
+	    "PID", "PARENT_PID", "CONTAINER_ID");
+	
+	// int bpf_map_get_next_key(int fd, const void *key, void *next_key)
+	int to_lookup = 0;
+	int next_key = 0;
+	struct container_event container_value;
+	while (!bpf_map_get_next_key(processes_fd, &to_lookup, &next_key))
+	{
+		bpf_map_lookup_elem(processes_fd, &next_key, &container_value);
+		printf("%-10u %-15u %lu \n", container_value.pid, container_value.ppid, container_value.container_id);
+		to_lookup = next_key;
+	}
+	while (!exiting) {
+		// err = ring_buffer__poll(rb, 100 /* timeout, ms */);
+		/* Ctrl-C will cause -EINTR */
+		if (err == -EINTR) {
+			err = 0;
+			break;
+		}
+		if (err < 0) {
+			printf("Error polling perf buffer: %d\n", err);
+			break;
+		}
+	}
 
 cleanup:
 	/* Clean up */
 	ring_buffer__free(rb);
-	bootstrap_bpf__destroy(skel);
+	container_bpf__destroy(skel);
 
 	return err < 0 ? -err : 0;
 }
