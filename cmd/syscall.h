@@ -32,15 +32,9 @@ struct syscall_tracker {
   }
   static int handle_event(void *ctx, void *data, size_t data_sz) {
     const struct syscall_event *e = (const struct syscall_event *)data;
-    struct tm *tm;
-    char ts[32];
-    time_t t;
+    auto time = get_current_time();
 
-    time(&t);
-    tm = localtime(&t);
-    strftime(ts, sizeof(ts), "%H:%M:%S", tm);
-
-    printf("%-8s %-16s %-7d %-7d [%lu] %u\n", ts, e->comm, e->pid, e->ppid,
+    printf("%-8s %-16s %-7d %-7d [%lu] %u\n", time.c_str(), e->comm, e->pid, e->ppid,
            e->mntns, e->syscall_id);
     return 0;
   }

@@ -38,6 +38,7 @@ struct process_tracker {
     jsoncons::json process_event(
         jsoncons::json_object_arg,
         {{"type", "process"},
+		 {"time", get_current_time()},
          {"pid", e.common.pid},
          {"ppid", e.common.ppid},
          {"cgroup_id", e.common.cgroup_id},

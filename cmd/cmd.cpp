@@ -9,24 +9,42 @@
 
 using namespace std::chrono_literals;
 
+#include <clipp.h>
+
 bool verbose = false;
 
-int main() {
+int main(int argc, char *argv[]) {
+  bool process_flag = false, syscall_flag = false;
+  std::string remote_url = "", fmt = "json";
+
+  auto cli = (clipp::option("-p", "--process")
+                  .set(process_flag)
+                  .doc("run process ebpf program"),
+              clipp::option("-s", "--syscall")
+                  .set(syscall_flag)
+                  .doc("run syscall ebpf program"),
+              clipp::option("-u") & clipp::value("remote url", remote_url),
+              clipp::option("-o") & clipp::value("output format", fmt),
+              clipp::option("-v").set(verbose).doc("print verbose output"));
+
+  if (!parse(argc, argv, cli)) {
+    std::cout << make_man_page(cli, argv[0]);
+    return 1;
+  }
+
   process_tracker process_tracker;
   syscall_tracker syscall_tracker;
-  std::thread process_t1(
-      &process_tracker::start_process,
-      &process_tracker);  // spawn new thread that calls foo()
-  // std::thread process_t2(&syscall_tracker::start_syscall, &syscall_tracker);
+  std::vector<std::thread> threads;
+  std::cout << "start ebpf...\n";
 
-  std::cout << "main, foo and bar now execute concurrently...\n";
-  // std::this_thread::sleep_for(5000ms);
-  // process_t.~thread();
-  //  synchronize threads:
-  process_t1.join();  // pauses until first finishes
-  // process_t2.join();
-
-  std::cout << "foo and bar completed.\n";
-
+  if (process_flag) {
+    threads.emplace_back(&process_tracker::start_process, &process_tracker);
+  }
+  if (syscall_flag) {
+    threads.emplace_back(&syscall_tracker::start_syscall, &syscall_tracker);
+  }
+  for (auto &i: threads) {
+	i.join();
+  }
   return 0;
 }
