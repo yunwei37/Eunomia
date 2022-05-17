@@ -1,7 +1,6 @@
 #ifndef BPF_DOCKER_H
 #define BPF_DOCKER_H
 
-
 /* Get the mount namespace id for the current task.
  *
  * return: Mount namespace id or 0 if we couldn't find it.
@@ -32,7 +31,7 @@ static __always_inline u32 get_current_user_ns_id()
 	return task->cred->user_ns->ns.inum;
 }
 
-static __always_inline void fill_event_basic(pid_t pid, struct task_struct *task, struct event *e)
+static __always_inline void fill_event_basic(pid_t pid, struct task_struct *task, struct process_event *e)
 {
 	e->common.pid = pid;
 	e->common.ppid = BPF_CORE_READ(task, real_parent, tgid);

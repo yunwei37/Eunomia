@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
 #include <argp.h>
 #include <signal.h>
 #include <stdio.h>
@@ -5,16 +6,11 @@
 #include <sys/resource.h>
 #include <bpf/libbpf.h>
 #include "process.h"
+#include "process_tracker.h"
 #include "process.skel.h"
 #include "output.h"
 
-static struct env
-{
-	bool verbose;
-	bool is_csv;
-	pid_t target_pid;
-	long min_duration_ms;
-} env;
+static struct process_env process_env;
 
 const char *argp_program_version = "process 1.0";
 const char *argp_program_bug_address = "<1067852565@qq.com>";
@@ -27,39 +23,43 @@ const char argp_program_doc[] =
 	"USAGE: ./process [-d <min-duration-ms>] [-v]\n";
 
 static const struct argp_option opts[] = {
-	{ "pid", 'p', "PID", 0, "Process ID to trace" },
+	{"pid", 'p', "PID", 0, "Process ID to trace"},
 	{"verbose", 'v', NULL, 0, "Verbose debug output"},
 	{"csv", 'C', NULL, 0, "Output in the CSV format"},
-	{ NULL, 'h', NULL, OPTION_HIDDEN, "Show the full help" },
+	{NULL, 'h', NULL, OPTION_HIDDEN, "Show the full help"},
 	{"duration", 'd', "DURATION-MS", 0, "Minimum process duration (ms) to report"},
 	{},
 };
 
 static error_t parse_arg(int key, char *arg, struct argp_state *state)
-{	
+{
 	pid_t pid;
 	switch (key)
 	{
 	case 'v':
-		env.verbose = true;
+		process_env.verbose = true;
 		break;
 	case 'p':
 		errno = 0;
 		pid = strtol(arg, NULL, 10);
-		if (errno || pid <= 0) {
+		if (errno || pid <= 0)
+		{
 			fprintf(stderr, "Invalid PID: %s\n", arg);
 			argp_usage(state);
 		}
-		env.target_pid = pid;
+		process_env.target_pid = pid;
 		break;
 	case 'd':
 		errno = 0;
-		env.min_duration_ms = strtol(arg, NULL, 10);
-		if (errno || env.min_duration_ms <= 0)
+		process_env.min_duration_ms = strtol(arg, NULL, 10);
+		if (errno || process_env.min_duration_ms <= 0)
 		{
 			fprintf(stderr, "Invalid duration: %s\n", arg);
 			argp_usage(state);
 		}
+		break;
+	case 'C':
+		process_env.is_csv = true;
 		break;
 	case ARGP_KEY_ARG:
 		argp_usage(state);
@@ -76,21 +76,21 @@ static const struct argp argp = {
 	.doc = argp_program_doc,
 };
 
-static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
-{
-	if (level == LIBBPF_DEBUG && !env.verbose)
-		return 0;
-	return vfprintf(stderr, format, args);
-}
-
-static volatile bool exiting = false;
+volatile bool exiting = false;
 
 static void sig_handler(int sig)
 {
 	exiting = true;
 }
 
-static void print_table_data(const struct event *e)
+static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
+{
+	if (level == LIBBPF_DEBUG && !process_env.verbose)
+		return 0;
+	return vfprintf(stderr, format, args);
+}
+
+static void print_table_data(const struct process_event *e)
 {
 	print_basic_info(e, false);
 
@@ -112,11 +112,11 @@ static void print_table_data(const struct event *e)
 static void
 print_header(void)
 {
-	print_table_header(headers, env.is_csv);
+	print_table_header(headers, process_env.is_csv);
 }
 
 static void
-print_csv_data(const struct event *e)
+print_csv_data(const struct process_event *e)
 {
 	print_basic_info(e, true);
 
@@ -137,8 +137,8 @@ print_csv_data(const struct event *e)
 
 static int handle_event(void *ctx, void *data, size_t data_sz)
 {
-	const struct event *e = data;
-	if (env.is_csv)
+	const struct process_event *e = data;
+	if (process_env.is_csv)
 		print_csv_data(e);
 	else
 		print_table_data(e);
@@ -147,8 +147,6 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 
 int main(int argc, char **argv)
 {
-	struct ring_buffer *rb = NULL;
-	struct process_bpf *skel;
 	int err;
 
 	/* Parse command line arguments */
@@ -156,70 +154,9 @@ int main(int argc, char **argv)
 	if (err)
 		return err;
 
-	libbpf_set_strict_mode(LIBBPF_STRICT_ALL);
-	/* Set up libbpf errors and debug info callback */
-	libbpf_set_print(libbpf_print_fn);
-
 	/* Cleaner handling of Ctrl-C */
 	signal(SIGINT, sig_handler);
 	signal(SIGTERM, sig_handler);
-
-	/* Load and verify BPF application */
-	skel = process_bpf__open();
-	if (!skel)
-	{
-		fprintf(stderr, "Failed to open and load BPF skeleton\n");
-		return 1;
-	}
-
-	/* Parameterize BPF code with minimum duration parameter */
-	skel->rodata->min_duration_ns = env.min_duration_ms * 1000000ULL;
-
-	/* Load & verify BPF programs */
-	err = process_bpf__load(skel);
-	if (err)
-	{
-		fprintf(stderr, "Failed to load and verify BPF skeleton\n");
-		goto cleanup;
-	}
-
-	/* Attach tracepoints */
-	err = process_bpf__attach(skel);
-	if (err)
-	{
-		fprintf(stderr, "Failed to attach BPF skeleton\n");
-		goto cleanup;
-	}
-
-	/* Set up ring buffer polling */
-	rb = ring_buffer__new(bpf_map__fd(skel->maps.rb), handle_event, NULL, NULL);
-	if (!rb)
-	{
-		err = -1;
-		fprintf(stderr, "Failed to create ring buffer\n");
-		goto cleanup;
-	}
 	print_header();
-	while (!exiting)
-	{
-		err = ring_buffer__poll(rb, 100 /* timeout, ms */);
-		/* Ctrl-C will cause -EINTR */
-		if (err == -EINTR)
-		{
-			err = 0;
-			break;
-		}
-		if (err < 0)
-		{
-			printf("Error polling perf buffer: %d\n", err);
-			break;
-		}
-	}
-
-cleanup:
-	/* Clean up */
-	ring_buffer__free(rb);
-	process_bpf__destroy(skel);
-
-	return err < 0 ? -err : 0;
+	return start_process_tracker(handle_event, libbpf_print_fn, process_env);
 }

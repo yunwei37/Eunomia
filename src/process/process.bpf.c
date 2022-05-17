@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
 #include "vmlinux.h"
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
@@ -28,7 +29,7 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
 {
 	struct task_struct *task;
 	unsigned fname_off;
-	struct event *e;
+	struct process_event *e;
 	pid_t pid;
 	u64 ts;
 
@@ -64,7 +65,7 @@ SEC("tp/sched/sched_process_exit")
 int handle_exit(struct trace_event_raw_sched_process_template *ctx)
 {
 	struct task_struct *task;
-	struct event *e;
+	struct process_event *e;
 	pid_t pid, tid;
 	u64 id, ts, *start_ts, duration_ns = 0;
 

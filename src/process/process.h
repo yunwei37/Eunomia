@@ -1,10 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
 #ifndef PROCESS_H
 #define PROCESS_H
 
 #include "event.h"
 
-struct event {
-    struct common_event common;
+struct process_event
+{
+	struct common_event common;
 
 	unsigned exit_code;
 	unsigned long long duration_ns;
@@ -13,9 +15,8 @@ struct event {
 	bool exit_event;
 };
 
-static const char* headers[] = {
+static const char *headers[] = {
 	"stat", "comm", "filename/exitcode", "duration",
-	NULL
-};
+	NULL};
 
 #endif
