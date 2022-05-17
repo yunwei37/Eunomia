@@ -30,7 +30,7 @@ print_table_header(const char *custom_headers[], bool is_csv)
     printf("\n");
 }
 
-static void print_basic_info(const struct process_event *e, bool is_csv)
+static void print_basic_info(const struct common_event *e, bool is_csv)
 {
     struct tm *tm;
     char ts[32];
@@ -47,12 +47,12 @@ static void print_basic_info(const struct process_event *e, bool is_csv)
     if (is_csv)
     {
         printf("%s,%d,%d,%lu,%u,%u,%u",
-               ts, e->common.pid, e->common.ppid, e->common.cgroup_id, e->common.user_namespace_id, e->common.pid_namespace_id, e->common.mount_namespace_id);
+               ts, e->pid, e->ppid, e->cgroup_id, e->user_namespace_id, e->pid_namespace_id, e->mount_namespace_id);
     }
     else
     {
         printf("%-8s\t%-7d\t%-7d\t%lu\t\t%u\t\t%u\t\t%u\t\t",
-               ts, e->common.pid, e->common.ppid, e->common.cgroup_id, e->common.user_namespace_id, e->common.pid_namespace_id, e->common.mount_namespace_id);
+               ts, e->pid, e->ppid, e->cgroup_id, e->user_namespace_id, e->pid_namespace_id, e->mount_namespace_id);
     }
 }
 

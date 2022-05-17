@@ -18,9 +18,8 @@ struct process_env
 	bool is_csv;
 	pid_t target_pid;
 	long min_duration_ms;
+	volatile bool *exiting;
 };
-
-extern volatile bool exiting;
 
 static int start_process_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, struct process_env env)
 {
@@ -28,6 +27,10 @@ static int start_process_tracker(ring_buffer_sample_fn handle_event, libbpf_prin
 	struct process_bpf *skel;
 	int err;
 
+	if (!env.exiting) {
+		fprintf(stderr, "env.exiting is not set.\n");
+		return -1;
+	}
 	libbpf_set_strict_mode(LIBBPF_STRICT_ALL);
 	/* Set up libbpf errors and debug info callback */
 	libbpf_set_print(libbpf_print_fn);
@@ -67,7 +70,7 @@ static int start_process_tracker(ring_buffer_sample_fn handle_event, libbpf_prin
 		fprintf(stderr, "Failed to create ring buffer\n");
 		goto cleanup;
 	}
-	while (!exiting)
+	while (!(*env.exiting))
 	{
 		err = ring_buffer__poll(rb, 100 /* timeout, ms */);
 		/* Ctrl-C will cause -EINTR */
