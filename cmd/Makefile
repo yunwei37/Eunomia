@@ -1,6 +1,6 @@
 CXX := g++
 SRC := ../src
-OUTPUT_INCULDE := -I$(SRC)/process/.output -I$(SRC)/syscall/.output -I$(SRC)/container/.output
+OUTPUT_INCULDE := -I$(SRC)/process/.output -I$(SRC)/syscall/.output -I$(SRC)/container/.output -I$(SRC)/ipc/.output 
 LIBRARY_PATH := $(SRC)/process/.output/libbpf.a
 VMLINUX := ../vmlinux/$(ARCH)/vmlinux.h
 INCLUDES := $(OUTPUT_INCULDE) -I../libbpf/include/uapi -I$(SRC)/include -I$(dir $(VMLINUX)) -I$(SRC) -isystem library

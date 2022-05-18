@@ -1,5 +1,0 @@
-UID                 PID                 PPID                C                   STIME               TTY                 TIME                CMD
-root                9331                9309                0                   13:06               pts/0               00:00:00            sh run.sh
-root                9349                9331                0                   13:06               pts/0               00:00:03            python main.py
-root                9379                9349                0                   13:06               pts/0               00:05:38            /opt/conda/envs/tf/bin/python main.py
-root                15650               9309                0                   15:04               pts/1               00:00:00            /bin/bash

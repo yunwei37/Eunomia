@@ -7,6 +7,7 @@
 #include "process.h"
 #include "syscall.h"
 #include "container.h"
+#include "ipc.h"
 
 using namespace std::chrono_literals;
 
@@ -15,7 +16,7 @@ using namespace std::chrono_literals;
 bool verbose = false;
 
 int main(int argc, char *argv[]) {
-  bool process_flag = false, syscall_flag = false, container_flag = false;
+  bool process_flag = false, syscall_flag = false, container_flag = false, ipc_flag = false;
   std::string remote_url = "", fmt = "json";
 
   auto cli = (clipp::option("-p", "--process")
@@ -27,6 +28,9 @@ int main(int argc, char *argv[]) {
               clipp::option("-c", "--container")
                   .set(container_flag)
                   .doc("run container ebpf program"),
+              clipp::option("-i", "--ipc")
+                  .set(ipc_flag)
+                  .doc("run ipc ebpf program"),
               clipp::option("-u") & clipp::value("remote url", remote_url),
               clipp::option("-o") & clipp::value("output format", fmt),
               clipp::option("-v").set(verbose).doc("print verbose output"));
@@ -39,7 +43,7 @@ int main(int argc, char *argv[]) {
   process_tracker process_tracker;
   syscall_tracker syscall_tracker;
   container_tracker container_tracker;
-
+  ipc_tracker ipc_tracker;
   std::vector<std::thread> threads;
   std::cout << "start ebpf...\n";
 
@@ -51,6 +55,9 @@ int main(int argc, char *argv[]) {
   }
   if (container_flag) {
     threads.emplace_back(&container_tracker::start_container, &container_tracker);
+  }
+  if (ipc_flag) {
+    threads.emplace_back(&ipc_tracker::start_ipc, &ipc_tracker);
   }
   for (auto &i: threads) {
 	i.join();

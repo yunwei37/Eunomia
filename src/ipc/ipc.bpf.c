@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
 #include <vmlinux.h>
-#include "bootstrap.h"
+#include "ipc.h"
 #include <asm-generic/errno.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_core_read.h>
@@ -21,7 +21,7 @@ SEC("lsm/ipc_permission")
 int BPF_PROG(ipc_permission, struct kern_ipc_perm *ipcp, short flag)
 {
     u32 pid = bpf_get_current_pid_tgid();
-    struct event *event = bpf_ringbuf_reserve(&events, sizeof(struct event), 0);
+    struct ipc_event *event = bpf_ringbuf_reserve(&events, sizeof(struct ipc_event), 0);
     if(!event) {
         return 0;
     }

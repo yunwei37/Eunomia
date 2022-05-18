@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause) */
 /* Copyright (c) 2020 Facebook */
-#ifndef __BOOTSTRAP_H
-#define __BOOTSTRAP_H
+#ifndef __IPC_H
+#define __IPC_H
 
-struct event {
+struct ipc_event {
     unsigned int pid;
     unsigned int uid;
     unsigned int gid;
@@ -11,4 +11,4 @@ struct event {
     unsigned int cgid;
 };
 
-#endif /* __BOOTSTRAP_H */
+#endif /* __IPC_H */
