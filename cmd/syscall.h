@@ -34,8 +34,8 @@ struct syscall_tracker {
     const struct syscall_event *e = (const struct syscall_event *)data;
     auto time = get_current_time();
 
-    printf("%-8s %-16s %-7d %-7d [%lu] %u\n", time.c_str(), e->comm, e->pid, e->ppid,
-           e->mntns, e->syscall_id);
+    printf("%-8s %-16s %-7d %-7d [%lu] %u\n", time.c_str(), e->comm, e->pid,
+           e->ppid, e->mntns, e->syscall_id);
     return 0;
   }
 };

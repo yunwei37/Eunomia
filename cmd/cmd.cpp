@@ -1,5 +1,7 @@
 #include <chrono>
+#include <clipp.h>
 #include <condition_variable>
+#include <httplib.h>
 #include <iostream>
 #include <mutex>
 #include <thread>
@@ -10,8 +12,6 @@
 #include "ipc.h"
 
 using namespace std::chrono_literals;
-
-#include <clipp.h>
 
 bool verbose = false;
 

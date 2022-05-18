@@ -2,8 +2,7 @@
 #define PROCESS_CMD_H
 
 #include <iostream>
-#include <jsoncons/json.hpp>
-#include <jsoncons_ext/jsonpath/jsonpath.hpp>
+#include <json.hpp>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -13,6 +12,8 @@
 extern "C" {
 #include "process/process_tracker.h"
 }
+
+using json = nlohmann::json;
 
 struct process_tracker {
   volatile bool exiting;
@@ -35,23 +36,20 @@ struct process_tracker {
   }
   static std::string to_json(const struct process_event &e) {
     std::string res;
-    jsoncons::json process_event(
-        jsoncons::json_object_arg,
-        {{"type", "process"},
-		 {"time", get_current_time()},
-         {"pid", e.common.pid},
-         {"ppid", e.common.ppid},
-         {"cgroup_id", e.common.cgroup_id},
-         {"user_namespace_id", e.common.user_namespace_id},
-         {"pid_namespace_id", e.common.pid_namespace_id},
-         {"mount_namespace_id", e.common.mount_namespace_id},
-         {"exit_code", e.exit_code},
-         {"duration_ns", e.duration_ns},
-         {"comm", e.comm},
-         {"filename", e.filename},
-         {"exit_event", e.exit_event}});
-    process_event.dump(res);
-    return res;
+    json process_event = {{"type", "process"},
+                          {"time", get_current_time()},
+                          {"pid", e.common.pid},
+                          {"ppid", e.common.ppid},
+                          {"cgroup_id", e.common.cgroup_id},
+                          {"user_namespace_id", e.common.user_namespace_id},
+                          {"pid_namespace_id", e.common.pid_namespace_id},
+                          {"mount_namespace_id", e.common.mount_namespace_id},
+                          {"exit_code", e.exit_code},
+                          {"duration_ns", e.duration_ns},
+                          {"comm", e.comm},
+                          {"filename", e.filename},
+                          {"exit_event", e.exit_event}};
+    return process_event.dump();
   }
   static int handle_event(void *ctx, void *data, size_t data_sz) {
     if (!data) {
