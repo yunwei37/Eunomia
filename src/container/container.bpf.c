@@ -43,7 +43,6 @@ int tp__sched_process_fork(struct trace_event_raw_sched_process_fork *args) {
     };
     buf = bpf_ringbuf_reserve(&events, sizeof(*buf), 0);
     if(!buf) {
-            
         return 0;
     }
     bpf_map_update_elem(&processes, &child_pid, &new_event, 0);

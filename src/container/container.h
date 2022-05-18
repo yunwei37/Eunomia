@@ -1,5 +1,5 @@
-#ifndef __BOOTSTRAP_H
-#define __BOOTSTRAP_H
+#ifndef __CONTAINER_H
+#define __CONTAINER_H
 
 #define TASK_COMM_LEN 16
 #define MAX_FILENAME_LEN 127
@@ -14,4 +14,4 @@ struct container_event {
 	int ppid;
 };
 
-#endif /* __BOOTSTRAP_H */
+#endif
