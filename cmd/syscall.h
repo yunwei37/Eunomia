@@ -9,7 +9,7 @@
 
 extern "C" {
 #include "syscall/syscall_tracker.h"
-#include "syscall/syscall_helper.h"
+#include "syscall_helper.h"
 }
 
 struct syscall_tracker {
@@ -37,18 +37,24 @@ struct syscall_tracker {
                           {"pid", e.pid},
                           {"ppid", e.ppid},
                           {"mount_namespace_id", e.mntns},
-                          };
+                          {"syscall_id", e.syscall_id},
+                          {"comm", e.comm},
+                          {"occur_times", e.occur_times}};
     return syscall_event.dump();
   }
-  static void print_event(const struct process_event *e) {
+  static void print_event(const struct syscall_event *e) {
     auto time = get_current_time();
 
-    printf("%-8s %-16s %-7d %-7d [%lu] %u\t%s\n", time.c_str(), e->comm, e->pid,
-           e->ppid, e->mntns, e->syscall_id, syscall_names_x86_64[e->syscall_id]);
+    if (e->syscall_id < 0 || e->syscall_id >= syscall_names_x86_64_size)
+      return;
+
+    printf("%-8s %-16s %-7d %-7d [%lu] %u\t%s\t%d\n", time.c_str(), e->comm,
+           e->pid, e->ppid, e->mntns, e->syscall_id,
+           syscall_names_x86_64[e->syscall_id], e->occur_times);
   }
   static int handle_event(void *ctx, void *data, size_t data_sz) {
     const struct syscall_event *e = (const struct syscall_event *)data;
-    
+
     return 0;
   }
 };

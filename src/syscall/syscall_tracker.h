@@ -25,7 +25,7 @@ struct syscall_env
     // the min sample duration in ms
     long min_duration_ms;
     // the times syscall a process is sampled
-    char filter_report_times;
+    unsigned char filter_report_times;
 };
 
 static int start_syscall_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, struct syscall_env env)
