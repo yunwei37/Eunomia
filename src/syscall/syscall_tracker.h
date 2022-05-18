@@ -2,20 +2,30 @@
 #define SYS_CALL_TRACKER_H
 
 #include <argp.h>
+#include <unistd.h>
 #include <signal.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <time.h>
 #include <sys/resource.h>
 #include <bpf/libbpf.h>
+#include <bpf/bpf.h>
 #include "syscall.skel.h"
 #include "syscall.h"
 
 struct syscall_env
 {
     bool verbose;
-    pid_t target_pid;
-    long min_duration_ms;
     volatile bool *exiting;
+
+	char *cgroupspath;
+    // file cgroup
+	bool filter_cg;
+    pid_t target_pid;
+    // the min sample duration in ms
+    long min_duration_ms;
+    // the times syscall a process is sampled
+    char filter_report_times;
 };
 
 static int start_syscall_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, struct syscall_env env)
@@ -41,6 +51,33 @@ static int start_syscall_tracker(ring_buffer_sample_fn handle_event, libbpf_prin
         fprintf(stderr, "Failed to open and load BPF skeleton\n");
         return 1;
     }
+
+    skel->rodata->filter_pid = env.target_pid;
+    skel->rodata->filter_cg = env.filter_cg;
+    /* Parameterize BPF code with minimum duration parameter */
+	skel->rodata->min_duration_ns = env.min_duration_ms * 1000000ULL;
+    if (env.filter_report_times > 200) {
+        fprintf(stderr, "filter_report_times to large\n");
+        return 1;
+    }
+    skel->rodata->filter_report_times = env.filter_report_times;
+
+    /* update cgroup path fd to map */
+	if (env.filter_cg) {
+        int idx, cg_map_fd;
+	    int cgfd = -1;
+		idx = 0;
+		cg_map_fd = bpf_map__fd(skel->maps.cgroup_map);
+		cgfd = open(env.cgroupspath, O_RDONLY);
+		if (cgfd < 0) {
+			fprintf(stderr, "Failed opening Cgroup path: %s", env.cgroupspath);
+			goto cleanup;
+		}
+		if (bpf_map_update_elem(cg_map_fd, &idx, &cgfd, BPF_ANY)) {
+			fprintf(stderr, "Failed adding target cgroup to map");
+			goto cleanup;
+		}
+	}
 
     /* Load & verify BPF programs */
     err = syscall_bpf__load(skel);

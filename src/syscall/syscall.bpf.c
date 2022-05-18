@@ -33,6 +33,38 @@ struct
     __uint(max_entries, 1 << 24);
 } events SEC(".maps");
 
+struct {
+	__uint(type, BPF_MAP_TYPE_CGROUP_ARRAY);
+	__type(key, u32);
+	__type(value, u32);
+	__uint(max_entries, 1);
+} cgroup_map SEC(".maps");
+
+const volatile bool filter_cg = false;
+const volatile char filter_report_times = 100;
+const volatile pid_t filter_pid = 0;
+const volatile unsigned long long min_duration_ns = 0;
+volatile unsigned long long last_ts = 0;
+
+void __always_inline submit_event(struct task_struct *task, u32 pid, u64 mntns, u32 syscall_id) {
+    // New element, throw event
+    struct syscall_event *event =
+                bpf_ringbuf_reserve(&events, sizeof(struct syscall_event), 0);
+    if (!event)
+    {
+        // Not enough space within the ringbuffer
+        return;
+    }
+
+    event->pid = pid;
+    event->ppid = BPF_CORE_READ(task, real_parent, tgid);
+    event->mntns = mntns;
+    event->syscall_id = syscall_id;
+    bpf_get_current_comm(&event->comm, sizeof(event->comm));
+
+    bpf_ringbuf_submit(event, 0);
+}
+
 SEC("tracepoint/raw_syscalls/sys_enter")
 int sys_enter(struct trace_event_raw_sys_enter *args)
 {
@@ -44,6 +76,12 @@ int sys_enter(struct trace_event_raw_sys_enter *args)
     }
 
     u32 pid = bpf_get_current_pid_tgid() >> 32;
+    if (filter_pid && pid != filter_pid)
+		return 0;
+    if (filter_cg && !bpf_current_task_under_cgroup(&cgroup_map, 0))
+		return 0;
+    if (min_duration_ns && bpf_ktime_get_ns() - last_ts < min_duration_ns)
+        return 0;
 
     struct task_struct *task = (struct task_struct *)bpf_get_current_task();
     u64 mntns = BPF_CORE_READ(task, nsproxy, mnt_ns, ns.inum);
@@ -63,27 +101,26 @@ int sys_enter(struct trace_event_raw_sys_enter *args)
     // Update the syscalls
     u8 *const syscall_value = bpf_map_lookup_elem(&syscalls, &pid);
     if (syscall_value)
-    {
-        syscall_value[syscall_id] = 1;
+    {   
+        if (syscall_value[syscall_id] == 0) {
+            // submit event at first time
+            submit_event(task, pid, mntns, syscall_id);
+            syscall_value[syscall_id] = 1;
+        }
+        else if (filter_report_times){
+            if( syscall_value[syscall_id] >= filter_report_times) {
+                // reach times, submit event
+                submit_event(task, pid, mntns, syscall_id);
+                syscall_value[syscall_id] = 1;
+            } else {
+                syscall_value[syscall_id]++;
+            }
+        }
     }
     else
     {
-        // New element, throw event
-        struct syscall_event *event =
-            bpf_ringbuf_reserve(&events, sizeof(struct syscall_event), 0);
-        if (!event)
-        {
-            // Not enough space within the ringbuffer
-            return 0;
-        }
-
-        event->pid = pid;
-        event->ppid = BPF_CORE_READ(task, real_parent, tgid);
-        event->mntns = mntns;
-        event->syscall_id = syscall_id;
-        bpf_get_current_comm(&event->comm, sizeof(event->comm));
-
-        bpf_ringbuf_submit(event, 0);
+        // submit event at first time
+        submit_event(task, pid, mntns, syscall_id);
 
         static const char init[MAX_SYSCALLS];
         bpf_map_update_elem(&syscalls, &pid, &init, BPF_ANY);
@@ -96,6 +133,8 @@ int sys_enter(struct trace_event_raw_sys_enter *args)
         }
         value[syscall_id] = 1;
     }
-
+    if (min_duration_ns) {
+        last_ts = bpf_ktime_get_ns();
+    }
     return 0;
 }

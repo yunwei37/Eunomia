@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause) */
 #include "syscall_tracker.h"
+#include "syscall_helper.h"
 
-static struct syscall_env syscall_env;
+static struct syscall_env syscall_env = {0};
 
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
 {
@@ -28,8 +29,8 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 	tm = localtime(&t);
 	strftime(ts, sizeof(ts), "%H:%M:%S", tm);
 
-	printf("%-8s %-16s %-7d %-7d [%lu] %u\n",
-		   ts, e->comm, e->pid, e->ppid, e->mntns, e->syscall_id);
+	printf("%-8s %-16s %-7d %-7d [%lu] %u\t%s\n",
+		   ts, e->comm, e->pid, e->ppid, e->mntns, e->syscall_id, syscall_names_x86_64[e->syscall_id]);
 
 	return 0;
 }
@@ -45,5 +46,8 @@ int main(int argc, char **argv)
 		   "TIME", "EVENT", "COMM", "PID", "PPID", "SYSCALL_ID");
 
 	syscall_env.exiting = &exiting;
+	// syscall_env.target_pid = 9666;
+	// syscall_env.filter_report_times = 200;
+	// syscall_env.min_duration_ms = 20;
 	return start_syscall_tracker(handle_event, libbpf_print_fn, syscall_env);
 }
