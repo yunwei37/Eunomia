@@ -3,6 +3,7 @@
 #define CONTAINER_TRACKER_H
 
 #include <argp.h>
+#include <stdarg.h>
 #include <bpf/libbpf.h>
 #include <unistd.h>
 #include <bpf/bpf.h>
@@ -18,66 +19,43 @@ struct container_env
     volatile bool *exiting;
 };
 
-static int long_hex_to_str(unsigned long num, char *arr, int len) {
+
+static void consist_str(char *dest, int num, ...)
+{
+    va_list valist;
+    va_start(valist, num);
     int i = 0;
-    while(num > 0) {
-        int res = num % 16;
-        arr[i++] = hex_dec_arr[res];
-        num /= 16;
-        if(i >= len) {
-            i = num == 0 ? i : -i;
-            break;
-        }
+    for(i = 0; i < num; i++) {
+        strcat(dest, va_arg(valist, char *));
     }
-    arr[len] = '\0';
-    return i;
 }
 
 static void init_container_map(struct container_bpf *skel, int processes_fd) {
-	char *cmd = "./library/container/namespace.sh > ./library/container/container.txt";
-	system(cmd);
-
-	/* read from the output */
-    FILE* fp = fopen("./library/container/container.txt","r");
-	if(fp == NULL) {
+    char cmd[200] = "./library/container/namespace.sh";
+    FILE *container_txt = popen(cmd, "r");
+    if (container_txt == NULL) {
         fprintf(stderr, "Fail to open container.txt\n");
         exit(0);
     }
 	char content_line[150];
     /* ignore the first two line*/
-    fgets(content_line, 150, fp);
-    fgets(content_line, 150, fp);
+    fgets(content_line, 150, container_txt);
+    fgets(content_line, 150, container_txt);
 
-	unsigned long container_id, cgroup_id, ipc_id, mnt_id, net_id, pid_id, user_id, uts;
-    char name[50];
+	unsigned long cgroup_id, ipc_id, mnt_id, net_id, pid_id, user_id, uts;
+    char name[50], container_id[16];
     pid_t pid;
 
 	/* read from txt */
-    while(fscanf(fp, "%lx %s %d %*s %lu %lu %lu %lu %lu %lu %lu\n", 
-                &container_id, name, &pid, 
+    while(fscanf(container_txt, "%s %s %d %*s %lu %lu %lu %lu %lu %lu %lu\n", 
+                container_id, name, &pid, 
                 &cgroup_id, &ipc_id, &mnt_id, 
                 &net_id, &pid_id, &user_id, &uts) == 10) {
-        //printf("%lx %lu %lu\n", container_id, cgroup_id, mnt_id);
-        char container_id_ch[16];
-        int len;
-        if((len = long_hex_to_str(container_id, container_id_ch, 16)) < 0) {
-            fprintf(stderr, "id is to long\n");
-            exit(0);
-        }
-        /* generate cmd */
-        char cmd[100] = "docker top ";
-        char *assit = " > ./library/container/top.txt";
-        int i = strlen(cmd);
-        while(len >= 0) {
-            cmd[i++] = container_id_ch[--len];
-        }
-        cmd[i] = '\0';
-        strcat(cmd, assit);
-        // printf("%s\n", cmd);
-        system(cmd);
         
+        char top_cmd[100] = "docker top ";
+        consist_str(top_cmd, 1, container_id);
 
-        FILE* f = fopen("./library/container/top.txt","r");
+        FILE* f = popen(top_cmd,"r");
         if(f == NULL) {
             exit(0);
         }
@@ -88,7 +66,7 @@ static void init_container_map(struct container_bpf *skel, int processes_fd) {
         while(fscanf(f,"%s %d %d %*[^\n]\n", uid, &c_pid, &ppid) == 3) {
             // printf("%d, %d\n", c_pid, ppid);
 			struct container_event data = {
-				.container_id = container_id,
+				.container_id = strtol(container_id, NULL, 16),
 				.pid = c_pid,
 				.ppid = ppid,
 			};
