@@ -40,6 +40,19 @@ int main(int argc, char *argv[]) {
   tracker_manager manager;
   std::cout << "start ebpf...\n";
 
+  /*
+  int i1 = manager.start_process_tracker();
+  int i2 = manager.start_syscall_tracker();
+  sleep(3);
+  manager.remove_tracker(i1);
+  sleep(3);
+  manager.remove_tracker(i2);
+  i1 = manager.start_process_tracker();
+  i2 = manager.start_syscall_tracker();
+  sleep(3);
+  return 0;
+  */
+
   if (process_flag) {
     manager.start_process_tracker();
   }
@@ -58,7 +71,6 @@ int main(int argc, char *argv[]) {
     std::this_thread::sleep_for(time_tracing * 1s);
     return 0;
   }
-  //manager.remove_tracker(0);
   while (1)
     ;
   return 0;
