@@ -23,6 +23,7 @@ struct
 } rb SEC(".maps");
 
 const volatile unsigned long long min_duration_ns = 0;
+const volatile unsigned long long target_pid = 0;
 
 SEC("tp/sched/sched_process_exec")
 int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
@@ -35,6 +36,8 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
 
 	/* remember time exec() was executed for this PID */
 	pid = bpf_get_current_pid_tgid() >> 32;
+	if (target_pid && pid != target_pid)
+		return 0;
 	ts = bpf_ktime_get_ns();
 	bpf_map_update_elem(&exec_start, &pid, &ts, BPF_ANY);
 
@@ -73,6 +76,8 @@ int handle_exit(struct trace_event_raw_sched_process_template *ctx)
 	id = bpf_get_current_pid_tgid();
 	pid = id >> 32;
 	tid = (u32)id;
+	if (target_pid && pid != target_pid)
+		return 0;
 
 	/* ignore thread exits */
 	if (pid != tid)

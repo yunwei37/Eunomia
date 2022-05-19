@@ -49,6 +49,8 @@ int main(int argc, char **argv)
 		   "TIME", "EVENT", "COMM", "PID", "PPID", "SYSCALL_ID");
 
 	syscall_env.exiting = &exiting;
+	//syscall_env.filter_cg = true;
+	//syscall_env.cgroupspath = "/sys/fs/cgroup/unified/cgroup.controllers";
 	// syscall_env.target_pid = 9666;
 	// syscall_env.filter_report_times = 200;
 	// syscall_env.min_duration_ms = 50;

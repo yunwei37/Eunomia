@@ -4,13 +4,13 @@
 #include <iostream>
 
 #include "libbpf_print.h"
+#include "tracker.h"
 
 extern "C" {
 #include "container/container_tracker.h"
 }
 
-struct container_tracker {
-  volatile bool exiting;
+struct container_tracker : public tracker {
 
   struct container_env env = {0};
 
@@ -20,7 +20,7 @@ struct container_tracker {
     env.exiting = &exiting;
   }
 
-  void start_container() {
+  void start_tracker() {
     start_container_tracker(handle_event, libbpf_print_fn, env);
   }
 

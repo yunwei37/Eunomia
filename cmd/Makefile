@@ -11,12 +11,12 @@ APP := cmd
 
 .PHONY:ebpf clean fmt
 
-all: $(APP)
+all: ebpf $(APP)
 
 ebpf:
 	@make -C ../src
 
-$(OBJECT): cmd.cpp ebpf
+$(OBJECT): cmd.cpp $(wildcard %.h) ebpf
 	@$(CXX) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 # Build application binary

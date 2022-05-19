@@ -10,7 +10,7 @@
 #include "process.skel.h"
 #include "output.h"
 
-static struct process_env process_env;
+static struct process_env process_env = {0};
 
 const char *argp_program_version = "process 1.0";
 const char *argp_program_bug_address = "<1067852565@qq.com>";
@@ -92,7 +92,7 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va
 
 static void print_table_data(const struct process_event *e)
 {
-	print_basic_info(e, false);
+	print_basic_info((const struct common_event *)e, false);
 
 	if (e->exit_event)
 	{
@@ -118,7 +118,7 @@ print_header(void)
 static void
 print_csv_data(const struct process_event *e)
 {
-	print_basic_info(e, true);
+	print_basic_info((const struct common_event *)e, true);
 
 	if (e->exit_event)
 	{

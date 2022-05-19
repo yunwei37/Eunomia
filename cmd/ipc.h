@@ -2,13 +2,13 @@
 #define IPC_CMD_H
 
 #include "libbpf_print.h"
+#include "tracker.h"
 
 extern "C" {
 #include "ipc/ipc_tracker.h"
 }
 
-struct ipc_tracker {
-  volatile bool exiting;
+struct ipc_tracker : public tracker {
   struct ipc_env env = {0};
   ipc_tracker() {
     env = {0};
@@ -16,7 +16,9 @@ struct ipc_tracker {
     env.exiting = &exiting;
   }
 
-  void start_ipc() { start_ipc_tracker(handle_event, libbpf_print_fn, env); }
+  void start_tracker() {
+    start_ipc_tracker(handle_event, libbpf_print_fn, env);
+  }
 
   static int handle_event(void *ctx, void *data, size_t data_sz) {
     const struct ipc_event *e = (const struct ipc_event *)data;

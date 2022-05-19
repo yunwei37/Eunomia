@@ -45,6 +45,7 @@ static int start_process_tracker(ring_buffer_sample_fn handle_event, libbpf_prin
 
 	/* Parameterize BPF code with minimum duration parameter */
 	skel->rodata->min_duration_ns = env.min_duration_ms * 1000000ULL;
+	skel->rodata->target_pid = env.target_pid;
 
 	/* Load & verify BPF programs */
 	err = process_bpf__load(skel);
