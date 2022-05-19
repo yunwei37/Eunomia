@@ -9,6 +9,7 @@ int main(int argc, char *argv[]) {
   bool process_flag = false, syscall_flag = false, container_flag = false,
        ipc_flag = false;
   pid_t target_pid = 0;
+  int time_tracing = 0;
   std::string remote_url = "", fmt = "json";
 
   auto cli =
@@ -25,6 +26,7 @@ int main(int argc, char *argv[]) {
        clipp::option("-u") & clipp::value("remote url", remote_url),
        clipp::option("-o") & clipp::value("output format", fmt),
        clipp::option("-P") & clipp::value("trace pid", target_pid),
+       clipp::option("-T") & clipp::value("trace time in seconds", time_tracing),
        clipp::option("-v").set(verbose).doc("print verbose output"));
 
   if (!parse(argc, argv, cli)) {
@@ -37,14 +39,20 @@ int main(int argc, char *argv[]) {
 
   if (process_flag) {
     manager.start_process_tracker();
-    manager.start_process_tracker();
   }
   if (syscall_flag) {
+    manager.start_syscall_tracker();
   }
   if (container_flag) {
   }
   if (ipc_flag) {
   }
+  if (time_tracing) {
+    // stop after time_tracing seconds
+    std::this_thread::sleep_for(time_tracing * 1s);
+    return 0;
+  }
+  //manager.remove_tracker(0);
   while (1)
     ;
   return 0;

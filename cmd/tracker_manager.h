@@ -18,6 +18,9 @@ private:
   std::map<int, std::unique_ptr<tracker>> trackers;
 
 public:
+  void remove_tracker(int id) {
+    trackers.erase(id);
+  }
   int start_process_tracker(process_env env) {
     auto tracker_ptr = std::make_unique<process_tracker>(env);
     tracker_ptr->thread =

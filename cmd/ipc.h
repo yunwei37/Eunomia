@@ -11,7 +11,10 @@ extern "C" {
 struct ipc_tracker : public tracker {
   struct ipc_env env = {0};
   ipc_tracker() {
-    env = {0};
+    ipc_tracker({0});
+  }
+  ipc_tracker(ipc_env env) {
+   this->env = env;
     exiting = false;
     env.exiting = &exiting;
   }
