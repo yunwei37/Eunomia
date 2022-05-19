@@ -7,7 +7,7 @@ bool verbose = false;
 
 int main(int argc, char *argv[]) {
   bool process_flag = false, syscall_flag = false, container_flag = false,
-       ipc_flag = false;
+       ipc_flag = false, tcp_flag = false;
   pid_t target_pid = 0;
   int time_tracing = 0;
   std::string remote_url = "", fmt = "json";
@@ -18,10 +18,13 @@ int main(int argc, char *argv[]) {
            .doc("run process ebpf program"),
        clipp::option("-s", "--syscall")
            .set(syscall_flag)
-           .doc("run syscall ebpf program"),
+           .doc("run syscall ebpf program"),	   
        clipp::option("-c", "--container")
            .set(container_flag)
            .doc("run container ebpf program"),
+       clipp::option("-t", "--tcp")
+           .set(tcp_flag)
+           .doc("run tcp ebpf program"),	   
        clipp::option("-i", "--ipc").set(ipc_flag).doc("run ipc ebpf program"),
        clipp::option("-u") & clipp::value("remote url", remote_url),
        clipp::option("-o") & clipp::value("output format", fmt),
@@ -44,6 +47,9 @@ int main(int argc, char *argv[]) {
     manager.start_syscall_tracker();
   }
   if (container_flag) {
+  }
+  if (tcp_flag) {
+  
   }
   if (ipc_flag) {
   }
