@@ -3,7 +3,6 @@
 
 #include <argp.h>
 #include <arpa/inet.h>
-#include <bpf/bpf.h>
 #include <bpf/libbpf.h>
 #include <limits.h>
 #include <signal.h>
@@ -42,11 +41,11 @@ struct tcp_env {
   bool is_csv;
 };
 
-static void handle_lost_events(void *ctx, int cpu, uint64_t lost_cnt) {
-  warn("Lost %lu events on CPU #%d!\n", lost_cnt, cpu);
+static void handle_lost_events(void *ctx, int cpu, long long unsigned int lost_cnt) {
+  warn("Lost %llu events on CPU #%d!\n", lost_cnt, cpu);
 }
 
-static void print_events(int perf_map_fd, ring_buffer_sample_fn handle_event,
+static void print_events(int perf_map_fd, perf_buffer_sample_fn handle_event,
                          struct tcp_env env) {
   struct perf_buffer *pb;
   int err;
@@ -154,7 +153,7 @@ static void print_count(int map_fd_ipv4, int map_fd_ipv6, struct tcp_env env) {
   print_count_ipv6(map_fd_ipv6, env.collector);
 }
 
-static int start_tcp_tracker(ring_buffer_sample_fn handle_event,
+static int start_tcp_tracker(perf_buffer_sample_fn handle_event,
                              libbpf_print_fn_t libbpf_print_fn,
                              struct tcp_env env) {
   if (!env.exiting) {

@@ -4,7 +4,7 @@ OUTPUT_INCULDE := -I$(SRC)/process/.output -I$(SRC)/syscall/.output -I$(SRC)/con
 LIBRARY_PATH := $(SRC)/process/.output/libbpf.a
 VMLINUX := ../vmlinux/$(ARCH)/vmlinux.h
 INCLUDES := $(OUTPUT_INCULDE) -I../libbpf/include/uapi -I$(SRC)/include -I$(dir $(VMLINUX)) -I$(SRC) -isystem library
-CFLAGS := -g -Wall -Wno-unused-function -Wno-unused-variable -std=c++2a
+CFLAGS := -g -Wall -Wno-unused-function -Wno-unused-variable -std=c++2a -Wno-pointer-arith
 
 OBJECT := cmd.o
 APP := cmd

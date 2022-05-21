@@ -18,7 +18,8 @@ static int dump_hash_iter(int map_fd, void *keys, uint32_t key_size,
                           void *invalid_key) {
   uint8_t key[key_size], next_key[key_size];
   uint32_t n = 0;
-  int i, err;
+  int err;
+  size_t i;
 
   /* First get keys */
   __builtin_memcpy(key, invalid_key, key_size);

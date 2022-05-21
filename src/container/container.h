@@ -7,7 +7,7 @@
 
 struct container_event {
     // container this process belongs to
-	unsigned long container_id; // container_id
+	long int container_id; // container_id
 	// pid in host
 	int pid;   
 	// parent pid of pid
