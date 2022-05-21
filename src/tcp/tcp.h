@@ -3,6 +3,8 @@
 #ifndef __TCPCONNECT_H
 #define __TCPCONNECT_H
 
+#include <stdint.h>
+
 /* The maximum number of items in maps */
 #define MAX_ENTRIES 8192
 
@@ -12,32 +14,32 @@
 #define TASK_COMM_LEN 16
 
 struct ipv4_flow_key {
-	__u32 saddr;
-	__u32 daddr;
-	__u16 dport;
+  uint32_t saddr;
+  uint32_t daddr;
+  uint16_t dport;
 };
 
 struct ipv6_flow_key {
-	__u8 saddr[16];
-	__u8 daddr[16];
-	__u16 dport;
+  uint8_t saddr[16];
+  uint8_t daddr[16];
+  uint16_t dport;
 };
 
-struct event {
-	union {
-		__u32 saddr_v4;
-		__u8 saddr_v6[16];
-	};
-	union {
-		__u32 daddr_v4;
-		__u8 daddr_v6[16];
-	};
-	char task[TASK_COMM_LEN];
-	__u64 ts_us;
-	__u32 af; // AF_INET or AF_INET6
-	__u32 pid;
-	__u32 uid;
-	__u16 dport;
+struct tcp_event {
+  union {
+    uint32_t saddr_v4;
+    uint8_t saddr_v6[16];
+  };
+  union {
+    uint32_t daddr_v4;
+    uint8_t daddr_v6[16];
+  };
+  char task[TASK_COMM_LEN];
+  uint64_t ts_us;
+  uint32_t af; // AF_INET or AF_INET6
+  uint32_t pid;
+  uint32_t uid;
+  uint16_t dport;
 };
 
 #endif /* __TCPCONNECT_H */
