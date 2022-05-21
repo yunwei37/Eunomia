@@ -1,5 +1,5 @@
 CXX := g++
-SRC := ../src
+SRC := ../bpftools
 OUTPUT_INCULDE := -I$(SRC)/process/.output -I$(SRC)/syscall/.output -I$(SRC)/container/.output -I$(SRC)/ipc/.output -I$(SRC)/tcp/.output
 LIBRARY_PATH := $(SRC)/process/.output/libbpf.a
 VMLINUX := ../vmlinux/$(ARCH)/vmlinux.h
@@ -14,7 +14,7 @@ APP := cmd
 all: ebpf $(APP)
 
 ebpf:
-	@make -C ../src
+	@make -C $(SRC)
 
 $(OBJECT): cmd.cpp $(wildcard %.h) ebpf
 	@$(CXX) $(CFLAGS) $(INCLUDES) -c -o $@ $<
