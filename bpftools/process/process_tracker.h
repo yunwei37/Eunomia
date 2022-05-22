@@ -9,7 +9,6 @@
 #include <sys/resource.h>
 #include <time.h>
 
-#include "output.h"
 #include "process.h"
 #include "process.skel.h"
 
@@ -22,11 +21,84 @@ struct process_env
   volatile bool *exiting;
 };
 
-static int
-start_process_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, struct process_env env)
+#include <time.h>
+
+static void print_table_header(const char *custom_headers[], bool is_csv)
 {
+  if (is_csv)
+  {
+    printf("time,pid,ppi,cgroup_id,user_namespace_id,pid_namespace_id,mount_namespace_id");
+  }
+  else
+  {
+    printf(
+        "%s\t\t%s\t%s\t%s\t%s\t%s\t%s",
+        "time",
+        "pid",
+        "ppid",
+        "cgroup_id",
+        "user_namespace_id",
+        "pid_namespace_id",
+        "mount_namespace_id");
+  }
+  while (*custom_headers)
+  {
+    if (is_csv)
+    {
+      printf(",%s", *custom_headers);
+    }
+    else
+    {
+      printf("\t%s", *custom_headers);
+    }
+    custom_headers++;
+  }
+  printf("\n");
+}
+
+static void print_basic_info(const struct common_event *e, bool is_csv)
+{
+  struct tm *tm;
+  char ts[32];
+  time_t t;
+
+  if (!e)
+  {
+    return;
+  }
+  time(&t);
+  tm = localtime(&t);
+  strftime(ts, sizeof(ts), "%H:%M:%S", tm);
+  /* format: [time] [pid] [ppid] [cgroup_id] [user_namespace_id] [pid_namespace_id] [mount_namespace_id] */
+  if (is_csv)
+  {
+    printf(
+        "%s,%d,%d,%lu,%u,%u,%u",
+        ts,
+        e->pid,
+        e->ppid,
+        e->cgroup_id,
+        e->user_namespace_id,
+        e->pid_namespace_id,
+        e->mount_namespace_id);
+  }
+  else
+  {
+    printf(
+        "%-8s\t%-7d\t%-7d\t%lu\t\t%u\t\t%u\t\t%u\t\t",
+        ts,
+        e->pid,
+        e->ppid,
+        e->cgroup_id,
+        e->user_namespace_id,
+        e->pid_namespace_id,
+        e->mount_namespace_id);
+  }
+}
+
+static int start_process_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, 
+	struct process_env env, struct process_bpf *skel) {
   struct ring_buffer *rb = NULL;
-  struct process_bpf *skel;
   int err;
 
   if (!env.exiting)

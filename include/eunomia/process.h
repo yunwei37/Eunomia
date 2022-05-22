@@ -23,7 +23,8 @@ struct process_tracker : public tracker {
     this->env.exiting = &exiting;
   }
   void start_tracker() {
-    start_process_tracker(handle_event, libbpf_print_fn, env);
+    struct process_bpf *skel;
+    start_process_tracker(handle_event, libbpf_print_fn, env, skel);
   }
   static std::string to_json(const struct process_event &e) {
     std::string res;

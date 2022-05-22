@@ -1,3 +1,13 @@
+# Eunomia
+
+A lightweight container monitoring solution covering the entire life cycle based on eBPF 
+
+[![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/MacOS/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
+[![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Windows/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
+[![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
+[![codecov](https://codecov.io/gh/filipdutescu/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/filipdutescu/modern-cpp-template)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/filipdutescu/modern-cpp-template)](https://github.com/filipdutescu/modern-cpp-template/releases)
+
 <!-- TOC -->
 
 - [0.概述](#0概述)
@@ -18,7 +28,7 @@
 本项目由两部分组成：
 
 * 一个零基础入门 `eBPF` 技术的教程实践和对应的命令行工具集，主要使用 `C/C++` 语言开发, 同时作为原型验证;
-* 一个基于 `eBPF` 技术实现的用于监控容器的工具, 包含 `profile`、容器集群网络可视化分析、容器安全感知告警、一键部署、持久化存储监控等功能, 主要使用 Go 语言开发, 力求为工业界提供覆盖容器全生命周期的轻量级开源监控解决方案;
+* 一个基于 `eBPF` 技术实现的用于监控容器的工具(**Eunomia**), 包含 `profile`、容器集群网络可视化分析、容器安全感知告警、一键部署、持久化存储监控等功能, 主要使用 Go 语言开发, 力求为工业界提供覆盖容器全生命周期的轻量级开源监控解决方案;
 
 理论部分，目标旨在降低新手学习eBPF技术的门槛，试图通过大量的例程解释、丰富对eBPF、libbpf、bcc等内核技术的认知，该部分来自于学习实践过程中积累的各类学习资料、与开发者对eBPF技术逐步深化认知的过程。同时，结合本课题项目的来源，将实践部分拆分为X个实验Labs，配以详细丰富的踩坑经验。各Lab通过设置对操作系统不同主题的实验，进一步加深学生对操作系统中进程、线程、Tcp、文件系统等概念以及 `namespace` `、cgroup` 等内核机制的直观认知。
 

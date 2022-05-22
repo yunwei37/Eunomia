@@ -1,4 +1,4 @@
-.PHONY: install coverage test docs help
+.PHONY: install coverage test docs help generate_tools
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -33,20 +33,20 @@ help:
 generate_tools: ## generate libbpf tools and headers
 	make -C bpftools
 
-test: ## run tests quickly with ctest
+test: generate_tools ## run tests quickly with ctest
 	rm -rf build/
 	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -Dmodern-cpp-template_ENABLE_UNIT_TESTING=1 -DCMAKE_BUILD_TYPE="Release"
 	cmake --build build --config Release
 	cd build/ && ctest -C Release -VV
 
-coverage: ## check code coverage quickly GCC
+coverage: generate_tools ## check code coverage quickly GCC
 	rm -rf build/
 	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -Dmodern-cpp-template_ENABLE_CODE_COVERAGE=1
 	cmake --build build --config Release
 	cd build/ && ctest -C Release -VV
 	cd .. && (bash -c "find . -type f -name '*.gcno' -exec gcov -pb {} +" || true)
 
-docs: ## generate Doxygen HTML documentation, including API docs
+docs: generate_tools ## generate Doxygen HTML documentation, including API docs
 	rm -rf docs/
 	rm -rf build/
 	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -DProject_ENABLE_DOXYGEN=1
@@ -54,7 +54,7 @@ docs: ## generate Doxygen HTML documentation, including API docs
 	cmake --build build --target doxygen-docs
 	$(BROWSER) docs/html/index.html
 
-install: ## install the package to the `INSTALL_LOCATION`
+install: generate_tools ## install the package to the `INSTALL_LOCATION`
 	rm -rf build/
 	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION)
 	cmake --build build --config Release

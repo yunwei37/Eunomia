@@ -10,7 +10,6 @@
 #include "process.h"
 #include "process_tracker.h"
 #include "process.skel.h"
-#include "output.h"
 
 static struct process_env process_env = {0};
 
