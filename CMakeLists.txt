@@ -72,7 +72,7 @@ if(${PROJECT_NAME}_BUILD_EXECUTABLE)
   endif()
 
   if(${PROJECT_NAME}_ENABLE_UNIT_TESTING)
-    #add_library(${PROJECT_NAME}_LIB ${headers} ${sources})
+    add_library(${PROJECT_NAME}_LIB ${headers} ${sources})
 
     if(${PROJECT_NAME}_VERBOSE_OUTPUT)
       verbose_message("Found the following headers:")
@@ -156,24 +156,56 @@ include(cmake/Doxygen.cmake)
 # Model project dependencies
 #
 
+
+# Tell cmake where to find BpfObject module
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+# Build vendored libbpf
+include(ExternalProject)
+ExternalProject_Add(libbpf
+  PREFIX libbpf
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libbpf/src
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND make
+    BUILD_STATIC_ONLY=1
+    OBJDIR=${CMAKE_CURRENT_BINARY_DIR}/libbpf/libbpf
+    DESTDIR=${CMAKE_CURRENT_BINARY_DIR}/libbpf
+    INCLUDEDIR=
+    LIBDIR=
+    UAPIDIR=
+    install
+  BUILD_IN_SOURCE TRUE
+  INSTALL_COMMAND ""
+  STEP_TARGETS build
+)
+
+# Set BpfObject input parameters -- note this is usually not necessary unless
+# you're in a highly vendored environment (like libbpf-bootstrap)
+set(BPFOBJECT_BPFTOOL_EXE ${CMAKE_CURRENT_SOURCE_DIR}/tools/bpftool)
+set(BPFOBJECT_VMLINUX_H ${CMAKE_CURRENT_SOURCE_DIR}/vmlinux/vmlinux.h)
+set(LIBBPF_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/libbpf)
+set(LIBBPF_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/libbpf/libbpf.a)
+find_package(BpfObject REQUIRED)
+
 # Identify and link with the specific "packages" the project uses
-#find_package(package_name package_version REQUIRED package_type [other_options])
-#target_link_libraries(
-#  ${PROJECT_NAME}
-#  PUBLIC
-#    dependency1 ...
-#  PRIVATE
-#    dependency2 ...
-#    ${PROJECT_NAME}_PROJECT_OPTIONS
-#    ${PROJECT_NAME}_PROJECT_WARNINGS
-#)
-#if(${PROJECT_NAME}_BUILD_EXECUTABLE AND ${PROJECT_NAME}_ENABLE_UNIT_TESTING)
-#  target_link_libraries(
-#    ${PROJECT_NAME}_LIB
-#    PUBLIC
-#      dependency1 ...
-#  )
-#endif()
+# find_package(package_name package_version REQUIRED package_type [other_options])
+target_link_libraries(
+ ${PROJECT_NAME}
+ PUBLIC
+  BpfObject
+ PRIVATE
+   #dependency2 ...
+   ${PROJECT_NAME}_PROJECT_OPTIONS
+   ${PROJECT_NAME}_PROJECT_WARNINGS
+)
+if(${PROJECT_NAME}_BUILD_EXECUTABLE AND ${PROJECT_NAME}_ENABLE_UNIT_TESTING)
+ target_link_libraries(
+   ${PROJECT_NAME}_LIB
+   PUBLIC
+    BpfObject
+     #dependency1 ...
+ )
+endif()
 
 # For Windows, it is necessary to link with the MultiThreaded library.
 # Depending on how the rest of the project's dependencies are linked, it might be necessary
@@ -193,6 +225,9 @@ verbose_message("Successfully added all dependencies and linked against them.")
 # Set the build/user include directories
 #
 
+include_directories(system ${LIBBPF_INCLUDE_DIRS})
+include_directories(${skel_includes})
+
 # Allow usage of header files in the `src` directory, but only for utilities
 if(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
   target_include_directories(
@@ -209,6 +244,7 @@ else()
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/bpftools
   )
   if(${PROJECT_NAME}_BUILD_EXECUTABLE AND ${PROJECT_NAME}_ENABLE_UNIT_TESTING)
     target_include_directories(
@@ -218,6 +254,7 @@ else()
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/src
+      ${CMAKE_CURRENT_SOURCE_DIR}/bpftools
     )
   endif()
 endif()

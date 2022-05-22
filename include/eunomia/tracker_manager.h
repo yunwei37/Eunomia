@@ -2,7 +2,6 @@
 #define TRACKER_MANAGER_H
 
 #include <condition_variable>
-#include <httplib.h>
 #include <iostream>
 #include <mutex>
 #include <thread>

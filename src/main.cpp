@@ -3,8 +3,6 @@
 
 using namespace std::chrono_literals;
 
-bool verbose = false;
-
 int main(int argc, char *argv[]) {
   bool process_flag = false, syscall_flag = false, container_flag = false,
        ipc_flag = false, tcp_flag = false;
