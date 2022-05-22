@@ -21,10 +21,10 @@ struct process_env
 	volatile bool *exiting;
 };
 
-static int start_process_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, struct process_env env)
+static int start_process_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, 
+	struct process_env env, struct process_bpf *skel)
 {
 	struct ring_buffer *rb = NULL;
-	struct process_bpf *skel;
 	int err;
 
 	if (!env.exiting) {

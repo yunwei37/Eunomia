@@ -2,9 +2,11 @@
 #include <argp.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #include <sys/resource.h>
 #include <bpf/libbpf.h>
+#include <bpf/bpf.h>
 #include "process.h"
 #include "process_tracker.h"
 #include "process.skel.h"
@@ -21,6 +23,10 @@ const char argp_program_doc[] =
 	"information (filename, process duration, PID and PPID, etc).\n"
 	"\n"
 	"USAGE: ./process [-d <min-duration-ms>] [-v]\n";
+const char *namespaces[] = {"cgroup", "user", "pid", "mnt"};
+#define NS_LEN 4
+
+static struct process_bpf *skel;
 
 static const struct argp_option opts[] = {
 	{"pid", 'p', "PID", 0, "Process ID to trace"},
@@ -135,9 +141,61 @@ print_csv_data(const struct process_event *e)
 	}
 }
 
+static void 
+copy_process_event(struct process_event *dest, const struct process_event *src)
+{
+	dest->common = src->common;
+	dest->duration_ns = src->duration_ns;
+	dest->exit_code = src->exit_code;
+	// dest->filename = src->filename;
+	strcpy(dest->filename, src->filename);
+	strcpy(dest->comm, src->comm);
+}
 static int handle_event(void *ctx, void *data, size_t data_sz)
 {
-	const struct process_event *e = data;
+	printf("handle\n");
+	int i, err;
+	const struct process_event *e = data, parent, curr = {0};
+	pid_t ppid = e->common.ppid;
+	char buf[10] = {0};
+	FILE* fp;
+	uint32_t ns;
+	int processes_fd;
+
+	const uint32_t e_ns[] = {e->common.cgroup_id, e->common.user_namespace_id,
+					e->common.pid_namespace_id, e->common.mount_namespace_id};
+	// printf("cut here\n");
+	/* bug happens here */
+	processes_fd = bpf_map__fd(skel->maps.processes);
+	
+	err = bpf_map_lookup_elem(processes_fd, &e->common.ppid, &parent);
+	
+	sprintf(buf,"%d/ns/",e->common.pid);
+	if (err) {
+		
+		for (i = 0; i < NS_LEN; i++)
+		{
+			char cmd[] = "stat --format=\%N /proc/";
+			strcat(cmd, buf);
+			strcat(cmd, namespaces[i]);
+			fp = popen(cmd, "r");
+			if(fscanf(fp, "%*[^[][%u]'\n", &ns) != 1) {
+				continue;
+			}
+			fclose(fp);
+			/* namespace has changed */
+			if(ns != e_ns[i]) {
+				copy_process_event(&curr, e);
+				bpf_map_update_elem(processes_fd, &curr.common.pid, &curr, 0);
+				break;
+			}
+		}
+	} else {
+		printf("another");
+		copy_process_event(&curr, e);
+		bpf_map_update_elem(processes_fd, &curr.common.pid, &curr, 0);
+	}
+
 	if (process_env.is_csv)
 		print_csv_data(e);
 	else
@@ -158,5 +216,5 @@ int main(int argc, char **argv)
 	signal(SIGTERM, sig_handler);
 	print_header();
 	process_env.exiting = &exiting;
-	return start_process_tracker(handle_event, libbpf_print_fn, process_env);
+	return start_process_tracker(handle_event, libbpf_print_fn, process_env, skel);
 }
