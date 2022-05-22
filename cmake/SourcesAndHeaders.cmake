@@ -1,6 +1,6 @@
-set(sources
-    src/tmp.cpp
-)
+# set(sources
+#     src/tmp.cpp
+# )
 
 set(exe_sources
 		src/main.cpp
@@ -8,7 +8,7 @@ set(exe_sources
 )
 
 set(headers
-    include/project/tmp.hpp
+    include/eunomia/*.h
 )
 
 set(test_sources
