@@ -1,5 +1,4 @@
-[Bb]uild/*
-[Dd]ocs/*
+[Bb]uild/
 CMakeCache.*
 CMakeFiles/*
 [Tt]esting/*
@@ -366,3 +365,5 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
+
+third_party/

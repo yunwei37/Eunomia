@@ -1,5 +1,6 @@
 set(sources
     src/libbpf_print.cpp
+    src/promethues_server.cpp
 )
 
 set(exe_sources

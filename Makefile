@@ -30,23 +30,34 @@ INSTALL_LOCATION := ~/.local
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-generate_tools: ## generate libbpf tools and headers
+generate-tools: ## generate libbpf tools and headers
 	make -C bpftools
 
-test: generate_tools ## run tests quickly with ctest
+install-prometheus: ## install prometheus and prometheus-cpp
+	sudo apt install prometheus
+	mkdir -p third_party/
+	cd third_party
+	cd third_party && git clone https://github.com/jupp0r/prometheus-cpp || true
+	cd third_party/prometheus-cpp && git submodule init && git submodule update
+	mkdir -p third_party/prometheus-cpp/_build
+	cd third_party/prometheus-cpp/_build && cmake .. -DBUILD_SHARED_LIBS=ON -DENABLE_PUSH=OFF -DENABLE_COMPRESSION=OFF
+	cd third_party/prometheus-cpp/_build && cmake --build . --parallel 4
+	cd third_party/prometheus-cpp/_build && cmake --install .
+
+test: generate-tools ## run tests quickly with ctest
 	rm -rf build/
 	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -Dmodern-cpp-template_ENABLE_UNIT_TESTING=1 -DCMAKE_BUILD_TYPE="Release"
 	cmake --build build --config Release
 	cd build/ && ctest -C Release -VV
 
-coverage: generate_tools ## check code coverage quickly GCC
+coverage: generate-tools ## check code coverage quickly GCC
 	rm -rf build/
 	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -Dmodern-cpp-template_ENABLE_CODE_COVERAGE=1
 	cmake --build build --config Release
 	cd build/ && ctest -C Release -VV
 	cd .. && (bash -c "find . -type f -name '*.gcno' -exec gcov -pb {} +" || true)
 
-docs: generate_tools ## generate Doxygen HTML documentation, including API docs
+docs: generate-tools ## generate Doxygen HTML documentation, including API docs
 	rm -rf docs/
 	rm -rf build/
 	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -DProject_ENABLE_DOXYGEN=1
@@ -54,7 +65,7 @@ docs: generate_tools ## generate Doxygen HTML documentation, including API docs
 	cmake --build build --target doxygen-docs
 	$(BROWSER) docs/html/index.html
 
-install: generate_tools ## install the package to the `INSTALL_LOCATION`
+install: generate-tools ## install the package to the `INSTALL_LOCATION`
 	rm -rf build/
 	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION)
 	cmake --build build --config Release

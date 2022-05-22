@@ -213,7 +213,7 @@ Makefile build:
 
 ```shell
 git submodule update --init --recursive       # check out libbpf
-make
+make install
 ```
 
 For example, run process:

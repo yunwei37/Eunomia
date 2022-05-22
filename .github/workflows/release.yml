@@ -18,36 +18,14 @@ jobs:
       matrix:
         config:
         - {
-            name: "Windows Latest MSVC",
-            artifact_ext: '.zip',
-            os: windows-latest,
-            cc: "cl",
-            cxx: "cl",
-            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
-          }
-        - {
             name: "Ubuntu Latest GCC",
             artifact_ext: '.tar.gz',
             os: ubuntu-latest,
             cc: "gcc",
             cxx: "g++",
           }
-        - {
-            name: "macOS Latest Clang",
-            artifact_ext: '.tar.gz',
-            os: macos-latest,
-            cc: "clang",
-            cxx: "clang++",
-          }
-
     steps:
-    - name: set version name (Windows)
-      id: version_win
-      if: ${{ runner.os == 'Windows' }}
-      run: |
-        $TAG = (${env:GITHUB_REF} -replace 'refs/tags/', '')
-        echo "::set-output name=name::$TAG"
-    
+
     - name: set version name
       id: version
       if: ${{ runner.os != 'Windows' }}

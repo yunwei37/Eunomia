@@ -18,7 +18,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      
+
+    - name: get submodule
+      run:  git submodule update --init --recursive
+
+    - name: get prometheus
+      run:  make install-prometheus
+
     - name: cache dependencies
       uses: actions/cache@v2
       id: cache
