@@ -11,7 +11,7 @@
 #include "tracker.h"
 
 extern "C" {
-#include "process/process_tracker.h"
+#include <process/process_tracker.h>
 }
 
 using json = nlohmann::json;

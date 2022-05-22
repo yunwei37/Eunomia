@@ -16,7 +16,8 @@
 
 #define warn(...) fprintf(stderr, __VA_ARGS__)
 
-struct tcp_count_event {
+struct tcp_count_event
+{
   bool is_ipv4;
   char LADDR[25];
   char RADDR[25];
@@ -24,7 +25,8 @@ struct tcp_count_event {
   long long unsigned int CONNECTS;
 };
 
-struct tcp_env {
+struct tcp_env
+{
   bool verbose;
   volatile bool *exiting;
 
@@ -41,26 +43,29 @@ struct tcp_env {
   bool is_csv;
 };
 
-static void handle_lost_events(void *ctx, int cpu, long long unsigned int lost_cnt) {
+static void handle_lost_events(void *ctx, int cpu, long long unsigned int lost_cnt)
+{
   warn("Lost %llu events on CPU #%d!\n", lost_cnt, cpu);
 }
 
-static void print_events(int perf_map_fd, perf_buffer_sample_fn handle_event,
-                         struct tcp_env env) {
+static void print_events(int perf_map_fd, perf_buffer_sample_fn handle_event, struct tcp_env env)
+{
   struct perf_buffer *pb;
   int err;
 
-  pb = perf_buffer__new(perf_map_fd, 128, handle_event, handle_lost_events,
-                        NULL, NULL);
-  if (!pb) {
+  pb = perf_buffer__new(perf_map_fd, 128, handle_event, handle_lost_events, NULL, NULL);
+  if (!pb)
+  {
     err = -errno;
     warn("failed to open perf buffer: %d\n", err);
     goto cleanup;
   }
 
-  while (!*env.exiting) {
+  while (!*env.exiting)
+  {
     err = perf_buffer__poll(pb, 100);
-    if (err < 0 && err != -EINTR) {
+    if (err < 0 && err != -EINTR)
+    {
       warn("error polling perf buffer: %s\n", strerror(-err));
       goto cleanup;
     }
@@ -72,8 +77,8 @@ cleanup:
   perf_buffer__free(pb);
 }
 
-static void print_count_ipv4(int map_fd,
-                             void (*collector)(struct tcp_count_event)) {
+static void print_count_ipv4(int map_fd, void (*collector)(struct tcp_count_event))
+{
   static struct ipv4_flow_key keys[MAX_ENTRIES];
   uint32_t value_size = sizeof(uint64_t);
   uint32_t key_size = sizeof(keys[0]);
@@ -85,12 +90,14 @@ static void print_count_ipv4(int map_fd,
   struct in_addr src;
   struct in_addr dst;
 
-  if (dump_hash(map_fd, keys, key_size, counts, value_size, &n, &zero)) {
+  if (dump_hash(map_fd, keys, key_size, counts, value_size, &n, &zero))
+  {
     warn("dump_hash: %s", strerror(errno));
     return;
   }
 
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < n; i++)
+  {
     src.s_addr = keys[i].saddr;
     dst.s_addr = keys[i].daddr;
 
@@ -105,8 +112,8 @@ static void print_count_ipv4(int map_fd,
   }
 }
 
-static void print_count_ipv6(int map_fd,
-                             void (*collector)(struct tcp_count_event)) {
+static void print_count_ipv6(int map_fd, void (*collector)(struct tcp_count_event))
+{
   static struct ipv6_flow_key keys[MAX_ENTRIES];
   uint32_t value_size = sizeof(uint64_t);
   uint32_t key_size = sizeof(keys[0]);
@@ -118,12 +125,14 @@ static void print_count_ipv6(int map_fd,
   struct in6_addr src;
   struct in6_addr dst;
 
-  if (dump_hash(map_fd, keys, key_size, counts, value_size, &n, &zero)) {
+  if (dump_hash(map_fd, keys, key_size, counts, value_size, &n, &zero))
+  {
     warn("dump_hash: %s", strerror(errno));
     return;
   }
 
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < n; i++)
+  {
     memcpy(src.s6_addr, keys[i].saddr, sizeof(src.s6_addr));
     memcpy(dst.s6_addr, keys[i].daddr, sizeof(src.s6_addr));
 
@@ -142,7 +151,8 @@ static void print_count_ipv6(int map_fd,
   }
 }
 
-static void print_count(int map_fd_ipv4, int map_fd_ipv6, struct tcp_env env) {
+static void print_count(int map_fd_ipv4, int map_fd_ipv6, struct tcp_env env)
+{
   // static const char *header_fmt = "\n%-25s %-25s %-20s %-10s\n";
 
   while (!*env.exiting)
@@ -153,10 +163,10 @@ static void print_count(int map_fd_ipv4, int map_fd_ipv6, struct tcp_env env) {
   print_count_ipv6(map_fd_ipv6, env.collector);
 }
 
-static int start_tcp_tracker(perf_buffer_sample_fn handle_event,
-                             libbpf_print_fn_t libbpf_print_fn,
-                             struct tcp_env env) {
-  if (!env.exiting) {
+static int start_tcp_tracker(perf_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, struct tcp_env env)
+{
+  if (!env.exiting)
+  {
     fprintf(stderr, "env.exiting is not set.\n");
     return -1;
   }
@@ -169,15 +179,18 @@ static int start_tcp_tracker(perf_buffer_sample_fn handle_event,
 
   /* Load and verify BPF application */
   obj = tcp_bpf__open_opts(&open_opts);
-  if (!obj) {
+  if (!obj)
+  {
     warn("failed to open BPF object\n");
     return 1;
   }
 
   int i, err;
-  if (env.count) {
+  if (env.count)
+  {
     obj->rodata->do_count = true;
-    if (!env.collector) {
+    if (!env.collector)
+    {
       fprintf(stderr, "env.collector is not set.\n");
       return -1;
     }
@@ -186,31 +199,37 @@ static int start_tcp_tracker(perf_buffer_sample_fn handle_event,
     obj->rodata->filter_pid = env.pid;
   if (env.uid != (uid_t)-1)
     obj->rodata->filter_uid = env.uid;
-  if (env.nports > 0) {
+  if (env.nports > 0)
+  {
     obj->rodata->filter_ports_len = env.nports;
-    for (i = 0; i < env.nports; i++) {
+    for (i = 0; i < env.nports; i++)
+    {
       obj->rodata->filter_ports[i] = htons(env.ports[i]);
     }
   }
 
   /* Load & verify BPF programs */
   err = tcp_bpf__load(obj);
-  if (err) {
+  if (err)
+  {
     warn("failed to load BPF object: %d\n", err);
     goto cleanup;
   }
 
   /* Attach tracepoints */
   err = tcp_bpf__attach(obj);
-  if (err) {
+  if (err)
+  {
     warn("failed to attach BPF programs: %s\n", strerror(-err));
     goto cleanup;
   }
 
-  if (env.count) {
-    print_count(bpf_map__fd(obj->maps.ipv4_count),
-                bpf_map__fd(obj->maps.ipv6_count), env);
-  } else {
+  if (env.count)
+  {
+    print_count(bpf_map__fd(obj->maps.ipv4_count), bpf_map__fd(obj->maps.ipv6_count), env);
+  }
+  else
+  {
     print_events(bpf_map__fd(obj->maps.events), handle_event, env);
   }
 

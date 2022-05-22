@@ -187,25 +187,27 @@ set(LIBBPF_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/libbpf)
 set(LIBBPF_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/libbpf/libbpf.a)
 find_package(BpfObject REQUIRED)
 
+target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBBPF_LIBRARIES} -lelf -lz -lpthread)
+
 # Identify and link with the specific "packages" the project uses
 # find_package(package_name package_version REQUIRED package_type [other_options])
-target_link_libraries(
- ${PROJECT_NAME}
- PUBLIC
-  BpfObject
- PRIVATE
-   #dependency2 ...
-   ${PROJECT_NAME}_PROJECT_OPTIONS
-   ${PROJECT_NAME}_PROJECT_WARNINGS
-)
-if(${PROJECT_NAME}_BUILD_EXECUTABLE AND ${PROJECT_NAME}_ENABLE_UNIT_TESTING)
- target_link_libraries(
-   ${PROJECT_NAME}_LIB
-   PUBLIC
-    BpfObject
-     #dependency1 ...
- )
-endif()
+# target_link_libraries(
+#  ${PROJECT_NAME}
+# #  PUBLIC
+# #   BpfObject
+#  #PRIVATE
+#    #dependency2 ...
+#    INTERFACE ${LIBBPF_LIBRARIES} -lelf -lz -lpthread
+# )
+# if(${PROJECT_NAME}_BUILD_EXECUTABLE AND ${PROJECT_NAME}_ENABLE_UNIT_TESTING)
+#  target_link_libraries(
+#    ${PROJECT_NAME}_LIB
+#   #  PUBLIC
+#   #   BpfObject
+#      #dependency1 ...
+#     INTERFACE ${LIBBPF_LIBRARIES} -lelf -lz
+#  )
+# endif()
 
 # For Windows, it is necessary to link with the MultiThreaded library.
 # Depending on how the rest of the project's dependencies are linked, it might be necessary
@@ -225,8 +227,8 @@ verbose_message("Successfully added all dependencies and linked against them.")
 # Set the build/user include directories
 #
 
-include_directories(system ${LIBBPF_INCLUDE_DIRS})
-include_directories(${skel_includes})
+include_directories(INTERFACE ${skel_includes} ${CMAKE_CURRENT_SOURCE_DIR}/libbpf/include/uapi)
+include_directories(SYSTEM INTERFACE ${LIBBPF_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/bpftools)
 
 # Allow usage of header files in the `src` directory, but only for utilities
 if(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
@@ -244,7 +246,6 @@ else()
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/bpftools
   )
   if(${PROJECT_NAME}_BUILD_EXECUTABLE AND ${PROJECT_NAME}_ENABLE_UNIT_TESTING)
     target_include_directories(
@@ -254,7 +255,6 @@ else()
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/src
-      ${CMAKE_CURRENT_SOURCE_DIR}/bpftools
     )
   endif()
 endif()

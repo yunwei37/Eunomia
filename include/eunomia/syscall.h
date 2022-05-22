@@ -9,7 +9,7 @@
 #include "tracker.h"
 
 extern "C" {
-#include "syscall/syscall_tracker.h"
+#include <syscall/syscall_tracker.h>
 #include "syscall_helper.h"
 }
 
