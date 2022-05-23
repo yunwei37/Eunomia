@@ -5,10 +5,16 @@ extern "C"
 #include <process/process_tracker.h>
 }
 
-process_tracker::process_tracker(process_env env, prometheus::Family<prometheus::Counter> &counter)
+process_tracker::process_tracker(process_env env, prometheus_server &server)
     : env(env),
-      process_start_counter(counter.Add({ { "process_event", "start" } })),
-      process_exit_counter(counter.Add({ { "process_event", "exit" } }))
+      process_start_counter(prometheus::BuildCounter()
+                                .Name("observed_process_start")
+                                .Help("Number of observed process start")
+                                .Register(*server.registry)),
+      process_exit_counter(prometheus::BuildCounter()
+                               .Name("observed_process_start")
+                               .Help("Number of observed process start")
+                               .Register(*server.registry))
 {
   exiting = false;
   this->env.exiting = &exiting;
@@ -20,8 +26,28 @@ void process_tracker::start_tracker()
   start_process_tracker(handle_event, libbpf_print_fn, env, skel, (void *)this);
 }
 
-void report_prometheus_event(const struct process_event &e)
+void process_tracker::report_prometheus_event(const struct process_event &e)
 {
+  if (e.exit_event)
+  {
+    process_exit_counter
+        .Add({ { "exit_code", std::to_string(e.exit_code) },
+               { "duration_ns", std::to_string(e.duration_ns / 1000000) },
+               { "comm", std::string(e.comm) },
+               { "filename", std::string(e.filename) },
+               { "pid", std::to_string(e.common.pid) } })
+        .Increment();
+  }
+  else
+  {
+    process_start_counter
+        .Add({ { "exit_code", std::to_string(e.exit_code) },
+               { "duration_ns", std::to_string(e.duration_ns / 1000000) },
+               { "comm", std::string(e.comm) },
+               { "filename", std::string(e.filename) },
+               { "pid", std::to_string(e.common.pid) } })
+        .Increment();
+  }
 }
 
 std::string process_tracker::to_json(const struct process_event &e)
@@ -45,11 +71,13 @@ std::string process_tracker::to_json(const struct process_event &e)
 
 int process_tracker::handle_event(void *ctx, void *data, size_t data_sz)
 {
-  if (!data)
+  if (!data || !ctx)
   {
     return -1;
   }
-  const struct process_event *e = (const struct process_event *)data;
-  std::cout << to_json(*e) << std::endl;
+  const struct process_event &e = *(const struct process_event *)data;
+  process_tracker &pt = *(process_tracker *)ctx;
+  std::cout << to_json(e) << std::endl;
+  pt.report_prometheus_event(e);
   return 0;
 }

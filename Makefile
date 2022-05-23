@@ -35,7 +35,7 @@ generate-tools: ## generate libbpf tools and headers
 
 install-deps: ## install deps
 	sudo apt update 
-	sudo apt install prometheus googletest
+	sudo apt install googletest
 	sudo apt-get install libcurl4-openssl-dev
 test: generate-tools ## run tests quickly with ctest
 	rm -rf build/

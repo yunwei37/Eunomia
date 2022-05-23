@@ -17,12 +17,11 @@ using json = nlohmann::json;
 struct process_tracker : public tracker {
   struct process_env env = {0};
   
-  prometheus::Counter & process_start_counter;
-  prometheus::Counter & process_exit_counter;
+  prometheus::Family<prometheus::Counter> & process_start_counter;
+  prometheus::Family<prometheus::Counter> & process_exit_counter;
 
-  process_tracker(process_env env, prometheus::Family<prometheus::Counter> &counter);
+  process_tracker(process_env env, prometheus_server& server);
   void start_tracker();
-  void add_prometheus_counter(prometheus_server& server);
   void report_prometheus_event(const struct process_event &e);
 
   static std::string to_json(const struct process_event &e);

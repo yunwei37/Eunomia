@@ -12,11 +12,15 @@ int main(int argc, char **argv)
  auto server = prometheus_server("127.0.0.1:8528");
   //server.start_prometheus_server();
   auto& events_counter =
-      prometheus::BuildCounter().Name("observed_events_total").Help("Number of observed packets").Register(*server.registry);
+      prometheus::BuildCounter().Name("process_events_total").Help("Number of observed packets").Register(*server.registry);
 
-  auto tracker_ptr = std::make_unique<process_tracker>(process_env{}, events_counter);
+  auto tracker_ptr = std::make_unique<process_tracker>(process_env{
+      .min_duration_ms = 100,
+  }, server);
     manager.start_process_tracker(std::move(tracker_ptr));
 
-  std::this_thread::sleep_for(10s);
+  server.start_prometheus_server();
+
+  std::this_thread::sleep_for(1000s);
   return 0;
 }
