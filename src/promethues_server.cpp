@@ -10,8 +10,9 @@
 #include "prometheus/exposer.h"
 #include "prometheus/family.h"
 #include "prometheus/registry.h"
+#include "eunomia/prometheus_server.h"
 
-int start_prometheus_server(std::string bind_address)
+int prometheus_server::start_prometheus_server()
 {
   using namespace prometheus;
 
