@@ -18,8 +18,8 @@ int main(int argc, char* argv[])
        clipp::option("-c", "--container").set(container_flag).doc("run container ebpf program"),
        clipp::option("-t", "--tcp").set(tcp_flag).doc("run tcp ebpf program"),
        clipp::option("-i", "--ipc").set(ipc_flag).doc("run ipc ebpf program"),
-       clipp::option("-u") & clipp::value("remote url", remote_url),
-       clipp::option("-o") & clipp::value("output format", fmt),
+       clipp::option("-u", "--url") & clipp::value("remote url", remote_url),
+       clipp::option("-o", "--ouput") & clipp::value("output format", fmt),
        clipp::option("-P") & clipp::value("trace pid", target_pid),
        clipp::option("-T") & clipp::value("trace time in seconds", time_tracing),
        clipp::option("-v").set(verbose).doc("print verbose output"));

@@ -1,6 +1,7 @@
 set(sources
     src/libbpf_print.cpp
     src/process.cpp
+    src/container.cpp
     src/promethues_server.cpp
 )
 
