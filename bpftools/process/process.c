@@ -153,47 +153,47 @@ copy_process_event(struct process_event *dest, const struct process_event *src)
 static int handle_event(void *ctx, void *data, size_t data_sz)
 {
 	printf("handle\n");
-	int i, err;
-	const struct process_event *e = data, parent, curr = {0};
-	pid_t ppid = e->common.ppid;
-	char buf[10] = {0};
-	FILE* fp;
-	uint32_t ns;
-	int processes_fd;
+	//int i, err;
+	const struct process_event *e = data;
+	// struct process_event parent, curr = {0};
+	// char buf[10] = {0};
+	// FILE* fp;
+	// uint32_t ns;
+	// int processes_fd;
 
-	const uint32_t e_ns[] = {e->common.cgroup_id, e->common.user_namespace_id,
-					e->common.pid_namespace_id, e->common.mount_namespace_id};
-	// printf("cut here\n");
-	/* bug happens here */
-	processes_fd = bpf_map__fd(skel->maps.processes);
+	// const uint32_t e_ns[] = {e->common.cgroup_id, e->common.user_namespace_id,
+	// 				e->common.pid_namespace_id, e->common.mount_namespace_id};
+	// // printf("cut here\n");
+	// /* bug happens here */
+	// processes_fd = bpf_map__fd(skel->maps.processes);
 	
-	err = bpf_map_lookup_elem(processes_fd, &e->common.ppid, &parent);
+	// err = bpf_map_lookup_elem(processes_fd, &e->common.ppid, &parent);
 	
-	sprintf(buf,"%d/ns/",e->common.pid);
-	if (err) {
+	// sprintf(buf,"%d/ns/",e->common.pid);
+	// if (err) {
 		
-		for (i = 0; i < NS_LEN; i++)
-		{
-			char cmd[] = "stat --format=\%N /proc/";
-			strcat(cmd, buf);
-			strcat(cmd, namespaces[i]);
-			fp = popen(cmd, "r");
-			if(fscanf(fp, "%*[^[][%u]'\n", &ns) != 1) {
-				continue;
-			}
-			fclose(fp);
-			/* namespace has changed */
-			if(ns != e_ns[i]) {
-				copy_process_event(&curr, e);
-				bpf_map_update_elem(processes_fd, &curr.common.pid, &curr, 0);
-				break;
-			}
-		}
-	} else {
-		printf("another");
-		copy_process_event(&curr, e);
-		bpf_map_update_elem(processes_fd, &curr.common.pid, &curr, 0);
-	}
+	// 	for (i = 0; i < NS_LEN; i++)
+	// 	{
+	// 		char cmd[] = "stat --format=\%N /proc/";
+	// 		strcat(cmd, buf);
+	// 		strcat(cmd, namespaces[i]);
+	// 		fp = popen(cmd, "r");
+	// 		if(fscanf(fp, "%*[^[][%u]'\n", &ns) != 1) {
+	// 			continue;
+	// 		}
+	// 		fclose(fp);
+	// 		/* namespace has changed */
+	// 		if(ns != e_ns[i]) {
+	// 			copy_process_event(&curr, e);
+	// 			bpf_map_update_elem(processes_fd, &curr.common.pid, &curr, 0);
+	// 			break;
+	// 		}
+	// 	}
+	// } else {
+	// 	printf("another");
+	// 	copy_process_event(&curr, e);
+	// 	bpf_map_update_elem(processes_fd, &curr.common.pid, &curr, 0);
+	// }
 
 	if (process_env.is_csv)
 		print_csv_data(e);
@@ -210,6 +210,7 @@ int main(int argc, char **argv)
 	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
 	if (err)
 		return err;
+
 	/* Cleaner handling of Ctrl-C */
 	signal(SIGINT, sig_handler);
 	signal(SIGTERM, sig_handler);

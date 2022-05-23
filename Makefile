@@ -34,7 +34,8 @@ generate-tools: ## generate libbpf tools and headers
 	make -C bpftools
 
 install-deps: ## install deps
-	sudo apt install prometheus
+	sudo apt update 
+	sudo apt install prometheus googletest
 
 test: generate-tools ## run tests quickly with ctest
 	rm -rf build/
@@ -56,11 +57,6 @@ docs: generate-tools ## generate Doxygen HTML documentation, including API docs
 	cmake --build build --config Release
 	cmake --build build --target doxygen-docs
 	$(BROWSER) docs/html/index.html
-
-build: generate-tools ## build eunomia tools
-	rm -rf build/
-	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION)
-	cmake --build build --config Release
 
 install: generate-tools ## install the package to the `INSTALL_LOCATION`
 	rm -rf build/

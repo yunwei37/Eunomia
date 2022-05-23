@@ -15,6 +15,7 @@
 extern "C" {
 // #include <container/container_tracker.h>
 #include <process/process_tracker.h>
+#include <unistd.h>
 }
 
 using json = nlohmann::json;
@@ -24,6 +25,9 @@ pthread_rwlock_t rwlock;
 struct container_tracker : public tracker {
   struct process_env env = {0};
   container_tracker(process_env env) : env(env) {
+    // do container settings
+    env.exclude_current_ppid = ::getpid();
+    env.min_duration_ms = 20;
     exiting = false;
     this->env.exiting = &exiting;
   }

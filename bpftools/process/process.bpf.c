@@ -32,6 +32,7 @@ struct
 
 const volatile unsigned long long min_duration_ns = 0;
 const volatile unsigned long long target_pid = 0;
+const volatile unsigned long long exclude_current_ppid = 0;
 
 SEC("tp/sched/sched_process_exec")
 int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
@@ -60,6 +61,11 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
 
 	/* fill out the sample with data */
 	task = (struct task_struct *)bpf_get_current_task();
+	if (exclude_current_ppid) {
+		if (exclude_current_ppid == BPF_CORE_READ(task, real_parent, tgid)) {
+			return 0;
+		}
+	}
 	fill_event_basic(pid, task, e);
 
 	bpf_get_current_comm(&e->comm, sizeof(e->comm));
@@ -110,6 +116,11 @@ int handle_exit(struct trace_event_raw_sched_process_template *ctx)
 
 	/* fill out the sample with data */
 	task = (struct task_struct *)bpf_get_current_task();
+	if (exclude_current_ppid) {
+		if (exclude_current_ppid == BPF_CORE_READ(task, real_parent, tgid)) {
+			return 0;
+		}
+	}
 	fill_event_basic(pid, task, e);
 
 	e->exit_event = true;

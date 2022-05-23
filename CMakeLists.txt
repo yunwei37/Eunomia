@@ -195,23 +195,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE prometheus-cpp::pull)
 
 # Identify and link with the specific "packages" the project uses
 # find_package(package_name package_version REQUIRED package_type [other_options])
-# target_link_libraries(
-#  ${PROJECT_NAME}
-# #  PUBLIC
-# #   BpfObject
-#  #PRIVATE
-#    #dependency2 ...
-#    INTERFACE ${LIBBPF_LIBRARIES} -lelf -lz -lpthread
-# )
-# if(${PROJECT_NAME}_BUILD_EXECUTABLE AND ${PROJECT_NAME}_ENABLE_UNIT_TESTING)
-#  target_link_libraries(
-#    ${PROJECT_NAME}_LIB
-#   #  PUBLIC
-#   #   BpfObject
-#      #dependency1 ...
-#     INTERFACE ${LIBBPF_LIBRARIES} -lelf -lz
-#  )
-# endif()
+if(${PROJECT_NAME}_BUILD_EXECUTABLE AND ${PROJECT_NAME}_ENABLE_UNIT_TESTING)
+  target_link_libraries(${PROJECT_NAME}_LIB PRIVATE prometheus-cpp::pull)
+  target_link_libraries(${PROJECT_NAME}_LIB PUBLIC ${LIBBPF_LIBRARIES} -lelf -lz -lpthread)
+endif()
 
 # For Windows, it is necessary to link with the MultiThreaded library.
 # Depending on how the rest of the project's dependencies are linked, it might be necessary

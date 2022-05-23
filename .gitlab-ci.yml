@@ -27,7 +27,7 @@ stages:
 
 .test: &test |
   # Build and Test
-  make install
+  make test
 
 test_linux_llvm:
   stage: test

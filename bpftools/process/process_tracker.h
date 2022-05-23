@@ -17,6 +17,7 @@ struct process_env
   bool verbose;
   bool is_csv;
   pid_t target_pid;
+  pid_t exclude_current_ppid;
   long min_duration_ms;
   volatile bool *exiting;
 };
@@ -96,8 +97,12 @@ static void print_basic_info(const struct common_event *e, bool is_csv)
   }
 }
 
-static int start_process_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, 
-	struct process_env env, struct process_bpf *skel) {
+static int start_process_tracker(
+    ring_buffer_sample_fn handle_event,
+    libbpf_print_fn_t libbpf_print_fn,
+    struct process_env env,
+    struct process_bpf *skel)
+{
   struct ring_buffer *rb = NULL;
   int err;
 
@@ -121,6 +126,7 @@ static int start_process_tracker(ring_buffer_sample_fn handle_event, libbpf_prin
   /* Parameterize BPF code with minimum duration parameter */
   skel->rodata->min_duration_ns = env.min_duration_ms * 1000000ULL;
   skel->rodata->target_pid = env.target_pid;
+  skel->rodata->exclude_current_ppid = env.exclude_current_ppid;
 
   /* Load & verify BPF programs */
   err = process_bpf__load(skel);
