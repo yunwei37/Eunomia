@@ -7,7 +7,6 @@ struct container_event {
 	struct process_event process;
     // container this process belongs to
 	unsigned long container_id; // container_id
-	bool has_printed;
 };
 
 #endif
