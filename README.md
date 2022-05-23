@@ -6,21 +6,7 @@
 
 Eunomia is a lightweight eBPF-based CloudNative Monitor tool for Security and Observability:
 
-
-<!-- TOC -->
-
-- [0.概述](#0概述)
-- [1.项目介绍](#1项目介绍)
-  - [项目描述](#项目描述)
-  - [可能的检测方式](#可能的检测方式)
-- [2.项目目标](#2项目目标)
-- [3.开发计划](#3开发计划)
-- [4.使用说明](#4使用说明)
-  - [目录结构](#目录结构)
-  - [安装教程](#安装教程)
-  - [其他](#其他)
-
-<!-- /TOC -->
+[toc]
 
 # What is Eunomia
 
