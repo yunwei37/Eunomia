@@ -1,17 +1,13 @@
 #ifndef __CONTAINER_H
 #define __CONTAINER_H
 
-#define TASK_COMM_LEN 16
-#define MAX_FILENAME_LEN 127
-#define CONTAINER_ID_LEN 127
+#include <process/process.h>
 
 struct container_event {
+	struct process_event process;
     // container this process belongs to
-	long int container_id; // container_id
-	// pid in host
-	int pid;   
-	// parent pid of pid
-	int ppid;
+	unsigned long container_id; // container_id
+	bool has_printed;
 };
 
 #endif
