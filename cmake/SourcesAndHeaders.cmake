@@ -1,5 +1,6 @@
 set(sources
     src/libbpf_print.cpp
+    src/process.cpp
     src/promethues_server.cpp
 )
 
@@ -27,5 +28,7 @@ set(skel_includes
 
 
 set(test_sources
+    src/process_test.cpp
     src/container_test.cpp
+    src/prometheus_test.cpp
 )

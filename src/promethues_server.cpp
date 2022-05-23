@@ -5,23 +5,16 @@
 #include <string>
 #include <thread>
 
+#include "eunomia/prometheus_server.h"
 #include "prometheus/client_metric.h"
 #include "prometheus/counter.h"
 #include "prometheus/exposer.h"
 #include "prometheus/family.h"
 #include "prometheus/registry.h"
-#include "eunomia/prometheus_server.h"
 
 int prometheus_server::start_prometheus_server()
 {
   using namespace prometheus;
-
-  // create a http server running on port 8080
-  Exposer exposer{ "127.0.0.1:8080" };
-
-  // create a metrics registry
-  // @note it's the users responsibility to keep the object alive
-  auto registry = std::make_shared<Registry>();
 
   // add a new counter family to the registry (families combine values with the
   // same name, but distinct label dimensions)

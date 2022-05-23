@@ -1,10 +1,11 @@
 #include <clipp.h>
 
+#include "eunomia/prometheus_server.h"
 #include "eunomia/tracker_manager.h"
 
 using namespace std::chrono_literals;
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   bool process_flag = false, syscall_flag = false, container_flag = false, ipc_flag = false, tcp_flag = false;
   pid_t target_pid = 0;
@@ -45,9 +46,15 @@ int main(int argc, char *argv[])
   return 0;
   */
 
+  auto server = prometheus_server("127.0.0.1:8528");
+  // server.start_prometheus_server();
+  auto& events_counter =
+      prometheus::BuildCounter().Name("observed_events_total").Help("Number of observed packets").Register(*server.registry);
+
   if (process_flag)
   {
-    manager.start_process_tracker();
+    auto tracker_ptr = std::make_unique<process_tracker>(process_env{}, events_counter);
+    manager.start_process_tracker(std::move(tracker_ptr));
   }
   if (syscall_flag)
   {

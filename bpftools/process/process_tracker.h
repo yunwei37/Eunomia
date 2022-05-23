@@ -101,7 +101,8 @@ static int start_process_tracker(
     ring_buffer_sample_fn handle_event,
     libbpf_print_fn_t libbpf_print_fn,
     struct process_env env,
-    struct process_bpf *skel)
+    struct process_bpf *skel,
+    void *ctx)
 {
   struct ring_buffer *rb = NULL;
   int err;
@@ -145,7 +146,7 @@ static int start_process_tracker(
   }
 
   /* Set up ring buffer polling */
-  rb = ring_buffer__new(bpf_map__fd(skel->maps.rb), handle_event, NULL, NULL);
+  rb = ring_buffer__new(bpf_map__fd(skel->maps.rb), handle_event, ctx, NULL);
   if (!rb)
   {
     err = -1;

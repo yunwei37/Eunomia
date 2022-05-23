@@ -216,5 +216,5 @@ int main(int argc, char **argv)
 	signal(SIGTERM, sig_handler);
 	print_header();
 	process_env.exiting = &exiting;
-	return start_process_tracker(handle_event, libbpf_print_fn, process_env, skel);
+	return start_process_tracker(handle_event, libbpf_print_fn, process_env, skel, NULL);
 }

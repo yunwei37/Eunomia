@@ -14,7 +14,7 @@ struct tcp_tracker : public tracker {
   tcp_tracker(tcp_env env) {
     this->env = env;
     exiting = false;
-    env.exiting = &exiting;
+    this->env.exiting = &exiting;
   }
 
   void start_tracker(void) {

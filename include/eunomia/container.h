@@ -38,7 +38,7 @@ struct container_tracker : public tracker {
     struct process_bpf *skel;
     printf("%-10s %-15s %-20s %-10s\n", "PID", "PARENT_PID", "CONTAINER_ID", "STATE");
     init_container_table();
-    start_process_tracker(handle_event, libbpf_print_fn, env, skel);
+    start_process_tracker(handle_event, libbpf_print_fn, env, skel, (void*)this);
   }
 
   static void fill_event(struct process_event &event) {
@@ -74,7 +74,7 @@ struct container_tracker : public tracker {
     unsigned long cid;
     const std::vector<std::string> ns = {"cgroup", "user", "pid", "mnt"};
     pid_t pid, ppid;
-    char *ps_cmd = "docker ps -q";
+    const char *ps_cmd = "docker ps -q";
     FILE *ps = popen(ps_cmd, "r");
     while (fscanf(ps, "%lu\n", &cid) == 1)
     {
@@ -124,7 +124,7 @@ struct container_tracker : public tracker {
 
   static void print_container(const struct container_event &e) {
     std::string state = e.process.exit_event == true ? "EXIT" : "EXEC";
-    printf("%-10d %-15d %-20d %-10s\n", e.process.common.pid, 
+    printf("%-10d %-15d %-20ld %-10s\n", e.process.common.pid, 
                                         e.process.common.ppid, 
                                         e.container_id, 
                                         state.c_str());
