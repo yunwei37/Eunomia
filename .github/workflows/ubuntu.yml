@@ -21,6 +21,9 @@ jobs:
 
     - name: get submodule
       run:  git submodule update --init --recursive
+    
+    - name: install deps
+      run:  make install-deps
 
     - name: cache dependencies
       uses: actions/cache@v2

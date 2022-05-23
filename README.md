@@ -1,9 +1,9 @@
 # Eunomia
 
-A lightweight container monitoring solution covering the entire life cycle based on eBPF
+A lightweight eBPF-based CloudNative Monitor tool for Container Security and Observability
 
-[![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/MacOS/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
-[![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Windows/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
+> WARN: This repo is under heavily development, it's not finished yet.
+
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
 [![codecov](https://codecov.io/gh/filipdutescu/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/filipdutescu/modern-cpp-template)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/filipdutescu/modern-cpp-template)](https://github.com/filipdutescu/modern-cpp-template/releases)
@@ -13,8 +13,8 @@ A lightweight container monitoring solution covering the entire life cycle based
 - [Eunomia](#eunomia)
 - [What is Eunomia](#what-is-eunomia)
 - [Why is eBPF](#why-is-ebpf)
-- [Functionality Overview](#functionality-overview)
 - [Architecture](#architecture)
+- [Functionality Overview](#functionality-overview)
 - [Roadmap](#roadmap)
 - [Quickstart](#quickstart)
 - [Documents](#documents)
@@ -28,10 +28,35 @@ A lightweight container monitoring solution covering the entire life cycle based
 Eunomia 是一个基于eBPF的云原生监控工具，旨在帮助用户了解容器的各项行为、监控可疑的容器安全事件，力求为工业界提供覆盖容器全生命周期的轻量级开源监控解决方案。它使用Linux eBPF技术在运行时跟踪您的系统和应用程序，并分析收集的事件以检测可疑的行为模式。目前，它包含 `profile`、容器集群网络可视化分析、容器安全感知告警、一键部署、持久化存储监控等功能。
 
 * 开箱即用：以单一二进制文件或 docker 镜像方式分发，一行代码即可启动，包含多种 ebpf 工具和多种监测点；
-* 作为守护进程运行，可自定义安全预警规则，也可以自动收集进程系统调用行为并通过 seccomp 进行限制；
 * 可集成 prometheus 和 Grafana，作为监控可视化和预警平台；
+* 作为守护进程运行，可自定义安全预警规则，也可以自动收集进程系统调用行为并通过 seccomp 进行限制；
 * 可外接时序数据库，如 InfluxDB 等，作为信息持久化存储方案；
 * 可通过 graphql 在远程发起请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行数据分析；
+
+和过去常用的 BCC 不同，Eunomia 基于 Libbpf + BPF CO-RE（一次编译，到处运行）开发。Libbpf 作为 BPF 程序加载器，接管了重定向、加载、验证等功能，BPF 程序开发者只需要关注 BPF 程序的正确性和性能即可。这种方式将开销降到了最低，且去除了庞大的依赖关系，使得整体开发流程更加顺畅。
+
+## Tutorial
+
+Eunomia 的 ebpf 部分是从 libbpf-tools 中得到了部分灵感，但是目前关于 ebpf 的资料还相对零散，这也导致了我们在前期的开发过程中走了不少的弯路。因此, 我们也提供了一系列教程，以及丰富的参考资料，旨在降低新手学习eBPF技术的门槛，试图通过大量的例程解释、丰富对 `eBPF、libbpf、bcc` 等内核技术和容器相关原理的认知，让后来者能更深入地参与到 ebpf 的技术开发中来。
+
+# Quickstart
+
+## Docker and Prometheus
+
+> TODO
+
+## build On Linux
+
+Makefile build:
+
+```shell
+git submodule update --init --recursive       # check out deps
+make install
+```
+
+You may need to install libcurl and gtest as deps.
+
+## TODO
 
 # Why is eBPF
 
@@ -49,6 +74,14 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 * 缺点：很新
 
   eBPF 仅在较新版本的 Linux 内核上可用，这对于在版本更新方面稍有滞后的组织来说可能是令人望而却步的。如果您没有运行 Linux 内核，那么 eBPF 根本不适合您。
+
+# Architecture
+
+从宏观角度来看，代理在Kuberntes中作为DeamonSet运行。它收集所有系统调用和一些其他跟踪点。我们使用不同的exporter对数据进行分发。对于当前版本，我们只需要通过普罗米修斯导出器（Prometheus-exporter）来导出可以存储到普罗米修斯中并在Grafana中可视化的数据。目前，Eunomia已经开源。
+
+<div  align="center">  
+ <img src="doc/imgs/architecture.jpg" width = "600" height = "400" alt="eunomia_architecture" align=center />
+</div>
 
 # Functionality Overview
 
@@ -99,14 +132,6 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
    http 通信
 
-# Architecture
-
-从宏观角度来看，代理在Kuberntes中作为DeamonSet运行。它收集所有系统调用和一些其他跟踪点。我们使用不同的exporter对数据进行分发。对于当前版本，我们只需要通过普罗米修斯导出器（Prometheus-exporter）来导出可以存储到普罗米修斯中并在Grafana中可视化的数据。目前，Eunomia已经开源。
-
-<div  align="center">  
- <img src="doc/imgs/architecture.jpg" width = "600" height = "400" alt="eunomia_architecture" align=center />
-</div>
-
 # Roadmap
 
 阶段一：学习ebpf相关技术栈（3.10~4.2）
@@ -155,14 +180,12 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 * [ ] 完善教程文档
 * [ ] 完善labs
 
-# Quickstart
-
 # Documents
 
 Eunomia的完整文档如下
 
-- [develop documents](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/tree/master/doc/develop_doc)
-- [tutorial](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/tree/master/doc/tutorial)
+- [develop documents](doc/develop_doc)
+- [tutorial](doc/tutorial)
 
 # Reference
 

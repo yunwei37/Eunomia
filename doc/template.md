@@ -202,5 +202,3 @@ existing versions can be found in the
 
 ## License
 
-This project is licensed under the [Unlicense](https://unlicense.org/) - see the
-[LICENSE](LICENSE) file for details
