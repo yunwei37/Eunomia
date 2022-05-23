@@ -1,12 +1,27 @@
 # Eunomia
 
+A lightweight container monitoring solution covering the entire life cycle based on eBPF
+
+[![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/MacOS/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
+[![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Windows/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
 [![codecov](https://codecov.io/gh/filipdutescu/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/filipdutescu/modern-cpp-template)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/filipdutescu/modern-cpp-template)](https://github.com/filipdutescu/modern-cpp-template/releases)
 
-Eunomia is a lightweight eBPF-based CloudNative Monitor tool for Security and Observability:
+<!-- TOC -->
 
-[toc]
+[Eunomia](#eunomia)
+[What is Eunomia](#what-is-eunomia)
+[Why is eBPF](#why-is-ebpf)
+[Functionality Overview](#functionality-overview)
+[Architecture](#architecture)
+[Roadmap](#roadmap)
+[Quickstart](#quickstart)
+[Documents](#documents)
+[Reference](#reference)
+[Contact](#contact)
+
+<!-- /TOC -->
 
 # What is Eunomia
 
