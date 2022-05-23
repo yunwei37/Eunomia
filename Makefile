@@ -33,16 +33,8 @@ help:
 generate-tools: ## generate libbpf tools and headers
 	make -C bpftools
 
-install-prometheus: ## install prometheus and prometheus-cpp
+install-deps: ## install deps
 	sudo apt install prometheus
-	mkdir -p third_party/
-	cd third_party
-	cd third_party && git clone https://github.com/jupp0r/prometheus-cpp || true
-	cd third_party/prometheus-cpp && git submodule init && git submodule update
-	mkdir -p third_party/prometheus-cpp/_build
-	cd third_party/prometheus-cpp/_build && cmake .. -DBUILD_SHARED_LIBS=ON -DENABLE_PUSH=OFF -DENABLE_COMPRESSION=OFF
-	cd third_party/prometheus-cpp/_build && cmake --build . --parallel 4
-	cd third_party/prometheus-cpp/_build && cmake --install .
 
 test: generate-tools ## run tests quickly with ctest
 	rm -rf build/
@@ -64,6 +56,11 @@ docs: generate-tools ## generate Doxygen HTML documentation, including API docs
 	cmake --build build --config Release
 	cmake --build build --target doxygen-docs
 	$(BROWSER) docs/html/index.html
+
+build: generate-tools ## build eunomia tools
+	rm -rf build/
+	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION)
+	cmake --build build --config Release
 
 install: generate-tools ## install the package to the `INSTALL_LOCATION`
 	rm -rf build/
