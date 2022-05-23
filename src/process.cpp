@@ -12,7 +12,7 @@ process_tracker::process_tracker(process_env env, prometheus_server &server)
                                 .Help("Number of observed process start")
                                 .Register(*server.registry)),
       process_exit_counter(prometheus::BuildCounter()
-                               .Name("observed_process_start")
+                               .Name("observed_process_end")
                                .Help("Number of observed process start")
                                .Register(*server.registry))
 {
@@ -32,17 +32,15 @@ void process_tracker::report_prometheus_event(const struct process_event &e)
   {
     process_exit_counter
         .Add({ { "exit_code", std::to_string(e.exit_code) },
-               { "duration_ns", std::to_string(e.duration_ns / 1000000) },
+               { "duration_ms", std::to_string(e.duration_ns / 1000000) },
                { "comm", std::string(e.comm) },
-               { "filename", std::string(e.filename) },
                { "pid", std::to_string(e.common.pid) } })
         .Increment();
   }
   else
   {
     process_start_counter
-        .Add({ { "exit_code", std::to_string(e.exit_code) },
-               { "duration_ns", std::to_string(e.duration_ns / 1000000) },
+        .Add({
                { "comm", std::string(e.comm) },
                { "filename", std::string(e.filename) },
                { "pid", std::to_string(e.common.pid) } })

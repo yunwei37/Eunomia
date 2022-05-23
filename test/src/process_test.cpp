@@ -10,9 +10,6 @@ int main(int argc, char **argv)
   std::cout << "start ebpf...\n";
 
  auto server = prometheus_server("127.0.0.1:8528");
-  //server.start_prometheus_server();
-  auto& events_counter =
-      prometheus::BuildCounter().Name("process_events_total").Help("Number of observed packets").Register(*server.registry);
 
   auto tracker_ptr = std::make_unique<process_tracker>(process_env{
       .min_duration_ms = 100,
