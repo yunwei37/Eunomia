@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
   }
   if (container_flag)
   {
+    manager.start_container_tracker();
   }
   if (tcp_flag)
   {

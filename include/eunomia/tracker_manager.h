@@ -36,6 +36,15 @@ public:
     return trackers.size() - 1;
   }
   int start_syscall_tracker() { return start_syscall_tracker({}); }
+  
+  int start_container_tracker() {return start_container_tracker({}); }
+  int start_container_tracker(process_env env) {
+    auto tracker_ptr = std::make_unique<container_tracker>(env);
+    tracker_ptr->thread =
+        std::thread(&container_tracker::start_tracker, tracker_ptr.get());
+    trackers.emplace(id_count++, std::move(tracker_ptr));
+    return trackers.size() - 1;
+  }
 };
 
 #endif
