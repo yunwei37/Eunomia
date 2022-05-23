@@ -10,16 +10,16 @@ A lightweight container monitoring solution covering the entire life cycle based
 
 <!-- TOC -->
 
-[Eunomia](#eunomia)
-[What is Eunomia](#what-is-eunomia)
-[Why is eBPF](#why-is-ebpf)
-[Functionality Overview](#functionality-overview)
-[Architecture](#architecture)
-[Roadmap](#roadmap)
-[Quickstart](#quickstart)
-[Documents](#documents)
-[Reference](#reference)
-[Contact](#contact)
+- [Eunomia](#eunomia)
+- [What is Eunomia](#what-is-eunomia)
+- [Why is eBPF](#why-is-ebpf)
+- [Functionality Overview](#functionality-overview)
+- [Architecture](#architecture)
+- [Roadmap](#roadmap)
+- [Quickstart](#quickstart)
+- [Documents](#documents)
+- [Reference](#reference)
+- [Contact](#contact)
 
 <!-- /TOC -->
 
@@ -104,7 +104,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 从宏观角度来看，代理在Kuberntes中作为DeamonSet运行。它收集所有系统调用和一些其他跟踪点。我们使用不同的exporter对数据进行分发。对于当前版本，我们只需要通过普罗米修斯导出器（Prometheus-exporter）来导出可以存储到普罗米修斯中并在Grafana中可视化的数据。目前，Eunomia已经开源。
 
 <div  align="center">  
- <img src="image/README%20copy/1653303193592.png" width = "600" height = "400" alt="eunomia_architecture" align=center />
+ <img src="doc/imgs/architecture.jpg" width = "600" height = "400" alt="eunomia_architecture" align=center />
 </div>
 
 # Roadmap
