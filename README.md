@@ -1,6 +1,6 @@
 # Eunomia
 
-A lightweight container monitoring solution covering the entire life cycle based on eBPF 
+A lightweight container monitoring solution covering the entire life cycle based on eBPF
 
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/MacOS/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Windows/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
@@ -17,99 +17,97 @@ A lightweight container monitoring solution covering the entire life cycle based
 - [2.项目目标](#2项目目标)
 - [3.开发计划](#3开发计划)
 - [4.使用说明](#4使用说明)
-    - [目录结构](#目录结构)
-    - [安装教程](#安装教程)
-    - [其他](#其他)
+  - [目录结构](#目录结构)
+  - [安装教程](#安装教程)
+  - [其他](#其他)
 
 <!-- /TOC -->
 
-# 0.概述
+# What is Eunomia
 
-本项目由两部分组成：
+Eunomia 是一个基于eBPF的云原生监控工具，旨在帮助用户了解容器的各项行为、监控可疑的容器安全事件，力求为工业界提供覆盖容器全生命周期的轻量级开源监控解决方案。它使用Linux eBPF技术在运行时跟踪您的系统和应用程序，并分析收集的事件以检测可疑的行为模式。目前，它包含 `profile`、容器集群网络可视化分析、容器安全感知告警、一键部署、持久化存储监控等功能。
 
-* 一个零基础入门 `eBPF` 技术的教程实践和对应的命令行工具集，主要使用 `C/C++` 语言开发, 同时作为原型验证;
-* 一个基于 `eBPF` 技术实现的用于监控容器的工具(**Eunomia**), 包含 `profile`、容器集群网络可视化分析、容器安全感知告警、一键部署、持久化存储监控等功能, 主要使用 Go 语言开发, 力求为工业界提供覆盖容器全生命周期的轻量级开源监控解决方案;
+* 开箱即用：以单一二进制文件或 docker 镜像方式分发，一行代码即可启动，包含多种 ebpf 工具和多种监测点；
+* 作为守护进程运行，可自定义安全预警规则，也可以自动收集进程系统调用行为并通过 seccomp 进行限制；
+* 可集成 prometheus 和 Grafana，作为监控可视化和预警平台；
+* 可外接时序数据库，如 InfluxDB 等，作为信息持久化存储方案；
+* 可通过 graphql 在远程发起请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行数据分析；
 
-理论部分，目标旨在降低新手学习eBPF技术的门槛，试图通过大量的例程解释、丰富对eBPF、libbpf、bcc等内核技术的认知，该部分来自于学习实践过程中积累的各类学习资料、与开发者对eBPF技术逐步深化认知的过程。同时，结合本课题项目的来源，将实践部分拆分为X个实验Labs，配以详细丰富的踩坑经验。各Lab通过设置对操作系统不同主题的实验，进一步加深学生对操作系统中进程、线程、Tcp、文件系统等概念以及 `namespace` `、cgroup` 等内核机制的直观认知。
+# Why is eBPF
 
-实践部分，来源于下述课题，主要是以X语言通过XX技术实现了一个用于监控容器行为的工具。开发过程符合软件工程开发规范，过程文档详细充实，测试用例丰富。每行代码均有相关注释。工具包含 `profile`、容器集群网络可视化分析、容器安全感知告警、一键部署、持久化存储监控等功能, 主要使用 Go 语言开发, 力求为工业界提供覆盖容器全生命周期的轻量级开源监控解决方案。
+eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，而无需更改内核源代码或加载内核模块。通过使Linux内核可编程，基础架构软件可以利用现有的层，从而使它们更加智能和功能丰富，而无需继续为系统增加额外的复杂性层。
 
-旨在：作为操作系统课程、 `eBPF` 开发入门、`docker`机制学习的补充材料, 
+* 优点：低开销
 
----
+  eBPF 是一个非常轻量级的工具，用于监控使用 Linux 内核运行的任何东西。虽然 eBPF 程序位于内核中，但它不会更改任何源代码，这使其成为泄露监控数据和调试的绝佳伴侣。eBPF 擅长的是跨复杂系统实现无客户端监控。 
+* 优点：安全
 
-当前进度：
+  解决内核观测行的一种方法是使用内核模块，它带来了大量的安全问题。而eBPF 程序不会改变内核，所以您可以保留代码级更改的访问管理规则。此外，eBPF 程序有一个验证阶段，该阶段通过大量程序约束防止资源被过度使用，保障了运行的ebpf程序不会在内核产生安全问题。
+* 优点：精细监控、跟踪
 
-1. 与导师保持微信联系,定期联系线上会议
-2. 与导师沟通,明确了项目目标
-3. 完成了基本的功能性代码：
-4. 构建了一个基于命令行程序的入口工具
-5. 完成了整体的文档框架
-6. 完成了多份文档：
-[目标描述](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/blob/master/doc/develop_doc/1_目标描述.md)
-[调研文档](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/blob/master/doc/develop_doc/2_调研文档.md)
-[系统设计](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/blob/master/doc/develop_doc/3_系统设计.md)
-[开发计划](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/blob/master/doc/develop_doc/4_开发计划.md)
+  eBPF 程序能提供比其他方式更精准、更细粒度的细节和内核上下文的监控和跟踪标准。并且eBPF监控、跟踪到的数据可以很容易地导出到用户空间，并由可观测平台进行可视化。 
+* 缺点：很新
 
-TODO:
+  eBPF 仅在较新版本的 Linux 内核上可用，这对于在版本更新方面稍有滞后的组织来说可能是令人望而却步的。如果您没有运行 Linux 内核，那么 eBPF 根本不适合您。
 
-1. 继续丰富行为感知的功能性代码：
-2. 添加监控信息的可视化功能
-3. 补充、完善开发文档
-4. 编写ebpf教程与Labs
+# Functionality Overview
 
-# 1.项目介绍
+#### tracker_manager
 
-> 项目来源：[eBPF-based-monitor-for-container](https://github.com/oscomp/proj118-eBPF-based-monitor-for-container)
+   负责启动和停止 ebpf collector，并且和 ebpf collector 通信（每个 tracer 是一个线程）；
 
-## 项目描述
+- start tracker
+- stop tracker(remove tracker)
 
-容器是一种应用层抽象，用于将代码和依赖资源打包在一起。多个容器可以在同一台机器上运行，共享操作系统内核。这使得容器的隔离性相对较弱，带来安全上的风险，最严重时会导致容器逃逸，严重影响底层基础设施的保密性、完整性和可用性。
+#### container_manager
 
-eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事件的特定代码，可基于此开发性能分析工具**、网络数据包过滤、系统调用过滤，**系统观测和分析等诸多场景。eBPF可以由hook机制在系统调用被使用时触发，也可以通过kprobe或uprobe将eBPF程序附在内核/用户程序的任何地方。
+   负责观察 container 的启动和停止，在内存中保存每个 container 的相关信息：（cgroup，namespace），同时负责 container id 到 pid 的转换（提供查询接口）
 
-这些机制让eBPF的跟踪技术可以有效地感知容器的各项行为，包括但不限于：
+#### seccomp_manager
 
-- 容器对文件的访问
-- 容器对系统的调用
-- 容器之间的互访
+   负责对 process 进行 seccomp 限制
 
-请基于eBPF技术开发一个监控工具，该工具可以监控容器的行为，并生成报表（如json文件）将各个容器的行为分别记录下来以供分析。
+#### data_collector
 
-- **第一题：行为感知**
+   收集数据，再决定怎么办；传给 database 还是聚合还是交给别的地方还是打印
 
-  编写eBPF程序，感知容器的各项行为。
-- **第二题：信息存储**
+- collect_string
+- collect_json
+- collet_object
 
-  在第一题的基础上，令工具可以将采集到的数据以特定的格式保存在本地。
-- **第三题：权限推荐（可选）**
+#### container detection
 
-  Seccomp是Linux内核的特性，开发者可以通过seccomp限制容器的行为。capabilities则将进程作为root的权限分成了各项更小的权限，方便			调控。这两个特性都有助于保障容器安全，但是因为业务执行的逻辑差异，准确配置权限最小集非常困难。请利用上面开发的监控工具，分析业务容器的行为记录报表，然后基于报表自动推荐精准的权限配置最小集。
+容器安全检测规则引擎，可以帮助您检测事件流中的可疑行为模式。
 
-## 可能的检测方式
+#### security analyzer
 
-确保容器运行时安全的关键点[1]：
+安全分析模块，通过ebpf采集到的底层相关数据，运用包括AI在内的多种方法进行安全性分析。
 
-- 使用 `ebpf` 跟踪技术自动生成容器访问控制权限。包括：容器对文件的可疑访问，容器对系统的可疑调用，容器之间的可疑互访，检测容器的异常进程，对可疑行为进行取证。例如：
-- 检测容器运行时是否创建其他进程。
-- 检测容器运行时是否存在文件系统读取和写入的异常行为，例如在运行的容器中安装了新软件包或者更新配置。
-- 检测容器运行时是否打开了新的监听端口或者建立意外连接的异常网络活动。
-- 检测容器中用户操作及可疑的 shell 脚本的执行。
+#### prometheus exporter
 
-# 2.项目目标
+将数据导出成Prometheus需要的格式，在Prometheus中保存时序数据，方便后续持久化和可视化功能。
 
-1. 实现一个接近工业界的工具
-2. 输出一系列开发文档
+#### config loader
 
-* 开发工具的使用教程——环境搭建；工具说明书；
-* 开发工具的设计文档——设计架构、各模块详细设计、数据流程；
-* 开发工具的开发文档——各模块的作用、函数的注释；
-* 测试文档——测试环境的搭建教程；设计多种容器环境，进行测试；
-* 过程文档——时间段、分工、迭代版次&版本变化；
+   解析 toml
 
-3. 一份 `ebpf` 技术的入门教程与lab
+#### cmd
 
-# 3.开发计划
+   命令行解析模块，将命令行字符串解析成对应的参数选项，对Eunomia进行配置。
+
+#### server
+
+   http 通信
+
+# Architecture
+
+从宏观角度来看，代理在Kuberntes中作为DeamonSet运行。它收集所有系统调用和一些其他跟踪点。我们使用不同的exporter对数据进行分发。对于当前版本，我们只需要通过普罗米修斯导出器（Prometheus-exporter）来导出可以存储到普罗米修斯中并在Grafana中可视化的数据。目前，Eunomia已经开源。
+
+<div  align="center">  
+ <img src="image/README%20copy/1653303193592.png" width = "600" height = "400" alt="eunomia_architecture" align=center />
+</div>
+
+# Roadmap
 
 阶段一：学习ebpf相关技术栈（3.10~4.2）
 
@@ -122,8 +120,8 @@ eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事
 阶段二：项目设计（4.3~4.10）
 
 * [X] 与mentor讨论项目需求、并设计功能模块
-* [ ] 输出系统设计文档
-* [ ] 输出模块设计文档
+* [X] 输出系统设计文档
+* [X] 输出模块设计文档
 
 阶段三：开发迭代（4.10~6.1）
 
@@ -133,9 +131,9 @@ eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事
 * [X] 实现tcp（ipv4、ipv6）通信监控
 * [X] 实现监控信息存储功能（csv或json格式）
 * [X] 完成了系统的原型验证功能
-* [ ] 基于上述功能，实现命令行调用，完成版本v0.1
-* [ ] 输出开发v0.1日志文档
-* [ ] 实现进程id与容器id映射，进程信息过滤
+* [X] 基于上述功能，实现命令行调用，完成版本v0.1
+* [X] 输出开发v0.1日志文档
+* [X] 实现进程id与容器id映射，进程信息过滤
 * [ ] 添加“seccomp”功能
 * [ ] 基于上述新增功能，迭代版本v0.2
 * [ ] 输出开发v0.2日志文档
@@ -157,73 +155,38 @@ eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事
 * [ ] 完善教程文档
 * [ ] 完善labs
 
-# 4.使用说明
+# Quickstart
 
-### 目录结构
+# Documents
 
-* 项目的目录结构如下图所示
+Eunomia的完整文档如下
 
-```
-├── doc
-│   ├── contribution.md
-│   ├── Develop-Doc
-│   └── tutorial
-├── src
-│   ├── files
-│   ├── include
-│   ├── process
-│   │   ├── bootstrap.bpf.c
-│   │   ├── bootstrap.c
-│   │   ├── bootstrap.h
-│   │   └── Makefile
-│   ├── syscall
-│   ├── ipc
-│   └── tcp
-├── libbpf
-├── LICENSE
-├── README.md
-├── tools
-├── utils
-└── vmlinuxi
-```
+- [develop documents](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/tree/master/doc/develop_doc)
+- [tutorial](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436/-/tree/master/doc/tutorial)
 
-目录说明
+# Reference
 
-* doc：
-  * Develop-Doc：开发文档
-  * Labs：教程+Lab系列
-  * contribution.md：博客、社区贡献
-* src：
-  * process：监控进程信息
-  * syscall：监控系统调用
-  * files: 监控文件读取写入
-  * ipc：监控进程间通信
-  * tcp：抓取tcp通信两端的信息
-* libbpf：
-* tools：
-* utils：
-* vmlinux：
-* README.md
+* [基于 eBPF 实现容器运行时安全](https://mp.weixin.qq.com/s/UiR8rjTt2SgJo5zs8n5Sqg)
+* [基于ebpf统计docker容器网络流量](https://blog.csdn.net/qq_32740107/article/details/110224623)
+* [BumbleBee: Build, Ship, Run eBPF tools](https://www.solo.io/blog/solo-announces-bumblebee/)
+* [Container traffic visibility library based on eBPF](https://github.com/ntop/libebpfflow)
+* [why-libbpf-bootstrap](https://nakryiko.com/posts/libbpf-bootstrap/#why-libbpf-bootstrap)
+* [bpf-core-reference-guide](https://nakryiko.com/posts/bpf-core-reference-guide/)
+* [bcc to libbpf](https://nakryiko.com/posts/bcc-to-libbpf-howto-guide/#setting-up-user-space-parts)
+* good intro for trace point and kprobe in ebpf
+  https://www.iserica.com/posts/brief-intro-for-tracepoint/
+  https://www.iserica.com/posts/brief-intro-for-kprobe/
+* other
+  https://lockc-project.github.io/book/index.html
+  https://github.com/willfindlay/bpfcontain-rs
+* user space uprobe:
+  [an-ebpf-overview-part-5-tracing-user-processes](https://www.collabora.com/news-and-blog/blog/2019/05/14/an-ebpf-overview-part-5-tracing-user-processes/)
+* ebpf secomp
+  [how_does_the_bpf_recorder_work_](https://developers.redhat.com/articles/2021/12/16/secure-your-kubernetes-deployments-ebpf#how_does_the_bpf_recorder_work_)
+  [recorder.bpf.c](https://github.com/kubernetes-sigs/security-profiles-operator/blob/main/internal/pkg/daemon/bpfrecorder/bpf/recorder.bpf.c)
+* [libbpf-tools](https://github.com/iovisor/bcc/tree/master/libbpf-tools)
 
-### 安装教程
-
-**Build**
-
-Makefile build:
-
-```shell
-git submodule update --init --recursive       # check out libbpf
-make install
-```
-
-For example, run process:
-
-```shell
-cd src/process
-sudo ./process
-```
-
-### 其他
+# Contact
 
 **成员**
 
