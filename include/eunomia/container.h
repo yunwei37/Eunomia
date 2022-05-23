@@ -39,6 +39,9 @@ struct container_tracker : public tracker {
 
   static int handle_event(void *ctx, void *data, size_t data_sz);
 
+  static unsigned long get_container_id_via_pid(pid_t pid);
+
+  static std::unordered_map<int, struct container_event> get_map();
 };
 
 #endif
