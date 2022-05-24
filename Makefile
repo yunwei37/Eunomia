@@ -36,7 +36,8 @@ generate-tools: ## generate libbpf tools and headers
 install-deps: ## install deps
 	sudo apt update 
 	sudo apt install googletest
-	sudo apt-get install libcurl4-openssl-dev
+	sudo apt-get install libcurl4-openssl-dev libelf-dev clang
+
 test: generate-tools ## run tests quickly with ctest
 	rm -rf build/
 	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -Dmodern-cpp-template_ENABLE_UNIT_TESTING=1 -DCMAKE_BUILD_TYPE="Release"

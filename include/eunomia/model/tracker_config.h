@@ -10,7 +10,7 @@ struct tracker_config
 {   
     ENV env;
     std::string name;
-    //std::optional<event_handler<EVENT>> handler = std::nullopt;;
+    std::shared_ptr<event_handler<EVENT>> handler = nullptr;
 };
 
 #endif

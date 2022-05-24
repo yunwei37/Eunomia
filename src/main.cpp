@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
   sleep(3);
   return 0;
   */
-
+/*
   auto server = prometheus_server("127.0.0.1:8528");
 
   if (process_flag)
@@ -139,5 +139,6 @@ int main(int argc, char* argv[])
   }
   while (1)
     ;
+    */
   return 0;
 }
