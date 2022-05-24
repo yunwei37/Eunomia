@@ -31,6 +31,7 @@ int main(int argc, char* argv[])
   }
 
   tracker_manager manager;
+  container_tracker container_manager;
   std::cout << "start ebpf...\n";
 
   /*
@@ -59,7 +60,7 @@ int main(int argc, char* argv[])
   }
   if (container_flag)
   {
-    manager.start_container_tracker();
+    container_manager.tracker.start_container_tracker();
   }
   if (tcp_flag)
   {

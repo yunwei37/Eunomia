@@ -1,6 +1,5 @@
 #include "eunomia/container.h"
 
-
 extern "C" {
 #include <container/container.h>
 #include <process/process_tracker.h>
@@ -16,40 +15,34 @@ container_tracker::container_tracker(process_env env): env(env) {
     this->env.exiting = &exiting;
   }
 void container_tracker::start_tracker(){
-  struct process_bpf *skel;
+  struct process_bpf *skel = nullptr;
   printf("%-10s %-15s %-20s %-10s\n", "PID", "PARENT_PID", "CONTAINER_ID", "STATE");
   init_container_table();
   start_process_tracker(handle_event, libbpf_print_fn, env, skel, (void*)this);
 }
-
 void container_tracker::fill_event(struct process_event &event) {
   std::string cmd("ls -Li /proc/"), cgroup("/ns/cgroup"), user("/ns/user"),
               pid("/ns/pid"), mnt("/ns/mnt");
   unsigned int ns;
   cmd += std::to_string(event.common.pid);
-
   std::unique_ptr<FILE, int(*)(FILE*)> fp_cgroup(popen((cmd + cgroup).c_str(), "r"), pclose);
   fscanf(fp_cgroup.get(), "%u %*[^\n]\n", &ns);
   event.common.cgroup_id = ns;
-
   std::unique_ptr<FILE, int(*)(FILE*)> fp_user(popen((cmd + user).c_str(), "r"), pclose);
   fscanf(fp_user.get(), "%u %*[^\n]\n", &ns);
   event.common.user_namespace_id = ns;
-  
   std::unique_ptr<FILE, int(*)(FILE*)> fp_mnt(popen((cmd + mnt).c_str(), "r"), pclose);
   fscanf(fp_mnt.get(), "%u %*[^\n]\n", &ns);
   event.common.mount_namespace_id = ns;
-
   std::unique_ptr<FILE, int(*)(FILE*)> fp_pid(popen((cmd + pid).c_str(), "r"), pclose);
   fscanf(fp_pid.get(), "%u %*[^\n]\n", &ns);
   event.common.pid_namespace_id = ns;
 }
-
 void container_tracker::init_container_table() {
   unsigned long cid;
   pid_t pid, ppid;
-  char *ps_cmd = "docker ps -q";
-  std::unique_ptr<FILE, int(*)(FILE*)> ps(popen(ps_cmd, "r"), pclose);
+  std::string ps_cmd("docker ps -q");
+  std::unique_ptr<FILE, int(*)(FILE*)> ps(popen(ps_cmd.c_str(), "r"), pclose);
   while (fscanf(ps.get(), "%lx\n", &cid) == 1)
   {
     std::string top_cmd("docker top ");
@@ -78,7 +71,6 @@ void container_tracker::init_container_table() {
     }
   }
 }
-
 void container_tracker::print_container(const struct container_event &e) {
   std::string state = e.process.exit_event == true ? "EXIT" : "EXEC";
   printf("%-10d %-15d %-20lx %-10s\n", e.process.common.pid, 
@@ -86,7 +78,6 @@ void container_tracker::print_container(const struct container_event &e) {
                                       e.container_id, 
                                       state.c_str());
 }
-
 void container_tracker::judge_container(const struct process_event &e) {
   if (e.exit_event)
   {
@@ -145,12 +136,11 @@ void container_tracker::judge_container(const struct process_event &e) {
             mp_lock.unlock();
           }
         }
-      }
-  
+      } 
     }
   }
 }
-  
+ 
 int container_tracker::handle_event(void *ctx, void *data, size_t data_sz) {
   if (!data) {
     return -1;
@@ -171,7 +161,6 @@ unsigned long container_tracker::get_container_id_via_pid(pid_t pid) {
   mp_lock.unlock();
   return ret;
 }
-
-std::unordered_map<int, struct container_event> container_tracker::get_map() {
+std::unordered_map<int, struct container_event> &container_tracker::get_map() {
   return container_processes;
 }

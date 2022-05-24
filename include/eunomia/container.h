@@ -13,6 +13,7 @@
 
 #include "libbpf_print.h"
 #include "tracker.h"
+#include "tracker_manager.h"
 
 extern "C" {
 #include <container/container.h>
@@ -21,11 +22,13 @@ extern "C" {
 }
 
 using json = nlohmann::json;
-static std::unordered_map<int, struct container_event> container_processes;
 static std::mutex mp_lock;
 
 struct container_tracker : public tracker {
+  static std::unordered_map<int, struct container_event> container_processes;
   struct process_env env = {0};
+  tracker_manager tracker;
+  
   container_tracker(process_env env);
   void start_tracker();
 
@@ -41,7 +44,8 @@ struct container_tracker : public tracker {
 
   static unsigned long get_container_id_via_pid(pid_t pid);
 
-  static std::unordered_map<int, struct container_event> get_map();
+  static std::unordered_map<int, struct container_event> &get_map();
 };
 
+std::unordered_map<int, struct container_event> container_tracker::container_processes = std::unordered_map<int, struct container_event>();
 #endif
