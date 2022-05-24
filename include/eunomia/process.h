@@ -10,11 +10,11 @@
 #include "libbpf_print.h"
 #include "prometheus/counter.h"
 #include "prometheus_server.h"
-#include "tracker.h"
+#include "model/tracker.h"
 
 using json = nlohmann::json;
 
-struct process_tracker : public tracker
+struct process_tracker : public tracker_with_config<process_env, process_event>
 {
   struct process_env current_env = { 0 };
 

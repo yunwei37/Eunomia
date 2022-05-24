@@ -5,6 +5,6 @@ struct config {
     bool export_json;
     bool export_csv;
     bool export_prometheus;
-}
+};
 
 #endif

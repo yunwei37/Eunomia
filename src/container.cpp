@@ -7,7 +7,10 @@ extern "C"
 #include <unistd.h>
 }
 
-container_tracker::container_tracker(container_env env, container_manager &manager) : current_env(env), this_manager(manager)
+container_tracker::container_tracker(container_env env, container_manager &manager)
+    : current_env(env),
+      this_manager(manager),
+      tracker_with_config(tracker_config<container_env, container_event>{})
 {
   // do container settings
   // this->env.process_env.exclude_current_ppid = ::getpid();

@@ -14,7 +14,8 @@ process_tracker::process_tracker(process_env env, prometheus_server &server)
       process_exit_counter(prometheus::BuildCounter()
                                .Name("observed_process_end")
                                .Help("Number of observed process start")
-                               .Register(*server.registry))
+                               .Register(*server.registry)),
+      tracker_with_config(tracker_config<process_env, process_event>{})
 {
   exiting = false;
   this->current_env.exiting = &exiting;

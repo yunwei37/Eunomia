@@ -14,6 +14,8 @@
 #include "prometheus/family.h"
 #include "prometheus/registry.h"
 
+#include "model/event_handler.h"
+
 struct prometheus_server
 {   
     prometheus_server(std::string bind_address) : exposer(bind_address) {

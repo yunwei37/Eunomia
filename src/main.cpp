@@ -1,8 +1,8 @@
 #include <clipp.h>
 
+#include "eunomia/container.h"
 #include "eunomia/prometheus_server.h"
 #include "eunomia/tracker_manager.h"
-#include "eunomia/container.h"
 
 using namespace std::chrono_literals;
 
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
     manager.start_tracker(std::move(tracker_ptr));
   }
   if (syscall_flag)
-  { 
+  {
     auto tracker_ptr = std::make_unique<syscall_tracker>(syscall_env{});
     manager.start_tracker(std::move(tracker_ptr));
   }

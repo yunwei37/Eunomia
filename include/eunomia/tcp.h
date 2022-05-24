@@ -2,16 +2,15 @@
 #define TCP_CMD_H
 
 #include "libbpf_print.h"
-#include "tracker.h"
+#include "model/tracker.h"
 
 extern "C" {
 #include <tcp/tcp_tracker.h>
 }
 
-struct tcp_tracker : public tracker {
+struct tcp_tracker : public tracker_with_config<tcp_env, tcp_event> {
   struct tcp_env current_env = {0};
-  tcp_tracker() { tcp_tracker({0}); }
-  tcp_tracker(tcp_env env) {
+  tcp_tracker(tcp_env env) : tracker_with_config(tracker_config<tcp_env, tcp_event>{}) {
     this->current_env = env;
     exiting = false;
     this->current_env.exiting = &exiting;

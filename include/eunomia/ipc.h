@@ -2,16 +2,15 @@
 #define IPC_CMD_H
 
 #include "libbpf_print.h"
-#include "tracker.h"
+#include "model/tracker.h"
 
 extern "C" {
 #include <ipc/ipc_tracker.h>
 }
 
-struct ipc_tracker : public tracker {
+struct ipc_tracker : public tracker_with_config<ipc_env, ipc_event> {
   struct ipc_env current_env = {0};
-  ipc_tracker() { ipc_tracker({0}); }
-  ipc_tracker(ipc_env env) {
+  ipc_tracker(ipc_env env) : tracker_with_config(tracker_config<ipc_env, ipc_event>{}) {
     this->current_env = env;
     exiting = false;
     env.exiting = &exiting;

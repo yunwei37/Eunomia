@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 
   manager.start_container_tracing();
 
-  std::this_thread::sleep_for(10s);
+  std::this_thread::sleep_for(100s);
   return 0;
 }
 

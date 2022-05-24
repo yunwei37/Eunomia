@@ -20,7 +20,7 @@ extern "C"
 }
 
 #include "libbpf_print.h"
-#include "tracker.h"
+#include "model/tracker.h"
 #include "tracker_manager.h"
 
 struct container_env
@@ -30,7 +30,7 @@ struct container_env
   bool print_result;
 };
 
-struct container_tracker : public tracker
+struct container_tracker : public tracker_with_config<container_env, container_event>
 {
   struct container_env current_env = { 0 };
   struct container_manager &this_manager;

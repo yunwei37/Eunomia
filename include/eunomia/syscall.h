@@ -6,24 +6,19 @@
 #include <thread>
 
 #include "libbpf_print.h"
-#include "tracker.h"
+#include "model/tracker.h"
 
 extern "C" {
 #include <syscall/syscall_tracker.h>
 #include "syscall_helper.h"
 }
 
-struct syscall_tracker : public tracker {
+struct syscall_tracker : public tracker_with_config<syscall_env, syscall_event> {
   struct syscall_env current_env = {0};
-  syscall_tracker(syscall_env env) {
+  syscall_tracker(syscall_env env) : tracker_with_config(tracker_config<syscall_env, syscall_event>{}) {
     exiting = false;
     this->current_env = env;
     this->current_env.exiting = &exiting;
-  }
-  syscall_tracker() {
-    current_env = {0};
-    exiting = false;
-    current_env.exiting = &exiting;
   }
   void start_tracker(void) override {
     start_syscall_tracker(handle_event, libbpf_print_fn, current_env);
