@@ -17,6 +17,6 @@ struct process_event
 
 static const char *headers[] = {
 	"stat", "comm", "filename/exitcode", "duration",
-	NULL};
+	(const char*)((void*)0)};
 
 #endif /* PROCESS_H */

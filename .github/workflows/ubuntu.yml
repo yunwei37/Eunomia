@@ -25,6 +25,9 @@ jobs:
     - name: install deps
       run:  make install-deps
 
+    - name: generate bpf headers
+      run:  make generate-tools
+
     - name: cache dependencies
       uses: actions/cache@v2
       id: cache
@@ -51,7 +54,7 @@ jobs:
     - name: run tests
       run: |
         cd build
-        ctest -C $BUILD_TYPE -VV
+        sudo ctest -C $BUILD_TYPE -VV
 
     - name: Code coverage using Codecov 
       run: bash <(curl -s https://codecov.io/bash) 

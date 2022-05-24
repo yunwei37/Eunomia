@@ -190,6 +190,7 @@ find_package(BpfObject REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBBPF_LIBRARIES} -lelf -lz -lpthread)
 
 add_subdirectory(third_party/prometheus-cpp)
+set(prometheus-cpp_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/prometheus-cpp)
 find_package(prometheus-cpp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE prometheus-cpp::pull)
 
