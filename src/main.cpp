@@ -2,6 +2,7 @@
 
 #include "eunomia/prometheus_server.h"
 #include "eunomia/tracker_manager.h"
+#include "eunomia/container.h"
 
 using namespace std::chrono_literals;
 
@@ -31,7 +32,7 @@ int main(int argc, char* argv[])
   }
 
   tracker_manager manager;
-  container_tracker container_manager;
+  container_manager container_manager;
   std::cout << "start ebpf...\n";
 
   /*
@@ -48,19 +49,20 @@ int main(int argc, char* argv[])
   */
 
   auto server = prometheus_server("127.0.0.1:8528");
- 
+
   if (process_flag)
   {
     auto tracker_ptr = std::make_unique<process_tracker>(process_env{}, server);
-    manager.start_process_tracker(std::move(tracker_ptr));
+    manager.start_tracker(std::move(tracker_ptr));
   }
   if (syscall_flag)
-  {
-    manager.start_syscall_tracker();
+  { 
+    auto tracker_ptr = std::make_unique<syscall_tracker>(syscall_env{});
+    manager.start_tracker(std::move(tracker_ptr));
   }
   if (container_flag)
   {
-    container_manager.tracker.start_container_tracker();
+    container_manager.start_container_tracing();
   }
   if (tcp_flag)
   {

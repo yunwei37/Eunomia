@@ -14,7 +14,7 @@ int main(int argc, char **argv)
   auto tracker_ptr = std::make_unique<process_tracker>(process_env{
       .min_duration_ms = 100,
   }, server);
-    manager.start_process_tracker(std::move(tracker_ptr));
+    manager.start_tracker(std::move(tracker_ptr));
 
   server.start_prometheus_server();
 

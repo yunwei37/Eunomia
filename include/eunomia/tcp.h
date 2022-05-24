@@ -9,17 +9,17 @@ extern "C" {
 }
 
 struct tcp_tracker : public tracker {
-  struct tcp_env env = {0};
+  struct tcp_env current_env = {0};
   tcp_tracker() { tcp_tracker({0}); }
   tcp_tracker(tcp_env env) {
-    this->env = env;
+    this->current_env = env;
     exiting = false;
-    this->env.exiting = &exiting;
+    this->current_env.exiting = &exiting;
   }
 
   void start_tracker(void) {
-    env.exiting = &exiting;
-    start_tcp_tracker(handle_event, libbpf_print_fn, env);
+    current_env.exiting = &exiting;
+    start_tcp_tracker(handle_event, libbpf_print_fn, current_env);
   }
 
   static void handle_event(void *ctx, int cpu, void *data,
@@ -45,8 +45,8 @@ struct tcp_tracker : public tracker {
 
     printf("%-6d %-12.12s %-2d %-16s %-16s %-4d\n", tcp_event->pid,
            tcp_event->task, tcp_event->af == AF_INET ? 4 : 6,
-           inet_ntop(tcp_event->af, &s, src, sizeof(src)),
-           inet_ntop(tcp_event->af, &d, dst, sizeof(dst)),
+           inet_ntop((int)tcp_event->af, &s, src, sizeof(src)),
+           inet_ntop((int)tcp_event->af, &d, dst, sizeof(dst)),
            ntohs(tcp_event->dport));
   }
 };

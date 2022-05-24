@@ -14,19 +14,19 @@ extern "C" {
 }
 
 struct syscall_tracker : public tracker {
-  struct syscall_env env = {0};
+  struct syscall_env current_env = {0};
   syscall_tracker(syscall_env env) {
     exiting = false;
-    this->env = env;
-    this->env.exiting = &exiting;
+    this->current_env = env;
+    this->current_env.exiting = &exiting;
   }
   syscall_tracker() {
-    env = {0};
+    current_env = {0};
     exiting = false;
-    env.exiting = &exiting;
+    current_env.exiting = &exiting;
   }
   void start_tracker(void) override {
-    start_syscall_tracker(handle_event, libbpf_print_fn, env);
+    start_syscall_tracker(handle_event, libbpf_print_fn, current_env);
   }
   static std::string to_json(const struct syscall_event &e) {
     json syscall_event = {{"type", "syscall"},
@@ -42,7 +42,7 @@ struct syscall_tracker : public tracker {
   static void print_event(const struct syscall_event *e) {
     auto time = get_current_time();
 
-    if (e->syscall_id < 0 || e->syscall_id >= syscall_names_x86_64_size)
+    if (e->syscall_id >= syscall_names_x86_64_size)
       return;
 
     printf("%-8s %-16s %-7d %-7d [%lu] %u\t%s\t%d\n", time.c_str(), e->comm,

@@ -11,7 +11,7 @@ struct tracker {
   std::mutex mutex;
 
 public:
-  ~tracker() {
+  virtual ~tracker() {
     exiting = true;
     if (thread.joinable()) {
       thread.join();

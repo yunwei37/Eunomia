@@ -9,16 +9,16 @@ extern "C" {
 }
 
 struct ipc_tracker : public tracker {
-  struct ipc_env env = {0};
+  struct ipc_env current_env = {0};
   ipc_tracker() { ipc_tracker({0}); }
   ipc_tracker(ipc_env env) {
-    this->env = env;
+    this->current_env = env;
     exiting = false;
     env.exiting = &exiting;
   }
 
   void start_tracker() {
-    start_ipc_tracker(handle_event, libbpf_print_fn, env);
+    start_ipc_tracker(handle_event, libbpf_print_fn, current_env);
   }
 
   static int handle_event(void *ctx, void *data, size_t data_sz) {

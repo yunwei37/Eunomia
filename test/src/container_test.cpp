@@ -1,15 +1,16 @@
 #include <gtest/gtest.h>
 
 #include "eunomia/tracker_manager.h"
+#include "eunomia/container.h"
 
 using namespace std::chrono_literals;
 
 int main(int argc, char **argv)
 { 
-  tracker_manager manager;
+  container_manager manager;
   std::cout << "start ebpf...\n";
 
-  manager.start_container_tracker();
+  manager.start_container_tracing();
 
   std::this_thread::sleep_for(10s);
   return 0;

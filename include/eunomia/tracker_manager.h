@@ -6,7 +6,6 @@
 #include <mutex>
 #include <thread>
 
-#include "container.h"
 #include "ipc.h"
 #include "process.h"
 #include "syscall.h"
@@ -20,29 +19,15 @@ private:
 public:
   void remove_tracker(int id) { trackers.erase(id); }
 
-  std::size_t start_process_tracker(std::unique_ptr<process_tracker> tracker_ptr) {
+  std::size_t start_tracker(std::unique_ptr<tracker> tracker_ptr) {
     tracker_ptr->thread =
-        std::thread(&process_tracker::start_tracker, tracker_ptr.get());
+        std::thread(&tracker::start_tracker, tracker_ptr.get());
     trackers.emplace(id_count++, std::move(tracker_ptr));
     return trackers.size() - 1;
   }
 
-  std::size_t start_syscall_tracker(syscall_env env) {
-    auto tracker_ptr = std::make_unique<syscall_tracker>(env);
-    tracker_ptr->thread =
-        std::thread(&syscall_tracker::start_tracker, tracker_ptr.get());
-    trackers.emplace(id_count++, std::move(tracker_ptr));
-    return trackers.size() - 1;
-  }
-  std::size_t start_syscall_tracker() { return start_syscall_tracker({}); }
-  
-  std::size_t start_container_tracker() {return start_container_tracker({}); }
-  std::size_t start_container_tracker(process_env env) {
-    auto tracker_ptr = std::make_unique<container_tracker>(env);
-    tracker_ptr->thread =
-        std::thread(&container_tracker::start_tracker, tracker_ptr.get());
-    trackers.emplace(id_count++, std::move(tracker_ptr));
-    return trackers.size() - 1;
+  void remove_all_trackers() {
+    trackers.clear();
   }
 };
 

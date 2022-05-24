@@ -8,19 +8,20 @@
 #include <thread>
 
 #include "libbpf_print.h"
-#include "tracker.h"
 #include "prometheus/counter.h"
 #include "prometheus_server.h"
+#include "tracker.h"
 
 using json = nlohmann::json;
 
-struct process_tracker : public tracker {
-  struct process_env env = {0};
-  
-  prometheus::Family<prometheus::Counter> & process_start_counter;
-  prometheus::Family<prometheus::Counter> & process_exit_counter;
+struct process_tracker : public tracker
+{
+  struct process_env current_env = { 0 };
 
-  process_tracker(process_env env, prometheus_server& server);
+  prometheus::Family<prometheus::Counter> &process_start_counter;
+  prometheus::Family<prometheus::Counter> &process_exit_counter;
+
+  process_tracker(process_env env, prometheus_server &server);
   void start_tracker();
   void report_prometheus_event(const struct process_event &e);
 

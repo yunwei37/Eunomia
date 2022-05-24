@@ -68,7 +68,7 @@ static int dump_hash_batch(int map_fd, void *keys, uint32_t key_size,
   return 0;
 }
 
-int dump_hash(int map_fd, void *keys, uint32_t key_size, void *values,
+static int dump_hash(int map_fd, void *keys, uint32_t key_size, void *values,
               uint32_t value_size, uint32_t *count, void *invalid_key) {
   int err;
 

@@ -6,7 +6,7 @@ extern "C"
 }
 
 process_tracker::process_tracker(process_env env, prometheus_server &server)
-    : env(env),
+    : current_env(env),
       process_start_counter(prometheus::BuildCounter()
                                 .Name("observed_process_start")
                                 .Help("Number of observed process start")
@@ -17,13 +17,13 @@ process_tracker::process_tracker(process_env env, prometheus_server &server)
                                .Register(*server.registry))
 {
   exiting = false;
-  this->env.exiting = &exiting;
+  this->current_env.exiting = &exiting;
 }
 
 void process_tracker::start_tracker()
 {
   struct process_bpf *skel = nullptr;
-  start_process_tracker(handle_event, libbpf_print_fn, env, skel, (void *)this);
+  start_process_tracker(handle_event, libbpf_print_fn, current_env, skel, (void *)this);
 }
 
 void process_tracker::report_prometheus_event(const struct process_event &e)
@@ -40,8 +40,7 @@ void process_tracker::report_prometheus_event(const struct process_event &e)
   else
   {
     process_start_counter
-        .Add({
-               { "comm", std::string(e.comm) },
+        .Add({ { "comm", std::string(e.comm) },
                { "filename", std::string(e.filename) },
                { "pid", std::to_string(e.common.pid) } })
         .Increment();

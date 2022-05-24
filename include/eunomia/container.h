@@ -1,51 +1,70 @@
 #ifndef CONTAINER_CMD_H
 #define CONTAINER_CMD_H
 
+#include <stdio.h>
+
 #include <iostream>
 #include <json.hpp>
+#include <memory>
+#include <mutex>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <stdio.h>
-#include <thread>
-#include <mutex>
-#include <memory>
 
-#include "libbpf_print.h"
-#include "tracker.h"
-#include "tracker_manager.h"
-
-extern "C" {
+extern "C"
+{
 #include <container/container.h>
 #include <process/process_tracker.h>
 #include <unistd.h>
 }
 
-using json = nlohmann::json;
-static std::mutex mp_lock;
+#include "libbpf_print.h"
+#include "tracker.h"
+#include "tracker_manager.h"
 
-struct container_tracker : public tracker {
-  static std::unordered_map<int, struct container_event> container_processes;
-  struct process_env env = {0};
-  tracker_manager tracker;
-  
-  container_tracker(process_env env);
-  void start_tracker();
-
-  static void fill_event(struct process_event &event);
-
-  static void init_container_table();
-
-  static void print_container(const struct container_event &e);
-
-  static void judge_container(const struct process_event &e);
-
-  static int handle_event(void *ctx, void *data, size_t data_sz);
-
-  static unsigned long get_container_id_via_pid(pid_t pid);
-
-  static std::unordered_map<int, struct container_event> &get_map();
+struct container_env
+{
+  struct process_env penv;
+  // other fields: TODO
+  bool print_result;
 };
 
-std::unordered_map<int, struct container_event> container_tracker::container_processes = std::unordered_map<int, struct container_event>();
+struct container_tracker : public tracker
+{
+  struct container_env current_env = { 0 };
+  struct container_manager &this_manager;
+
+  container_tracker(container_env env, container_manager &manager);
+  void start_tracker();
+
+  void fill_event(struct process_event &event);
+
+  void init_container_table();
+
+  void print_container(const struct container_event &e);
+
+  void judge_container(const struct process_event &e);
+
+  static int handle_event(void *ctx, void *data, size_t data_sz);
+};
+
+struct container_manager
+{
+ private:
+  struct tracker_manager tracker;
+  std::mutex mp_lock;
+  std::unordered_map<int, struct container_event> container_processes;
+  friend struct container_tracker;
+
+ public:
+  void start_container_tracing()
+  { 
+    tracker.start_tracker(std::make_unique<container_tracker>(container_env{
+      .print_result = true,
+    }, *this));
+  }
+  unsigned long get_container_id_via_pid(pid_t pid);
+};
+
 #endif

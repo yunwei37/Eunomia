@@ -41,7 +41,7 @@ function(set_project_warnings project_name)
 
   set(CLANG_WARNINGS
       -Wall
-      #-Wextra  # reasonable and standard
+      -Wextra  # reasonable and standard
       -Wshadow # warn the user if a variable declaration shadows one from a
                # parent context
       -Wnon-virtual-dtor # warn the user if a class with virtual functions has a
@@ -61,6 +61,9 @@ function(set_project_warnings project_name)
                  # (ie printf)
         -Wno-unused-function 
         -Wno-unused-variable 
+        -Wno-unused-parameter
+        -Wno-missing-field-initializers
+
         -Wno-pointer-arith
   )
 
