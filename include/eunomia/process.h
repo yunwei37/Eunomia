@@ -16,18 +16,19 @@ using json = nlohmann::json;
 
 struct process_tracker : public tracker_with_config<process_env, process_event>
 {
-  using process_config = tracker_config<process_env, process_event>;
-  using process_event_handler = std::shared_ptr<event_handler<process_event>>;
+  using config_data = tracker_config<process_env, process_event>;
+  using tracker_event_handler = std::shared_ptr<event_handler<process_event>>;
 
-  process_tracker(process_config config);
+  process_tracker(config_data config);
 
   // create a tracker with deafult config
-  static std::unique_ptr<process_tracker> create_tracker_with_default_env(process_event_handler handler);
+  static std::unique_ptr<process_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 
   process_tracker(process_env env);
   // start process tracker
   void start_tracker();
 
+  // used for prometheus exporter
   struct prometheus_event_handler : public event_handler<process_event>
   {
     prometheus::Family<prometheus::Counter> &eunomia_process_start_counter;
@@ -38,12 +39,14 @@ struct process_tracker : public tracker_with_config<process_env, process_event>
     void handle(tracker_event<process_event> &e);
   };
 
-  struct json_event_handler : public event_handler<process_event>
+  // convert event to json
+  struct json_event_handler_base : public event_handler<process_event>
   {
     std::string to_json(const struct process_event &e);
   };
 
-  struct json_event_printer : public json_event_handler
+  // used for json exporter, inherits from json_event_handler
+  struct json_event_printer : public json_event_handler_base
   {
     void handle(tracker_event<process_event> &e);
   };

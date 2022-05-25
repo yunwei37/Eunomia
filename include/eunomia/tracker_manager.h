@@ -11,7 +11,7 @@
 struct tracker_manager
 {
  private:
-  int id_count = 0;
+  int id_count = 1;
   std::map<int, std::unique_ptr<tracker_base>> trackers;
 
  public:
@@ -22,6 +22,11 @@ struct tracker_manager
 
   std::size_t start_tracker(std::unique_ptr<tracker_base> tracker_ptr)
   {
+    if (!tracker_ptr)
+    {
+      std::cout << "tracker_ptr is null in start_tracker\n";
+      return 0;
+    }
     tracker_ptr->thread = std::thread(&tracker_base::start_tracker, tracker_ptr.get());
     trackers.emplace(id_count++, std::move(tracker_ptr));
     return trackers.size() - 1;

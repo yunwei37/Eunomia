@@ -60,15 +60,15 @@ void files_tracker::prometheus_event_handler::handle(tracker_event<files_event> 
   report_prometheus_event(e.data);
 }
 
-files_tracker::files_tracker(files_config config) : tracker_with_config(config)
+files_tracker::files_tracker(config_data config) : tracker_with_config(config)
 {
   exiting = false;
   this->current_config.env.exiting = &exiting;
 }
 
-std::unique_ptr<files_tracker> files_tracker::create_tracker_with_default_env(files_event_handler handler)
+std::unique_ptr<files_tracker> files_tracker::create_tracker_with_default_env(tracker_event_handler handler)
 {
-  files_config config;
+  config_data config;
   config.handler = handler;
   config.name = "files_tracker";
   config.env = files_env{
@@ -85,7 +85,7 @@ std::unique_ptr<files_tracker> files_tracker::create_tracker_with_default_env(fi
 }
 
 files_tracker::files_tracker(files_env env)
-    : files_tracker(files_config{
+    : files_tracker(config_data{
           .env = env,
       })
 {

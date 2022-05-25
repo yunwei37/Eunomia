@@ -6,22 +6,21 @@ extern "C"
 }
 
 void process_tracker::prometheus_event_handler::report_prometheus_event(const struct process_event &e)
-{ 
+{
   // TODO: fix this
-  std::string ids[] = {"36fca8c5eec1", "e2055f599ca6"};
-  std::string names[] = {"Ubuntu", "Debian"};
+  std::string ids[] = { "36fca8c5eec1", "e2055f599ca6" };
+  std::string names[] = { "Ubuntu", "Debian" };
   size_t n = (size_t)std::rand() % 2;
   if (e.exit_event)
-  { 
+  {
     eunomia_process_exit_counter
         .Add({ { "exit_code", std::to_string(e.exit_code) },
                { "duration_ms", std::to_string(e.duration_ns / 1000000) },
                { "comm", std::string(e.comm) },
-              //  // TODO: fix container part
-                { "container_name", names[n] },
-                { "container_id", ids[n] },
-               { "pid", std::to_string(e.common.pid) } 
-              })
+               //  // TODO: fix container part
+               { "container_name", names[n] },
+               { "container_id", ids[n] },
+               { "pid", std::to_string(e.common.pid) } })
         .Increment();
   }
   else
@@ -32,8 +31,7 @@ void process_tracker::prometheus_event_handler::report_prometheus_event(const st
                // TODO: fix container part
                { "container_name", names[n] },
                { "container_id", ids[n] },
-               { "pid", std::to_string(e.common.pid) } 
-              })
+               { "pid", std::to_string(e.common.pid) } })
         .Increment();
   }
 }
@@ -55,15 +53,15 @@ void process_tracker::prometheus_event_handler::handle(tracker_event<process_eve
   report_prometheus_event(e.data);
 }
 
-process_tracker::process_tracker(process_config config) : tracker_with_config(config)
+process_tracker::process_tracker(config_data config) : tracker_with_config(config)
 {
   exiting = false;
   this->current_config.env.exiting = &exiting;
 }
 
-std::unique_ptr<process_tracker> process_tracker::create_tracker_with_default_env(process_event_handler handler)
+std::unique_ptr<process_tracker> process_tracker::create_tracker_with_default_env(tracker_event_handler handler)
 {
-  process_config config;
+  config_data config;
   config.handler = handler;
   config.name = "process_tracker";
   config.env = process_env{
@@ -73,7 +71,7 @@ std::unique_ptr<process_tracker> process_tracker::create_tracker_with_default_en
 }
 
 process_tracker::process_tracker(process_env env)
-    : process_tracker(process_config{
+    : process_tracker(config_data{
           .env = env,
       })
 {
@@ -87,7 +85,7 @@ void process_tracker::start_tracker()
       handle_tracker_event<process_tracker, process_event>, libbpf_print_fn, current_config.env, skel, (void *)this);
 }
 
-std::string process_tracker::json_event_handler::to_json(const struct process_event &e)
+std::string process_tracker::json_event_handler_base::to_json(const struct process_event &e)
 {
   std::string res;
   json process_event = { { "type", "process" },

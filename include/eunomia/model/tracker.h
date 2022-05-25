@@ -11,8 +11,10 @@
 // for tracker manager to manage
 struct tracker_base
 {
+  // base thread
   std::thread thread;
   volatile bool exiting;
+  // TODO: use the mutex
   std::mutex mutex;
 
  public:
@@ -42,9 +44,12 @@ struct tracker_with_config : public tracker_base
 };
 
 template<typename TRACKER>
-concept C = requires
+concept tracker_concept = requires
 {
-  typename TRACKER::current_config;  // required nested member name
+  typename TRACKER::config_data;
+  typename TRACKER::tracker_event_handler;
+  typename TRACKER::prometheus_event_handler;
+  typename TRACKER::json_event_printer;
 };
 
 // function for handler tracker event call back
@@ -53,7 +58,7 @@ concept C = requires
 //
 // start_process_tracker(handle_tracker_event<process_tracker, process_event>, libbpf_print_fn, current_config.env, skel,
 // (void *)this);
-template<typename TRACKER, typename EVENT>
+template<tracker_concept TRACKER, typename EVENT>
 static int handle_tracker_event(void *ctx, void *data, size_t data_sz)
 {
   if (!data || !ctx)
@@ -66,6 +71,8 @@ static int handle_tracker_event(void *ctx, void *data, size_t data_sz)
   if (pt.current_config.handler)
   {
     pt.current_config.handler->do_handle_event(event);
+  } else {
+    std::cout<< "warn: no handler for tracker event" << std::endl;
   }
   return 0;
 }

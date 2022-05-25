@@ -4,6 +4,7 @@ set(sources
     src/container.cpp
     src/promethues_server.cpp
     src/files.cpp
+    src/eunomia_core.cpp
 )
 
 set(exe_sources
