@@ -13,14 +13,17 @@ int main(int argc, char **argv)
 
   auto prometheus_event_handler = std::make_shared<process_tracker::prometheus_event_handler>(process_tracker::prometheus_event_handler(server));
   auto json_event_printer = std::make_shared<process_tracker::json_event_printer>(process_tracker::json_event_printer{});
-  prometheus_event_handler->add_handler(json_event_printer);
-  //prometheus_event_handler->add_handler(json_event_printer)->add_handler(json_event_printer);
+  auto json_event_printer2 = std::make_shared<process_tracker::json_event_printer>(process_tracker::json_event_printer{});
+  //prometheus_event_handler->add_handler(json_event_printer);
+  prometheus_event_handler->add_handler(json_event_printer)->add_handler(json_event_printer2);
 
   auto tracker_ptr = std::make_unique<process_tracker>(process_tracker::process_config{
-    .env = process_env{},
+    .env = process_env{
+      .min_duration_ms = 20,
+    },
     .handler = prometheus_event_handler,
   });
-    manager.start_tracker(std::move(tracker_ptr));
+  manager.start_tracker(std::move(tracker_ptr));
 
   server.start_prometheus_server();
 

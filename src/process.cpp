@@ -13,7 +13,8 @@ void process_tracker::prometheus_event_handler::report_prometheus_event(const st
         .Add({ { "exit_code", std::to_string(e.exit_code) },
                { "duration_ms", std::to_string(e.duration_ns / 1000000) },
                { "comm", std::string(e.comm) },
-               { "pid", std::to_string(e.common.pid) } })
+               // { "pid", std::to_string(e.common.pid) } 
+               })
         .Increment();
   }
   else
@@ -21,7 +22,8 @@ void process_tracker::prometheus_event_handler::report_prometheus_event(const st
     process_start_counter
         .Add({ { "comm", std::string(e.comm) },
                { "filename", std::string(e.filename) },
-               { "pid", std::to_string(e.common.pid) } })
+               // { "pid", std::to_string(e.common.pid) } 
+               })
         .Increment();
   }
 }

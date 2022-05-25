@@ -1,14 +1,16 @@
 #ifndef EVENT_HANDLER_H
 #define EVENT_HANDLER_H
 
-#include <optional>
-
+// the basic event type
+// T is the event from C code
 template <typename T>
 struct tracker_event
 {
     T data;
+    // TODO: add more data here
 };
 
+// the event handler for share_ptr
 template <typename T>
 struct event_handler_base
 {
@@ -18,6 +20,8 @@ public:
     virtual void do_handle_event(tracker_event<T> &e) = 0;
 };
 
+// the event handler for single type
+// all single type event hanlder should inherit from this class
 template <typename T>
 struct event_handler : event_handler_base<T>
 {
@@ -39,6 +43,7 @@ public:
     }
 };
 
+// type switcher
 template <typename T1, typename T2>
 struct event_handler_adapter : event_handler_base<T2>
 {

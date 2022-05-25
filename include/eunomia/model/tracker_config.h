@@ -5,6 +5,7 @@
 #include <thread>
 #include "event_handler.h"
 
+// config data for tracker
 template <typename ENV, typename EVENT>
 struct tracker_config
 {   

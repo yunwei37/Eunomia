@@ -22,6 +22,7 @@ public:
   void stop_tracker(void) { exiting = true; }
 };
 
+// all tracker should inherit from this class
 template <typename ENV, typename EVENT>
 struct tracker_with_config : public tracker {
   tracker_config<ENV, EVENT> current_config;
@@ -34,6 +35,10 @@ concept C = requires
   typename TRACKER::current_config; // required nested member name
 };
 
+// function for handler tracker event call back
+// Example:
+//
+//   start_process_tracker(handle_tracker_event<process_tracker, process_event>, libbpf_print_fn, current_config.env, skel, (void *)this);
 template <typename TRACKER, typename EVENT>
 static int handle_tracker_event(void *ctx, void *data, size_t data_sz) {
   if (!data || !ctx)
