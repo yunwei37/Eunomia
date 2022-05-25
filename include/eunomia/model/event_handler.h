@@ -28,12 +28,17 @@ struct event_handler : event_handler_base<T>
 std::shared_ptr<event_handler_base<T>> next_handler = nullptr;
 public:
     virtual ~event_handler() = default;
+
+    // implement this function to handle the event
     virtual void handle(tracker_event<T> &e) = 0;
+
+    // add a next handler after this handler
     std::shared_ptr<event_handler<T>> add_handler(std::shared_ptr<event_handler<T>> handler)
     {
         next_handler = handler;
         return handler;
     }
+    // do the handle event
     void do_handle_event(tracker_event<T> &e)
     {
         handle(e);
@@ -44,6 +49,7 @@ public:
 };
 
 // type switcher
+// all switch type event hanlder should inherit from this class
 template <typename T1, typename T2>
 struct event_handler_adapter : event_handler_base<T2>
 {

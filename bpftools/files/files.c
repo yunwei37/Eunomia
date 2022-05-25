@@ -8,15 +8,7 @@
 #include <unistd.h>
 #include "file_tracker.h"
 
-enum SORT {
-	ALL,
-	READS,
-	WRITES,
-	RBYTES,
-	WBYTES,
-};
-
-static volatile sig_atomic_t exiting = 0;
+static volatile bool exiting = 0;
 
 static pid_t target_pid = 0;
 static bool clear_screen = true;
@@ -166,7 +158,7 @@ static int print_event(void *ctx, void *data, size_t size) {
     if (!data || !ctx) {
         return 0;
     }
-    struct file_event* event = (struct file_event*)data;
+    struct files_event* event = (struct files_event*)data;
     struct files_env *env = (struct files_env*)ctx;
     int i, n;
 	FILE *f;

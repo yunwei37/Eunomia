@@ -3,6 +3,7 @@ set(sources
     src/process.cpp
     src/container.cpp
     src/promethues_server.cpp
+    src/files.cpp
 )
 
 set(exe_sources
@@ -32,4 +33,5 @@ set(test_sources
     src/process_test.cpp
     src/container_test.cpp
     src/prometheus_test.cpp
+    src/files_test.cpp
 )
