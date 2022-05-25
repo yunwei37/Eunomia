@@ -6,15 +6,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-
-#include <bpf/libbpf.h>
-#include <bpf/bpf.h>
-#include "files.h"
-#include "files.skel.h"
-#include <bpf/libbpf.h>
-
-#define warn(...) fprintf(stderr, __VA_ARGS__)
-#define OUTPUT_ROWS_LIMIT 10240
+#include "file_tracker.h"
 
 enum SORT {
 	ALL,
@@ -167,20 +159,20 @@ static int sort_column(const void *obj1, const void *obj2)
 	} else {
 		return (s2->reads + s2->writes + s2->read_bytes + s2->write_bytes)
 		     - (s1->reads + s1->writes + s1->read_bytes + s1->write_bytes);
-	}
+	} 
 }
 
-static int print_stat(struct files_bpf *obj)
-{
+static int print_event(void *ctx, void *data, size_t size) {
+    if (!data || !ctx) {
+        return 0;
+    }
+    struct file_event* event = (struct file_event*)data;
+    struct files_env *env = (struct files_env*)ctx;
+    int i, n;
 	FILE *f;
 	time_t t;
 	struct tm *tm;
 	char ts[16], buf[256];
-	struct file_id key, *prev_key = NULL;
-	static struct file_stat values[OUTPUT_ROWS_LIMIT];
-	int n, i, err = 0, rows = 0;
-	int fd = bpf_map__fd(obj->maps.entries);
-
 	f = fopen("/proc/loadavg", "r");
 	if (f) {
 		time(&t);
@@ -196,120 +188,50 @@ static int print_stat(struct files_bpf *obj)
 	printf("%-7s %-16s %-6s %-6s %-7s %-7s %1s %s\n",
 	       "TID", "COMM", "READS", "WRITES", "R_Kb", "W_Kb", "T", "FILE");
 
-	while (1) {
-		err = bpf_map_get_next_key(fd, prev_key, &key);
-		if (err) {
-			if (errno == ENOENT) {
-				err = 0;
-				break;
-			}
-			warn("bpf_map_get_next_key failed: %s\n", strerror(errno));
-			return err;
-		}
-		err = bpf_map_lookup_elem(fd, &key, &values[rows++]);
-		if (err) {
-			warn("bpf_map_lookup_elem failed: %s\n", strerror(errno));
-			return err;
-		}
-		prev_key = &key;
-	}
-
-	qsort(values, rows, sizeof(struct file_stat), sort_column);
-	rows = rows < output_rows ? rows : output_rows;
-	for (i = 0; i < rows; i++)
+	qsort(event->values, event->rows, sizeof(struct file_stat), sort_column);
+	event->rows = event->rows < env->output_rows ? event->rows : env->output_rows;
+	for (i = 0; i < event->rows; i++)
 		printf("%-7d %-16s %-6lld %-6lld %-7lld %-7lld %c %s\n",
-		       values[i].tid, values[i].comm, values[i].reads, values[i].writes,
-		       values[i].read_bytes / 1024, values[i].write_bytes / 1024,
-		       values[i].type, values[i].filename);
+		       event->values[i].tid, event->values[i].comm, event->values[i].reads, event->values[i].writes,
+		       event->values[i].read_bytes / 1024, event->values[i].write_bytes / 1024,
+		       event->values[i].type, event->values[i].filename);
 
 	printf("\n");
-	prev_key = NULL;
-
-	while (1) {
-		err = bpf_map_get_next_key(fd, prev_key, &key);
-		if (err) {
-			if (errno == ENOENT) {
-				err = 0;
-				break;
-			}
-			warn("bpf_map_get_next_key failed: %s\n", strerror(errno));
-			return err;
-		}
-		err = bpf_map_delete_elem(fd, &key);
-		if (err) {
-			warn("bpf_map_delete_elem failed: %s\n", strerror(errno));
-			return err;
-		}
-		prev_key = &key;
-	}
-	return err;
+	return 0;
 }
 
 int main(int argc, char **argv)
 {
-	LIBBPF_OPTS(bpf_object_open_opts, open_opts);
 	static const struct argp argp = {
 		.options = opts,
 		.parser = parse_arg,
 		.doc = argp_program_doc,
 	};
-	struct files_bpf *obj;
 	int err;
 
 	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
 	if (err)
 		return err;
 
-	libbpf_set_strict_mode(LIBBPF_STRICT_ALL);
-	libbpf_set_print(libbpf_print_fn);
-
-	obj = files_bpf__open_opts(&open_opts);
-	if (!obj) {
-		warn("failed to open BPF object\n");
-		return 1;
-	}
-
-	obj->rodata->target_pid = target_pid;
-	obj->rodata->regular_file_only = regular_file_only;
-
-	err = files_bpf__load(obj);
-	if (err) {
-		warn("failed to load BPF object: %d\n", err);
-		goto cleanup;
-	}
-
-	err = files_bpf__attach(obj);
-	if (err) {
-		warn("failed to attach BPF programs: %d\n", err);
-		goto cleanup;
-	}
-
 	if (signal(SIGINT, sig_int) == SIG_ERR) {
 		warn("can't set signal handler: %s\n", strerror(errno));
 		err = 1;
 		goto cleanup;
 	}
-
-	while (1) {
-		sleep(interval);
-
-		if (clear_screen) {
-			err = system("clear");
-			if (err)
-				goto cleanup;
-		}
-
-		err = print_stat(obj);
-		if (err)
-			goto cleanup;
-
-		count--;
-		if (exiting || !count)
-			goto cleanup;
-	}
-
+	struct files_env env = {
+		.output_rows = output_rows,
+		.target_pid = target_pid,
+		.clear_screen = clear_screen,
+		.regular_file_only = regular_file_only,
+		.exiting = &exiting,
+		.sort_by = sort_by,
+		.interval = interval,
+		.verbose = verbose,
+		.output_rows = output_rows,
+		};
+	env.ctx = &env;
+	exiting = false;
+	start_file_tracker(print_event, libbpf_print_fn, env);
 cleanup:
-	files_bpf__destroy(obj);
-
 	return err != 0;
 }

@@ -34,4 +34,7 @@ name = "/proc/xxx
 type = "syscall"
 sycall = "xxxxx"
 
+[seccomp]
+allow = ["read","write", "connect"]
+
 ```
