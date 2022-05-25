@@ -81,7 +81,9 @@ void eunomia_core::start_trackers(void)
       case avaliable_tracker::tcp: break;
       case avaliable_tracker::syscall: break;
       case avaliable_tracker::ipc: break;
-      case avaliable_tracker::process: break;
+      case avaliable_tracker::process: 
+        core_tracker_manager.start_tracker(create_default_tracker<process_tracker>(t.get()));
+      break;
       case avaliable_tracker::files:
         core_tracker_manager.start_tracker(create_default_tracker<files_tracker>(t.get()));
         break;
@@ -92,6 +94,30 @@ void eunomia_core::start_trackers(void)
 
 int eunomia_core::start_eunomia(void)
 {
+  std::cout << "start eunomia...\n";
   start_trackers();
+
+  if (core_config.enable_container_manager)
+  { 
+    std::cout << "start container manager...\n";
+    core_container_manager.start_container_tracing();
+  }
+  if (core_config.enabled_export_types.count(export_type::prometheus))
+  {
+    std::cout << "start prometheus server...\n";
+    core_prometheus_server.start_prometheus_server();
+  }
+  if (core_config.is_auto_exit)
+  {
+    std::cout << "set exit time...\n";
+    std::this_thread::sleep_for(std::chrono::seconds(core_config.exit_after));
+    std::cout << "auto exit...\n";
+  } else {
+    std::cout << "press 'x' key to exit...\n";
+    while (std::cin.get() != 'x')
+    {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+  }
   return 0;
 }

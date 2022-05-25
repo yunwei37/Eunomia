@@ -21,17 +21,17 @@ private:
     container_manager core_container_manager;
     prometheus_server core_prometheus_server;
     
-    // create a 
+    // create all event handlers for a tracker
     template <tracker_concept TRACKER>
     TRACKER::tracker_event_handler
     create_tracker_event_handler(void);
 
+    // create a default tracker with default env
     template <tracker_concept TRACKER>
     std::unique_ptr<TRACKER>
     create_default_tracker(const tracker_data_base* base);
 
-    void start_files_tracker(const tracker_data_base* base);
-
+    // start all trackers
     void start_trackers(void);
 public:
     eunomia_core(config &config);

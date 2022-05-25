@@ -28,7 +28,7 @@ enum class export_type
   databse
 };
 
-enum class cmd_mode
+enum class eunomia_mode
 {
   run,
   daemon,
@@ -55,7 +55,9 @@ enum class avaliable_tracker
   files
 };
 
-//
+// TODO refactor
+// we should not use enum class
+// use dynamic_cast to get the type of tracker
 struct tracker_data_base
 {
   avaliable_tracker type;
@@ -66,6 +68,7 @@ template<typename T>
 struct tracker_data : tracker_data_base
 {
   T config;
+  tracker_data(avaliable_tracker t) : tracker_data_base{t} {}
 };
 
 using process_tracker_data = tracker_data<process_tracker::config_data>;
@@ -75,38 +78,48 @@ using files_tracker_data = tracker_data<files_tracker::config_data>;
 // both config from toml and command line should be put here
 struct config
 {
-  cmd_mode run_selected;
+  // global run mode
+  eunomia_mode run_selected = eunomia_mode::server;
 
   // config for all enabled tracker
   // each tracker should have its own config, for example, process_tracker_data
   // you can add fields to config_data, just replace the using with struct decleration
   // see:
   // using config_data = tracker_config<process_env, process_event>;
-  std::vector<std::shared_ptr<tracker_data_base>> enabled_trackers;
+  std::vector<std::shared_ptr<tracker_data_base>> enabled_trackers = {
+        std::make_shared<process_tracker_data>(avaliable_tracker::process),
+        std::make_shared<files_tracker_data>(avaliable_tracker::files),
+  };
 
   // export config
   // may be we should have config similar to tracker_config
   // TODO
-  std::set<export_type> enabled_export_types;
+  std::set<export_type> enabled_export_types = {export_type::prometheus, export_type::stdout_type};
 
   // export format
   // this should be set as well
   // TODO
-  export_format fmt;
+  export_format fmt = export_format::json_format;
 
   // tracing config
-  tracing_type tracing_selected;
+  tracing_type tracing_selected = tracing_type::all;
+
+  // enable container tracing
+  // we can get container id and container name
+  // using pid from the map of it
+  bool enable_container_manager = false;
 
   // tracing targets
-  std::string container_name;
-  unsigned long target_contaienr_id;
-  pid_t target_pid;
+  std::string container_name = "";
+  unsigned long target_contaienr_id = 0;
+  pid_t target_pid = 0;
 
   bool is_auto_exit = false;
-  std::chrono::seconds exit_after;
+  int exit_after = 0;
 
   // TODO: this should be add to export config
   std::string prometheus_listening_address = "127.0.0.1:8528";
+
 };
 
 #endif
