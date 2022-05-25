@@ -2,8 +2,6 @@
 
 A lightweight eBPF-based CloudNative Monitor tool for Container Security and Observability
 
-> WARN: This repo is under heavily development, it's not finished yet.
-
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
 [![codecov](https://codecov.io/gh/filipdutescu/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/filipdutescu/modern-cpp-template)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/filipdutescu/modern-cpp-template)](https://github.com/filipdutescu/modern-cpp-template/releases)
@@ -39,11 +37,31 @@ Eunomia 是一个基于eBPF的云原生监控工具，旨在帮助用户了解�
 
 Eunomia 的 ebpf 部分是从 libbpf-tools 中得到了部分灵感，但是目前关于 ebpf 的资料还相对零散，这也导致了我们在前期的开发过程中走了不少的弯路。因此, 我们也提供了一系列教程，以及丰富的参考资料，旨在降低新手学习eBPF技术的门槛，试图通过大量的例程解释、丰富对 `eBPF、libbpf、bcc` 等内核技术和容器相关原理的认知，让后来者能更深入地参与到 ebpf 的技术开发中来。
 
+see: [tutorial](doc/tutorial)
+
 # Quickstart
 
 ## Docker and Prometheus
 
-> TODO
+> TODO: docker file
+
+## run as binary
+
+you can use our pre-compiled binary to start a prometheus exporter:
+
+```
+./eunomia server
+```
+
+This will enable our core ebpf trackers including `process`, `tcp`, `syscall` and `files`, it will also start our security engine to detect potential security issues. For more details, you can refer to our doc.
+
+Alternatively, you can simply use eunomia to run a single ebpf tracker, for example:
+
+```
+./eunomia run files --pid=1234
+```
+
+will trace all files read or writed by process 1234. You can also use `--container-id` to trace a container. You can also use `toml` config file.
 
 ## build On Linux
 
@@ -54,9 +72,13 @@ git submodule update --init --recursive       # check out deps
 make install
 ```
 
-You may need to install libcurl and gtest as deps.
+You may need to install libcurl, libelf-dev clang and gtest as deps. On Debian/Ubuntu, run
 
-## TODO
+```
+make install-deps
+```
+
+TODO: other platforms
 
 # Why is eBPF
 
