@@ -22,10 +22,10 @@ TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler()
       case export_type::prometheus:
         new_handler = std::make_shared<typename TRACKER::prometheus_event_handler>(
             typename TRACKER::prometheus_event_handler(core_prometheus_server));
-      break;
-      case export_type::stdout_json:
+        break;
+      case export_type::stdout_type:
         new_handler = std::make_shared<typename TRACKER::json_event_printer>(typename TRACKER::json_event_printer{});
-       break;
+        break;
       default: std::cout << "unsupported export type\n"; break;
     }
     if (new_handler)
@@ -56,7 +56,8 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_data
   const cur_tracker_data& files_data = *data;
 
   auto handler = create_tracker_event_handler<TRACKER>();
-  if (!handler) {
+  if (!handler)
+  {
     std::cout << "no handler was created for tracker\n";
     return nullptr;
   }
@@ -81,17 +82,16 @@ void eunomia_core::start_trackers(void)
       case avaliable_tracker::syscall: break;
       case avaliable_tracker::ipc: break;
       case avaliable_tracker::process: break;
-      case avaliable_tracker::files: 
-          core_tracker_manager.start_tracker(create_default_tracker<files_tracker>(t.get()));
+      case avaliable_tracker::files:
+        core_tracker_manager.start_tracker(create_default_tracker<files_tracker>(t.get()));
         break;
-      default: 
-        std::cout << "unsupported tracker type\n";
-      break;
+      default: std::cout << "unsupported tracker type\n"; break;
     }
   }
 }
 
 int eunomia_core::start_eunomia(void)
 {
+  start_trackers();
   return 0;
 }

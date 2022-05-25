@@ -14,6 +14,10 @@
 
 using json = nlohmann::json;
 
+// ebpf process tracker interface
+// the true implementation is in process/process_tracker.h
+//
+// trace process start and exit
 struct process_tracker : public tracker_with_config<process_env, process_event>
 {
   using config_data = tracker_config<process_env, process_event>;

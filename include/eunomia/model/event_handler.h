@@ -1,6 +1,10 @@
 #ifndef EVENT_HANDLER_H
 #define EVENT_HANDLER_H
 
+#include <mutex>
+#include <string>
+#include <thread>
+
 // the basic event type
 // T is the event from C code
 template <typename T>

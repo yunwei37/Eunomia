@@ -5,6 +5,7 @@ set(sources
     src/promethues_server.cpp
     src/files.cpp
     src/eunomia_core.cpp
+    src/sec_analyzer.cpp
 )
 
 set(exe_sources

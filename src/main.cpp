@@ -8,7 +8,7 @@
 #include "eunomia/config.h"
 
 // run mode config
-enum class run_cmd_mode {tcpconnect, syscall, ipc, file, help};
+enum class run_cmd_mode {tcpconnect, syscall, ipc, files, process, help};
 
 using namespace std::chrono_literals;
 
@@ -26,7 +26,15 @@ void run_mode_operation(run_cmd_mode selected, unsigned long contaienr_id, pid_t
   
     
     break;
+  case run_cmd_mode::syscall:
+
+    break;
+  case run_cmd_mode::process:
   
+    break;
+  case run_cmd_mode::files:
+  
+    break;
   default:
     break;
   }
@@ -76,7 +84,7 @@ int main(int argc, char* argv[])
     clipp::option("tcpconnect").set(run_selected, run_cmd_mode::tcpconnect) |
     clipp::option("syscall").set(run_selected, run_cmd_mode::syscall) |
     clipp::option("ipc").set(run_selected, run_cmd_mode::ipc) |
-    clipp::option("file").set(run_selected, run_cmd_mode::file)
+    clipp::option("file").set(run_selected, run_cmd_mode::files)
   );
 
   auto run_mode = (

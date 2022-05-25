@@ -18,6 +18,10 @@ extern "C"
 
 using json = nlohmann::json;
 
+// ebpf files tracker interface
+// the true implementation is in files/file_tracker.h
+//
+// trace files read and write
 struct files_tracker : public tracker_with_config<files_env, files_event>
 {
   using config_data = tracker_config<files_env, files_event>;

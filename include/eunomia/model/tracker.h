@@ -43,6 +43,8 @@ struct tracker_with_config : public tracker_base
   }
 };
 
+// concept for tracker
+// all tracker should have these types
 template<typename TRACKER>
 concept tracker_concept = requires
 {
