@@ -8,9 +8,9 @@ extern "C"
 }
 
 container_tracker::container_tracker(container_env env, container_manager &manager)
-    : current_env(env),
-      this_manager(manager),
-      tracker_with_config(tracker_config<container_env, container_event>{})
+    : tracker_with_config(tracker_config<container_env, container_event>{}),
+      current_env(env),
+      this_manager(manager)
 {
   // do container settings
   // this->env.process_env.exclude_current_ppid = ::getpid();

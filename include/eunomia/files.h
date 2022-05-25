@@ -26,7 +26,7 @@ struct files_tracker : public tracker_with_config<files_env, files_event>
   files_tracker(files_config config);
 
   // create a tracker with deafult config
-  static std::unique_ptr<files_tracker> create_files_tracker_with_default_env(files_event_handler handler);
+  static std::unique_ptr<files_tracker> create_tracker_with_default_env(files_event_handler handler);
 
   files_tracker(files_env env);
   // start files tracker
@@ -36,6 +36,8 @@ struct files_tracker : public tracker_with_config<files_env, files_event>
   {
     prometheus::Family<prometheus::Counter> &eunomia_files_read_counter;
     prometheus::Family<prometheus::Counter> &eunomia_files_write_counter;
+    prometheus::Family<prometheus::Counter> &eunomia_files_write_bytes;
+    prometheus::Family<prometheus::Counter> &eunomia_files_read_bytes;
     void report_prometheus_event(const struct files_event &e);
 
     prometheus_event_handler(prometheus_server &server);

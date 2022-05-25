@@ -5,6 +5,7 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
+#include <map>
 #include "model/tracker.h"
 
 struct tracker_manager

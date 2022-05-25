@@ -50,9 +50,9 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
 	ts = bpf_ktime_get_ns();
 	bpf_map_update_elem(&exec_start, &pid, &ts, BPF_ANY);
 
-	/* don't emit exec events when minimum duration is specified */
-	if (min_duration_ns)
-		return 0;
+	// /* don't emit exec events when minimum duration is specified */
+	// if (min_duration_ns)
+	// 	return 0;
 
 	/* reserve sample from BPF ringbuf */
 	e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
