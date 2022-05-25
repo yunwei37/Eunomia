@@ -4,17 +4,32 @@ A lightweight eBPF-based CloudNative Monitor tool for Container Security and Obs
 
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
 [![codecov](https://codecov.io/gh/filipdutescu/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/filipdutescu/modern-cpp-template)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/filipdutescu/modern-cpp-template)](https://github.com/filipdutescu/modern-cpp-template/releases)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/yunwei37/Eunomia)](https://github.com/filipdutescu/modern-cpp-template/releases)
 
 <!-- TOC -->
 
 - [Eunomia](#eunomia)
 - [What is Eunomia](#what-is-eunomia)
+  - [Tutorial](#tutorial)
+- [Quickstart](#quickstart)
+  - [Docker and Prometheus](#docker-and-prometheus)
+  - [run as binary](#run-as-binary)
+  - [build On Linux](#build-on-linux)
 - [Why is eBPF](#why-is-ebpf)
 - [Architecture](#architecture)
+    - [Prometheus-exporter 的效果如图：](#prometheus-exporter-的效果如图)
 - [Functionality Overview](#functionality-overview)
+      - [tracker_manager](#tracker_manager)
+      - [container_manager](#container_manager)
+      - [seccomp_manager](#seccomp_manager)
+      - [data_collector](#data_collector)
+      - [container detection](#container-detection)
+      - [security analyzer](#security-analyzer)
+      - [prometheus exporter](#prometheus-exporter)
+      - [config loader](#config-loader)
+      - [cmd](#cmd)
+      - [server](#server)
 - [Roadmap](#roadmap)
-- [Quickstart](#quickstart)
 - [Documents](#documents)
 - [Reference](#reference)
 - [Contact](#contact)
@@ -103,6 +118,19 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 <div  align="center">  
  <img src="doc/imgs/architecture.jpg" width = "600" height = "400" alt="eunomia_architecture" align=center />
+ <p>系统架构</p>
+</div>
+
+### Prometheus-exporter 的效果如图：
+
+
+<div  align="center">  
+ <img src="doc/imgs/prometheus1.png" alt="eunomia_prometheus1" align=center />
+ <p>文件读取的byte数</p>
+ <img src="doc/imgs/prometheus2.png" alt="eunomia_prometheus1" align=center />
+  <p>文件读取的系统调用次数</p>
+ <img src="doc/imgs/prometheus3.png" alt="eunomia_prometheus1" align=center />
+ <p>对于容器中进程的跟踪结果，记录开始和结束时间</p>
 </div>
 
 # Functionality Overview
@@ -181,10 +209,10 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 * [X] 基于上述功能，实现命令行调用，完成版本v0.1
 * [X] 输出开发v0.1日志文档
 * [X] 实现进程id与容器id映射，进程信息过滤
-* [ ] 添加“seccomp”功能
-* [ ] 基于上述新增功能，迭代版本v0.2
+* [X] 添加“seccomp”功能
+* [x] 基于上述新增功能，迭代版本v0.2
 * [ ] 输出开发v0.2日志文档
-* [ ] 添加可视化模块
+* [x] 添加可视化模块
 * [ ] 基于上述新增功能，迭代版本v0.3
 * [ ] 输出开发v0.3日志文档
 * [ ] 后续更新迭代
@@ -192,7 +220,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 阶段四：开发测试（6.2~6.16）
 
 * [ ] 设计测试场景（分别针对基础功能、权限控制、安全逃逸场景）
-* [ ] 搭建测试环境
+* [X] 搭建测试环境
 * [ ] 测试-开发
 * [ ] 输出测试文档
 
