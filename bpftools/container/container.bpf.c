@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause) */
 #include <vmlinux.h>
 #include "container.h"
 #include <asm-generic/errno.h>
