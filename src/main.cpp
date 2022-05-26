@@ -55,7 +55,7 @@ void run_mode_operation(
   eunomia_core core(core_config);
   core.start_eunomia();
   /*
-    TODE
+    TODO
   */
 }
 void daemon_mode_opertiaon(
@@ -68,6 +68,11 @@ void daemon_mode_opertiaon(
   /*
     TODE
   */
+  toml_config config;
+  if(config_file != "") {
+    analyze_toml(config_file, config);
+  }
+  
 }
 void server_mode_operation(bool prometheus_flag, std::string listening_address, std::vector<std::string>& input)
 {
@@ -101,8 +106,9 @@ int main(int argc, char* argv[])
   eunomia_mode selected = eunomia_mode::help;
   run_cmd_mode run_selected = run_cmd_mode::help;
   unsigned long container_id = 0;
-  std::string config_file = "", module_name = "", syscall_id_file = "";
   std::string listening_address = "127.0.0.1:8528";
+  std::string config_file = "../test.toml", module_name = "", syscall_id_file = "";
+  unsigned int listening_port = 0;
   std::vector<std::string> input;
 
   auto container_id_cmd =
@@ -118,6 +124,7 @@ int main(int argc, char* argv[])
        clipp::option("ipc").set(run_selected, run_cmd_mode::ipc) |
        clipp::option("process").set(run_selected, run_cmd_mode::process) |
        clipp::option("files").set(run_selected, run_cmd_mode::files));
+  auto config_cmd = (clipp::option("--config") & clipp::value("config file", config_file)) % "The toml file stores the config data";
 
   auto run_mode =
       (clipp::command("run").set(selected, eunomia_mode::run),
@@ -125,27 +132,30 @@ int main(int argc, char* argv[])
        container_id_cmd,
        process_id_cmd,
        run_time_cmd,
+       config_cmd,
        (clipp::option("--fmt") & clipp::value("output format of the program", fmt)) % "The output format of EUNOMIA");
 
   auto daemon_mode =
       (clipp::command("daemon").set(selected, eunomia_mode::daemon),
        container_id_cmd,
        process_id_cmd,
-       (clipp::option("--config") & clipp::value("config file", config_file)) % "The toml file stores the config data",
+       config_cmd,
        (clipp::option("--seccomp") & clipp::opt_value("syscall id file", syscall_id_file)) % "The syscall table");
 
   auto seccomp_mode =
       (clipp::command("seccomp").set(selected, eunomia_mode::seccomp),
        process_id_cmd,
        run_time_cmd,
+       config_cmd,
        (clipp::option("-o") & clipp::opt_value("output file name", output_file)) % "The output file name of seccomp");
 
   auto server_cmd =
       (clipp::command("server").set(selected, eunomia_mode::server),
-       (clipp::option("--prometheus").set(prometheus_flag, true)) % "Start prometheus server",
-       (clipp::option("--listen") & clipp::value("listening address", listening_address)) %
-           "Listen http requests on this address",
-       (clipp::option("--config") & clipp::values("config files", input)) % "Config files input");
+      config_cmd,
+      (clipp::option("--prometheus").set(prometheus_flag, true)) % "Start prometheus server",
+      (clipp::option("--listen") & clipp::value("listening address", listening_address)) %
+         "Listen http requests on this address",
+      (clipp::option("--config") & clipp::values("config files", input)) % "Config files input");
 
   auto cli =
       ((run_mode | daemon_mode | seccomp_mode | server_cmd | clipp::command("help").set(selected, eunomia_mode::help)));
@@ -155,6 +165,10 @@ int main(int argc, char* argv[])
     std::cout << clipp::make_man_page(cli, argv[0]);
     return 1;
   }
+  
+  tracker_manager manager;
+  container_manager container_manager;
+  std::cout << "start ebpf...\n";
 
   switch (selected)
   {

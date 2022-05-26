@@ -12,6 +12,7 @@
 #include "model/tracker_config.h"
 #include "process.h"
 #include "tcp.h"
+#include "toml.hpp"
 
 // export config
 enum class export_format
@@ -119,7 +120,118 @@ struct config
 
   // TODO: this should be add to export config
   std::string prometheus_listening_address = "127.0.0.1:8528";
-
 };
+
+
+using namespace std::string_view_literals;
+
+struct database_data
+{
+    std::string endpoint;
+    unsigned int port;
+    std::string database;
+    std::string username;
+    std::string pwd;
+};
+
+struct trackers_config
+{
+    std::string tracker_name;
+    unsigned long container_id;
+    unsigned int process_id;
+    unsigned int run_time;
+    std::string fmt;
+};
+
+struct rule_config 
+{
+    std::string rule_name;
+    std::string type;
+    std::string trigger;
+    std::string err_msg;
+};
+
+struct exporter_config
+{
+    std::string exporter_name;
+    std::string endpoint;
+    unsigned int port;
+};
+
+struct toml_config
+{
+    database_data db;
+    std::vector<trackers_config> trackers;
+    std::vector<rule_config> rules;
+    std::vector<std::string> seccomp;
+    std::vector<exporter_config> exporters;
+};
+
+static void analyze_toml(std::string file_path, toml_config &config_toml) {
+    toml::table data;
+    unsigned int i, len;
+    try
+    {
+        data = toml::parse_file(file_path);
+    } 
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
+    /* fill db */
+    config_toml.db.endpoint = std::string(data["MySQL"]["Endpoint"].value_or(""sv));
+    config_toml.db.port = data["MySQL"]["Port"].value_or(0);
+    config_toml.db.username = std::string(data["MySQL"]["Username"].value_or(""sv));
+    config_toml.db.pwd = std::string(data["MySQL"]["Password"].value_or(""sv));
+    config_toml.db.database = std::string(data["MySQL"]["Database"].value_or(""sv));
+    /* fill trackers */
+    len = data["trackers"]["Enable"].as_array()->size();
+    for (i = 0; i < len; i++)
+    {
+        std::string_view tracker_name = data["trackers"]["Enable"][i].value_or(""sv);
+        trackers_config tracker_config;
+        tracker_config.tracker_name = std::string(tracker_name);
+        tracker_config.container_id = data[tracker_name]["container_id"].value_or(0);
+        tracker_config.process_id = data[tracker_name]["process_id"].value_or(0);
+        tracker_config.run_time = data[tracker_name]["run_time"].value_or(0);
+        tracker_config.fmt = data[tracker_name]["fmt"].value_or(""sv);
+        config_toml.trackers.emplace_back(tracker_config);
+    }
+
+    /* fill rules */
+    len = data["rules"]["enable"].as_array()->size();
+    for (i = 0; i < len; i++)
+    {
+        std::string_view rule_name = data["rules"]["Enable"][i].value_or(""sv);
+        rule_config rule;
+        rule.rule_name = data[rule_name]["name"].value_or(""sv);
+        rule.type = data[rule_name]["type"].value_or(""sv);
+        rule.err_msg = data[rule_name]["error_message"].value_or(""sv);
+        config_toml.rules.emplace_back(rule);
+    }
+
+    /* fill seccomp */
+    len = data["seccomp"]["allow"].as_array()->size();
+    for (i = 0; i < len; i++)
+    {
+        config_toml.seccomp.emplace_back(std::string(data["seccomp"]["allow"][i].value_or(""sv)));
+    }
+    
+    /* fill exporter */
+    len = data["exporter"]["Enable"].as_array()->size();
+    for (i = 0; i < len; i++)
+    {
+        exporter_config exporter;
+        std::string_view exporter_name = data["exporter"]["Enable"][i].value_or(""sv);
+        
+        exporter.port = data[exporter_name]["port"].value_or(0);
+        exporter.endpoint = std::string(data[exporter_name]["endpoint"].value_or(""sv));
+        exporter.exporter_name = std::string(exporter_name);
+        config_toml.exporters.emplace_back(std::string(data["seccomp"]["allow"][i].value_or(""sv)));
+    }
+    
+
+}
 
 #endif
