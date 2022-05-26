@@ -4,6 +4,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <memory>
 
 // the basic event type
 // T is the event from C code
