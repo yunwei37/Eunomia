@@ -36,7 +36,7 @@ generate-tools: ## generate libbpf tools and headers
 install-deps: ## install deps
 	sudo apt update 
 	sudo apt install googletest
-	sudo apt-get install libcurl4-openssl-dev libelf-dev clang
+	sudo apt-get install libcurl4-openssl-dev libelf-dev clang llvm
 
 test: generate-tools ## run tests quickly with ctest
 	rm -rf build/

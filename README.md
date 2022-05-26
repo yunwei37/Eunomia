@@ -2,6 +2,8 @@
 
 A lightweight eBPF-based CloudNative Monitor tool for Container Security and Observability
 
+> NOTE: This repo is under heavily development, it shall not be used in product environments now.
+
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
 [![codecov](https://codecov.io/gh/filipdutescu/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/filipdutescu/modern-cpp-template)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/yunwei37/Eunomia)](https://github.com/filipdutescu/modern-cpp-template/releases)
@@ -211,8 +213,9 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 * [X] 实现进程id与容器id映射，进程信息过滤
 * [X] 添加“seccomp”功能
 * [x] 基于上述新增功能，迭代版本v0.2
-* [ ] 输出开发v0.2日志文档
+* [X] 输出开发v0.2日志文档
 * [x] 添加可视化模块
+* [X] add more tools from libbpf-tools
 * [ ] 基于上述新增功能，迭代版本v0.3
 * [ ] 输出开发v0.3日志文档
 * [ ] 后续更新迭代
