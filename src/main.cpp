@@ -23,9 +23,9 @@ void run_mode_operation(
     unsigned long contaienr_id,
     pid_t target_pid,
     int time_tracing,
-    std::string fmt)
+    std::string fmt,
+    std::string config_file_path)
 {
-  // int tmp = selected;
   std::cout << static_cast<std::underlying_type<run_cmd_mode>::type>(selected) << std::endl;
   std::cout << " " << contaienr_id << " " << target_pid << " " << time_tracing << " " << fmt << std::endl;
 
@@ -58,23 +58,25 @@ void run_mode_operation(
     TODO
   */
 }
+
 void daemon_mode_opertiaon(
     unsigned long contaienr_id,
     pid_t target_pid,
     std::string config_file,
-    std::string syscall_id_file)
+    std::string syscall_id_file,
+    std::string config_file_path)
 {
   std::cout << contaienr_id << " " << target_pid << " " << config_file << " " << syscall_id_file << " \n";
   /*
     TODE
   */
-  toml_config config;
-  if(config_file != "") {
-    analyze_toml(config_file, config);
-  }
   
 }
-void server_mode_operation(bool prometheus_flag, std::string listening_address, std::vector<std::string>& input)
+
+void server_mode_operation(bool prometheus_flag, 
+    std::string listening_address, 
+    std::vector<std::string>& input,
+    std::string config_file_path)
 {
   std::cout << prometheus_flag << " " << listening_address << " " << std::endl;
   config core_config{
@@ -84,14 +86,18 @@ void server_mode_operation(bool prometheus_flag, std::string listening_address, 
   eunomia_core core(core_config);
   core.start_eunomia();
   /*
-    TODE
+    TODO
   */
 }
-void seccomp_mode_operation(pid_t target_pid, int time_tracing, std::string output_file)
+
+void seccomp_mode_operation(pid_t target_pid, 
+    int time_tracing, 
+    std::string output_file,
+    std::string config_file_path)
 {
   std::cout << target_pid << " " << time_tracing << " " << output_file << "\n";
   /*
-    TODE
+    TODO
   */
 }
 
@@ -118,6 +124,7 @@ int main(int argc, char* argv[])
                         "The process id of the process the EUNOMIA will monitor";
   auto run_time_cmd =
       (clipp::option("-T") & clipp::value("trace time in seconds", time_tracing)) % "The time the ENUNOMIA will monitor for";
+  
   auto run_required_cmd =
       (clipp::option("tcpconnect").set(run_selected, run_cmd_mode::tcpconnect) |
        clipp::option("syscall").set(run_selected, run_cmd_mode::syscall) |
@@ -172,10 +179,10 @@ int main(int argc, char* argv[])
 
   switch (selected)
   {
-    case eunomia_mode::run: run_mode_operation(run_selected, container_id, target_pid, time_tracing, fmt); break;
-    case eunomia_mode::daemon: daemon_mode_opertiaon(container_id, target_pid, config_file, syscall_id_file); break;
-    case eunomia_mode::server: server_mode_operation(prometheus_flag, listening_address, input); break;
-    case eunomia_mode::seccomp: seccomp_mode_operation(target_pid, time_tracing, output_file); break;
+    case eunomia_mode::run: run_mode_operation(run_selected, container_id, target_pid, time_tracing, fmt, config_file); break;
+    case eunomia_mode::daemon: daemon_mode_opertiaon(container_id, target_pid, config_file, syscall_id_file, config_file); break;
+    case eunomia_mode::server: server_mode_operation(prometheus_flag, listening_address, input, config_file); break;
+    case eunomia_mode::seccomp: seccomp_mode_operation(target_pid, time_tracing, output_file, config_file); break;
     case eunomia_mode::help:
     default: std::cout << clipp::make_man_page(cli, argv[0]); break;
   }

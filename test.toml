@@ -1,20 +1,13 @@
-[MySQL]
-Endpoint="127.0.0.1"
-Port=3306
-Database="testdb"
-Username="root"
-Password="lowkey2046"
 
 [trackers]
 Enable = ["process", "tcp", "syscall"]
-
-[process]
 container_id = 7895212
 process_id = 100
 run_time = 50
 fmt = "json"
+
 [exporter]
-Enable = ["prometheus", "json", "influxdb"]
+Enable = ["prometheus"]
 
 [prometheus]
 endpoint ="127.0.0.1"
