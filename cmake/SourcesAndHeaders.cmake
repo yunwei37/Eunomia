@@ -6,6 +6,7 @@ set(sources
     src/files.cpp
     src/eunomia_core.cpp
     src/sec_analyzer.cpp
+    src/config.cpp
 )
 
 set(exe_sources
