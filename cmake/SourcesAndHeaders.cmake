@@ -7,6 +7,7 @@ set(sources
     src/eunomia_core.cpp
     src/sec_analyzer.cpp
     src/config.cpp
+    src/myseccomp.cpp
 )
 
 set(exe_sources
@@ -20,6 +21,7 @@ set(headers
     bpftools/ipc/ipc_tracker.h
     bpftools/syscall/syscall_tracker.h
     bpftools/tcp/tcp_tracker.h
+    include/eunomia/myseccomp.h
 )
 
 set(skel_includes
@@ -37,4 +39,5 @@ set(test_sources
     src/container_test.cpp
     src/prometheus_test.cpp
     src/files_test.cpp
+    src/seccomp_test.cpp
 )

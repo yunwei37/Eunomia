@@ -132,5 +132,12 @@ struct config
   std::vector<std::string> seccomp;
 };
 
+struct seccomp_config {
+  // the length of banned syscalls
+  int len = 0;
+  // the syscalls name which is banned
+  std::string ban_syscall[439];
+};
+
 static void analyze_toml(std::string file_path, config &config_toml);
 #endif
