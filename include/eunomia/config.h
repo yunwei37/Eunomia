@@ -135,8 +135,8 @@ struct config
 struct seccomp_config {
   // the length of banned syscalls
   int len = 0;
-  // the syscalls name which is banned
-  std::string ban_syscall[439];
+  // the syscalls name which is allowed
+  std::string allow_syscall[439];
 };
 
 static void analyze_toml(std::string file_path, config &config_toml);
