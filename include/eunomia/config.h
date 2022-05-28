@@ -12,7 +12,6 @@
 #include "model/tracker_config.h"
 #include "process.h"
 #include "tcp.h"
-#include "toml.hpp"
 
 // export config
 enum class export_format

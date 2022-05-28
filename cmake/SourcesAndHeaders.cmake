@@ -40,4 +40,5 @@ set(test_sources
     src/prometheus_test.cpp
     src/files_test.cpp
     src/seccomp_test.cpp
+    src/logger_test.cpp
 )

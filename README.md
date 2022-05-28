@@ -2,7 +2,7 @@
 
 A lightweight eBPF-based CloudNative Monitor tool for Container Security and Observability
 
-> NOTE: This repo is under heavily development, it shall not be used in product environments now.
+> NOTE: This repo is under heavily development and `NOT YET COMPLETE`, it shall not be used in product environments now.
 
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
 [![codecov](https://codecov.io/gh/filipdutescu/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/filipdutescu/modern-cpp-template)
@@ -46,7 +46,7 @@ Eunomia 是一个基于eBPF的云原生监控工具，旨在帮助用户了解�
 * 可集成 prometheus 和 Grafana，作为监控可视化和预警平台；
 * 作为守护进程运行，可自定义安全预警规则，也可以自动收集进程系统调用行为并通过 seccomp 进行限制；
 * 可外接时序数据库，如 InfluxDB 等，作为信息持久化存储方案；
-* 可通过 graphql 在远程发起请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行数据分析；
+* 可通过 graphql 在远程发起请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行数据分析(`TODO`)；
 
 和过去常用的 BCC 不同，Eunomia 基于 Libbpf + BPF CO-RE（一次编译，到处运行）开发。Libbpf 作为 BPF 程序加载器，接管了重定向、加载、验证等功能，BPF 程序开发者只需要关注 BPF 程序的正确性和性能即可。这种方式将开销降到了最低，且去除了庞大的依赖关系，使得整体开发流程更加顺畅。
 
@@ -79,6 +79,8 @@ Alternatively, you can simply use eunomia to run a single ebpf tracker, for exam
 ```
 
 will trace all files read or writed by process 1234. You can also use `--container-id` to trace a container. You can also use `toml` config file.
+
+for more details, see: (usage.md)[doc/usage.md]
 
 ## build On Linux
 

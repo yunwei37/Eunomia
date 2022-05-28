@@ -1,4 +1,5 @@
 #include "eunomia/config.h"
+#include "toml.hpp"
 
 using namespace std::string_view_literals;
 

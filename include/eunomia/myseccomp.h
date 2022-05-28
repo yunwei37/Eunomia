@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <sys/prctl.h>
-#include <seccomp.h>
 #include <linux/seccomp.h>
 #include <linux/filter.h>
 #include <vector>

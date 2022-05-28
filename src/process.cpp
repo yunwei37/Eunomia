@@ -65,7 +65,7 @@ std::unique_ptr<process_tracker> process_tracker::create_tracker_with_default_en
   config.handler = handler;
   config.name = "process_tracker";
   config.env = process_env{
-    .min_duration_ms = 20,
+    //.min_duration_ms = 20,
   };
   return std::make_unique<process_tracker>(config);
 }
