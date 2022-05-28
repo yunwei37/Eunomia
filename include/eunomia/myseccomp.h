@@ -2,22 +2,23 @@
 #define SECCOMP_H
 
 #define _GNU_SOURCE 1
-#include <stdio.h>
-#include <signal.h>
-#include <unistd.h>
-#include <time.h>
-#include <string.h>
-#include <stdlib.h>
-#include <malloc.h>
-#include <sys/prctl.h>
-#include <linux/seccomp.h>
 #include <linux/filter.h>
-#include <vector>
-#include <string>
+#include <linux/seccomp.h>
+#include <malloc.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/prctl.h>
+#include <time.h>
+#include <unistd.h>
 
+#include <string>
+#include <vector>
+
+#include "config.h"
 #include "seccomp-bpf.h"
 #include "syscall_helper.h"
-#include "config.h"
 
 bool is_not_exist(uint32_t syscall_id[], int len, int id);
 

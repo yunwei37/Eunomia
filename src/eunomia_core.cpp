@@ -37,7 +37,7 @@ TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler()
             typename TRACKER::prometheus_event_handler(core_prometheus_server));
         break;
       case export_type::stdout_type:
-        //new_handler = std::make_shared<typename TRACKER::json_event_printer>(typename TRACKER::json_event_printer{});
+        // new_handler = std::make_shared<typename TRACKER::json_event_printer>(typename TRACKER::json_event_printer{});
         new_handler = create_print_event_handler<TRACKER>();
         break;
       default: spdlog::error("unsupported export type."); break;
@@ -109,7 +109,8 @@ void eunomia_core::start_trackers(void)
 int eunomia_core::start_eunomia(void)
 {
   spdlog::info("start eunomia...");
-  try {
+  try
+  {
     start_trackers();
   }
   catch (const std::exception& e)
