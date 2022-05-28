@@ -11,6 +11,10 @@
 #include "process_tracker.h"
 #include "process.skel.h"
 
+static const char *headers[] = {
+	"stat", "comm", "filename/exitcode", "duration",
+	(const char*)((void*)0)};
+
 static struct process_env process_env = {0};
 
 const char *argp_program_version = "process 1.0";
