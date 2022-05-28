@@ -26,6 +26,11 @@ private:
     TRACKER::tracker_event_handler
     create_tracker_event_handler(void);
 
+    // create event handler for print to console
+    template <tracker_concept TRACKER>
+    TRACKER::tracker_event_handler
+    create_print_event_handler(void);
+
     // create a default tracker with default env
     template <tracker_concept TRACKER>
     std::unique_ptr<TRACKER>

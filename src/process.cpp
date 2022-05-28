@@ -1,5 +1,7 @@
 #include "eunomia/process.h"
 
+#include <spdlog/spdlog.h>
+
 extern "C"
 {
 #include <process/process_tracker.h>
@@ -107,4 +109,47 @@ std::string process_tracker::json_event_handler_base::to_json(const struct proce
 void process_tracker::json_event_printer::handle(tracker_event<process_event> &e)
 {
   std::cout << to_json(e.data) << std::endl;
+}
+
+void process_tracker::plain_text_event_printer::handle(tracker_event<process_event> &e)
+{
+  static bool is_start = true;
+  if (is_start)
+  {
+    is_start = false;
+    spdlog::info(
+        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+        "pid",
+        "ppid",
+        "cgroup_id",
+        "user_namespace_id",
+        "pid_namespace_id",
+        "mount_namespace_id",
+        "exit_code/comm",
+        "duration_ns/filename");
+  }
+  if (e.data.exit_event)
+  {
+    spdlog::info(
+        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+        e.data.common.pid,
+        e.data.common.ppid,
+        e.data.common.cgroup_id,
+        e.data.common.user_namespace_id,
+        e.data.common.pid_namespace_id,
+        e.data.common.mount_namespace_id,
+        e.data.exit_code,
+        e.data.duration_ns);
+    return;
+  }
+  spdlog::info(
+      "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+      e.data.common.pid,
+      e.data.common.ppid,
+      e.data.common.cgroup_id,
+      e.data.common.user_namespace_id,
+      e.data.common.pid_namespace_id,
+      e.data.common.mount_namespace_id,
+      e.data.comm,
+      e.data.filename);
 }

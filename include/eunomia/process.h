@@ -54,6 +54,11 @@ struct process_tracker : public tracker_with_config<process_env, process_event>
   {
     void handle(tracker_event<process_event> &e);
   };
+
+  struct plain_text_event_printer : public event_handler<process_event>
+  {
+    void handle(tracker_event<process_event> &e);
+  };
 };
 
 #endif

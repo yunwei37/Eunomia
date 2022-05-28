@@ -55,7 +55,7 @@ void analyze_toml(std::string file_path, config &config_toml)
     {
         config_toml.fmt = export_format::csv;
     } else {
-        config_toml.fmt = export_format::plant_text;
+        config_toml.fmt = export_format::plain_text;
     }
     
     // /* fill rules */

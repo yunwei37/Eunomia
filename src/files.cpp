@@ -1,5 +1,7 @@
 #include "eunomia/files.h"
 
+#include <spdlog/spdlog.h>
+
 void files_tracker::prometheus_event_handler::report_prometheus_event(const struct files_event &e)
 {
   for (int i = 0; i < e.rows; i++)
@@ -122,5 +124,29 @@ json files_tracker::json_event_handler::to_json(const struct files_event &e)
 
 void files_tracker::json_event_printer::handle(tracker_event<files_event> &e)
 {
-  std::cout << to_json(e.data).dump() << std::endl;
+  spdlog::info(to_json(e.data).dump());
+}
+
+void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> &e)
+{
+  static bool is_start = true;
+  if (is_start)
+  {
+    is_start = false;
+    spdlog::info("pid\tread_bytes\tread count\twrite_bytes\twrite count\tcomm\ttype\ttid\tfilename");
+  }
+  for (int i = 0; i < e.data.rows; i++)
+  {
+    spdlog::info(
+        "{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\t{}\t{}",
+        e.data.values[i].pid,
+        e.data.values[i].read_bytes,
+        e.data.values[i].reads,
+        e.data.values[i].write_bytes,
+        e.data.values[i].writes,
+        e.data.values[i].comm,
+        e.data.values[i].type,
+        e.data.values[i].tid,
+        e.data.values[i].filename);
+  }
 }

@@ -52,6 +52,7 @@ concept tracker_concept = requires
   typename TRACKER::tracker_event_handler;
   typename TRACKER::prometheus_event_handler;
   typename TRACKER::json_event_printer;
+  typename TRACKER::plain_text_event_printer;
 };
 
 // function for handler tracker event call back

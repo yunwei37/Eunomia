@@ -77,12 +77,28 @@ This will enable our core ebpf trackers including `process`, `tcp`, `syscall` an
 Alternatively, you can simply use eunomia to run a single ebpf tracker, for example:
 
 ```
-./eunomia run files --pid=1234
+./eunomia run files
 ```
 
-will trace all files read or writed by process 1234. You can also use `--container-id` to trace a container. You can also use `toml` config file.
+will trace all files read or write in the system at a defaut interval of 3s, and print the result:
 
-for more details, see: (usage.md)[doc/usage.md]
+```sh
+[2022-05-28 11:23:10.699] [info] start eunomia...
+[2022-05-28 11:23:10.699] [info] start ebpf tracker...
+[2022-05-28 11:23:10.699] [info] start prometheus server...
+[2022-05-28 11:23:10.699] [info] press 'Ctrl C' key to exit...
+[2022-05-28 11:23:13.785] [info] pid    read_bytes      read count      write_bytes     write count     comm    type    tid     filename
+[2022-05-28 11:23:13.785] [info] 34802  2048            1               0               0               ps      R       34802   status
+[2022-05-28 11:23:13.785] [info] 34802  2048            1               0               0               ps      R       34802   stat
+[2022-05-28 11:23:13.785] [info] 34802  2048            1               0               0               ps      R       34802   status
+....
+```
+
+You can also use `--container-id` to trace a container, or use `toml` config file. You can specify the interval of tracing or sampling, the output format, the log level, etc.
+
+we have provide five default trackers, `process`, `tcp`, `syscall`, `ipc` and `files`. You can also add your own trackers from libbpf-tools easily.
+
+for more details, see: [usage.md](doc/usage.md)
 
 ## build On Linux
 
@@ -93,7 +109,7 @@ git submodule update --init --recursive       # check out deps
 make install
 ```
 
-You may need to install libcurl, libelf-dev clang and gtest as deps. On Debian/Ubuntu, run
+You may need to install libcurl, libelf-dev clang and gtest as deps. On `Debian/Ubuntu`, run
 
 ```
 make install-deps

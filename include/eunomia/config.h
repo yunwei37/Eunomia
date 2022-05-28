@@ -18,7 +18,7 @@ enum class export_format
 {
   json_format,
   csv,
-  plant_text
+  plain_text
 };
 
 enum class export_type
@@ -107,7 +107,7 @@ struct config
   // export format
   // this should be set as well
   // TODO
-  export_format fmt = export_format::json_format;
+  export_format fmt = export_format::plain_text;
 
   // enable container tracing
   // we can get container id and container name

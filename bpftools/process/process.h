@@ -15,8 +15,4 @@ struct process_event
 	bool exit_event;
 };
 
-static const char *headers[] = {
-	"stat", "comm", "filename/exitcode", "duration",
-	(const char*)((void*)0)};
-
 #endif /* PROCESS_H */

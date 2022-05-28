@@ -1,11 +1,25 @@
 #include "eunomia/eunomia_core.h"
 
 #include <spdlog/spdlog.h>
+
 #include "eunomia/container.h"
 #include "eunomia/tracker_manager.h"
 
 eunomia_core::eunomia_core(config& config) : core_config(config), core_prometheus_server(config.prometheus_listening_address)
 {
+}
+
+// create event handler for print to console
+template<tracker_concept TRACKER>
+TRACKER::tracker_event_handler eunomia_core::create_print_event_handler(void)
+{
+  switch (core_config.fmt)
+  {
+    case export_format::json_format: return std::make_shared<typename TRACKER::json_event_printer>();
+    case export_format::plain_text: return std::make_shared<typename TRACKER::plain_text_event_printer>();
+    default: spdlog::error("unsupported output format to stdout"); return nullptr;
+  }
+  return nullptr;
 }
 
 template<tracker_concept TRACKER>
@@ -23,7 +37,8 @@ TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler()
             typename TRACKER::prometheus_event_handler(core_prometheus_server));
         break;
       case export_type::stdout_type:
-        new_handler = std::make_shared<typename TRACKER::json_event_printer>(typename TRACKER::json_event_printer{});
+        //new_handler = std::make_shared<typename TRACKER::json_event_printer>(typename TRACKER::json_event_printer{});
+        new_handler = create_print_event_handler<TRACKER>();
         break;
       default: spdlog::error("unsupported export type."); break;
     }
@@ -80,9 +95,9 @@ void eunomia_core::start_trackers(void)
       case avaliable_tracker::tcp: break;
       case avaliable_tracker::syscall: break;
       case avaliable_tracker::ipc: break;
-      case avaliable_tracker::process: 
+      case avaliable_tracker::process:
         core_tracker_manager.start_tracker(create_default_tracker<process_tracker>(t.get()));
-      break;
+        break;
       case avaliable_tracker::files:
         core_tracker_manager.start_tracker(create_default_tracker<files_tracker>(t.get()));
         break;
@@ -94,10 +109,17 @@ void eunomia_core::start_trackers(void)
 int eunomia_core::start_eunomia(void)
 {
   spdlog::info("start eunomia...");
-  start_trackers();
+  try {
+    start_trackers();
+  }
+  catch (const std::exception& e)
+  {
+    spdlog::error("eunomia start tracker failed: {}", e.what());
+    return 1;
+  }
 
   if (core_config.enable_container_manager)
-  { 
+  {
     spdlog::info("start container manager...");
     core_container_manager.start_container_tracing();
   }
@@ -111,8 +133,10 @@ int eunomia_core::start_eunomia(void)
     spdlog::info("set exit time...");
     std::this_thread::sleep_for(std::chrono::seconds(core_config.exit_after));
     spdlog::info("auto exit...");
-  } else {
-    spdlog::info("press 'x' key to exit...");
+  }
+  else
+  {
+    spdlog::info("press 'Ctrl C' key to exit...");
     while (std::cin.get() != 'x')
     {
       std::this_thread::sleep_for(std::chrono::seconds(1));
