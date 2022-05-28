@@ -1,6 +1,6 @@
 #include "eunomia/process.h"
 
-#include <gtest/gtest.h>
+//#include <gtest/gtest.h>
 
 #include "eunomia/tracker_manager.h"
 

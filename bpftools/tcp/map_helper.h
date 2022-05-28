@@ -9,8 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define warn(...) fprintf(stderr, __VA_ARGS__)
-
 static bool batch_map_ops = true; /* hope for the best */
 
 static int dump_hash_iter(int map_fd, void *keys, uint32_t key_size,

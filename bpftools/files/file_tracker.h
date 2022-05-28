@@ -18,7 +18,6 @@
 #include "files.h"
 #include "files.skel.h"
 
-#define warn(...)         fprintf(stderr, __VA_ARGS__)
 #define OUTPUT_ROWS_LIMIT 10240
 
 enum SORT
@@ -67,13 +66,13 @@ static int print_stat(struct files_bpf *obj, struct files_env env, ring_buffer_s
         err = 0;
         break;
       }
-      warn("bpf_map_get_next_key failed: %s\n", strerror(errno));
+      fprintf(stderr, "bpf_map_get_next_key failed: %s\n", strerror(errno));
       return err;
     }
     err = bpf_map_lookup_elem(fd, &key, &values[rows++]);
     if (err)
     {
-      warn("bpf_map_lookup_elem failed: %s\n", strerror(errno));
+      fprintf(stderr, "bpf_map_lookup_elem failed: %s\n", strerror(errno));
       return err;
     }
     prev_key = &key;
@@ -96,13 +95,13 @@ static int print_stat(struct files_bpf *obj, struct files_env env, ring_buffer_s
         err = 0;
         break;
       }
-      warn("bpf_map_get_next_key failed: %s\n", strerror(errno));
+      fprintf(stderr, "bpf_map_get_next_key failed: %s\n", strerror(errno));
       return err;
     }
     err = bpf_map_delete_elem(fd, &key);
     if (err)
     {
-      warn("bpf_map_delete_elem failed: %s\n", strerror(errno));
+      fprintf(stderr, "bpf_map_delete_elem failed: %s\n", strerror(errno));
       return err;
     }
     prev_key = &key;
@@ -127,7 +126,7 @@ static int start_file_tracker(ring_buffer_sample_fn handle_event, libbpf_print_f
   obj = files_bpf__open_opts(&open_opts);
   if (!obj)
   {
-    warn("failed to open BPF object\n");
+    fprintf(stderr, "failed to open BPF object\n");
     return 1;
   }
 
@@ -137,14 +136,14 @@ static int start_file_tracker(ring_buffer_sample_fn handle_event, libbpf_print_f
   err = files_bpf__load(obj);
   if (err)
   {
-    warn("failed to load BPF object: %d\n", err);
+    fprintf(stderr, "failed to load BPF object: %d\n", err);
     goto cleanup;
   }
 
   err = files_bpf__attach(obj);
   if (err)
   {
-    warn("failed to attach BPF programs: %d\n", err);
+    fprintf(stderr, "failed to attach BPF programs: %d\n", err);
     goto cleanup;
   }
 

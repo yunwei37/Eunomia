@@ -1,7 +1,7 @@
 image: ubuntu:latest
 
 stages:
-  - test
+  - build
 
 .setup_linux: &setup_linux |
   DEBIAN_FRONTEND=noninteractive
@@ -30,18 +30,9 @@ stages:
   make test
 
 test_linux_llvm:
-  stage: test
+  stage: build
   variables:
     compiler: llvm
-  script:
-    - *setup_linux
-    - *setup_cpp
-    - *test
-
-test_linux_gcc:
-  stage: test
-  variables:
-    compiler: gcc
   script:
     - *setup_linux
     - *setup_cpp

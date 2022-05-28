@@ -14,8 +14,6 @@
 #include "tcp.h"
 #include "tcp.skel.h"
 
-#define warn(...) fprintf(stderr, __VA_ARGS__)
-
 struct tcp_count_event
 {
   bool is_ipv4;
@@ -45,7 +43,7 @@ struct tcp_env
 
 static void handle_lost_events(void *ctx, int cpu, long long unsigned int lost_cnt)
 {
-  warn("Lost %llu events on CPU #%d!\n", lost_cnt, cpu);
+  fprintf(stderr, "Lost %llu events on CPU #%d!\n", lost_cnt, cpu);
 }
 
 static void print_events(int perf_map_fd, perf_buffer_sample_fn handle_event, struct tcp_env env)
@@ -57,7 +55,7 @@ static void print_events(int perf_map_fd, perf_buffer_sample_fn handle_event, st
   if (!pb)
   {
     err = -errno;
-    warn("failed to open perf buffer: %d\n", err);
+    fprintf(stderr, "failed to open perf buffer: %d\n", err);
     goto cleanup;
   }
 
@@ -66,7 +64,7 @@ static void print_events(int perf_map_fd, perf_buffer_sample_fn handle_event, st
     err = perf_buffer__poll(pb, 100);
     if (err < 0 && err != -EINTR)
     {
-      warn("error polling perf buffer: %s\n", strerror(-err));
+      fprintf(stderr, "error polling perf buffer: %s\n", strerror(-err));
       goto cleanup;
     }
     /* reset err to return 0 if exiting */
@@ -92,7 +90,7 @@ static void print_count_ipv4(int map_fd, void (*collector)(struct tcp_count_even
 
   if (dump_hash(map_fd, keys, key_size, counts, value_size, &n, &zero))
   {
-    warn("dump_hash: %s", strerror(errno));
+    fprintf(stderr, "dump_hash: %s", strerror(errno));
     return;
   }
 
@@ -127,7 +125,7 @@ static void print_count_ipv6(int map_fd, void (*collector)(struct tcp_count_even
 
   if (dump_hash(map_fd, keys, key_size, counts, value_size, &n, &zero))
   {
-    warn("dump_hash: %s", strerror(errno));
+    fprintf(stderr, "dump_hash: %s", strerror(errno));
     return;
   }
 
@@ -181,7 +179,7 @@ static int start_tcp_tracker(perf_buffer_sample_fn handle_event, libbpf_print_fn
   obj = tcp_bpf__open_opts(&open_opts);
   if (!obj)
   {
-    warn("failed to open BPF object\n");
+    fprintf(stderr, "failed to open BPF object\n");
     return 1;
   }
 
@@ -212,7 +210,7 @@ static int start_tcp_tracker(perf_buffer_sample_fn handle_event, libbpf_print_fn
   err = tcp_bpf__load(obj);
   if (err)
   {
-    warn("failed to load BPF object: %d\n", err);
+    fprintf(stderr, "failed to load BPF object: %d\n", err);
     goto cleanup;
   }
 
@@ -220,7 +218,7 @@ static int start_tcp_tracker(perf_buffer_sample_fn handle_event, libbpf_print_fn
   err = tcp_bpf__attach(obj);
   if (err)
   {
-    warn("failed to attach BPF programs: %s\n", strerror(-err));
+    fprintf(stderr, "failed to attach BPF programs: %s\n", strerror(-err));
     goto cleanup;
   }
 

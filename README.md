@@ -8,6 +8,8 @@ A lightweight eBPF-based CloudNative Monitor tool for Container Security and Obs
 [![codecov](https://codecov.io/gh/filipdutescu/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/filipdutescu/modern-cpp-template)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/yunwei37/Eunomia)](https://github.com/filipdutescu/modern-cpp-template/releases)
 
+We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Eunomia) which runs CI. We also have a mirror on [GitLab](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436), for faster access in Chines.
+
 <!-- TOC -->
 
 - [Eunomia](#eunomia)
@@ -141,22 +143,30 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 #### tracker_manager
 
-   负责启动和停止 ebpf collector，并且和 ebpf collector 通信（每个 tracer 是一个线程）；
+  负责启动和停止 ebpf collector，并且和 ebpf collector 通信（每个 tracer 是一个线程）；
 
 - start tracker
 - stop tracker(remove tracker)
 
+Currently we have 5 main trackers:
+
+- process
+- syscall
+- tcp
+- files
+- ipc
+
 #### container_manager
 
-   负责观察 container 的启动和停止，在内存中保存每个 container 的相关信息：（cgroup，namespace），同时负责 container id 到 pid 的转换（提供查询接口）
+  负责观察 container 的启动和停止，在内存中保存每个 container 的相关信息：（cgroup，namespace），同时负责 container id, container name 等 container mata 信息到 pid 的转换（提供查询接口）
 
 #### seccomp_manager
 
-   负责对 process 进行 seccomp 限制
+  负责对 process 进行 seccomp 限制
 
 #### data_collector
 
-   收集数据，再决定怎么办；传给 database 还是聚合还是交给别的地方还是打印
+  收集数据，再决定怎么办；传给 database 还是聚合还是交给别的地方还是打印
 
 - collect_string
 - collect_json
@@ -216,7 +226,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 * [X] 添加“seccomp”功能
 * [x] 基于上述新增功能，迭代版本v0.2
 * [X] 输出开发v0.2日志文档
-* [x] 添加可视化模块
+* [x] 添加可视化模块: prometheus and grafana
 * [X] add more tools from libbpf-tools
 * [ ] 基于上述新增功能，迭代版本v0.3
 * [ ] 输出开发v0.3日志文档
@@ -224,6 +234,9 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 阶段四：开发测试（6.2~6.16）
 
+* [ ] graphql for extentions
+* [ ] lsm support
+* [ ] add more rules
 * [ ] 设计测试场景（分别针对基础功能、权限控制、安全逃逸场景）
 * [X] 搭建测试环境
 * [ ] 测试-开发

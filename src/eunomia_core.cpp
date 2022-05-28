@@ -1,7 +1,6 @@
 #include "eunomia/eunomia_core.h"
 
-#include <iostream>
-
+#include <spdlog/spdlog.h>
 #include "eunomia/container.h"
 #include "eunomia/tracker_manager.h"
 
@@ -26,7 +25,7 @@ TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler()
       case export_type::stdout_type:
         new_handler = std::make_shared<typename TRACKER::json_event_printer>(typename TRACKER::json_event_printer{});
         break;
-      default: std::cout << "unsupported export type\n"; break;
+      default: spdlog::error("unsupported export type."); break;
     }
     if (new_handler)
     {
@@ -70,7 +69,7 @@ void eunomia_core::start_trackers(void)
 {
   for (auto t : core_config.enabled_trackers)
   {
-    std::cout << "start ebpf tracker...\n";
+    spdlog::info("start ebpf tracker...");
     if (!t)
     {
       std::cout << "tracker data is null\n";
@@ -94,26 +93,26 @@ void eunomia_core::start_trackers(void)
 
 int eunomia_core::start_eunomia(void)
 {
-  std::cout << "start eunomia...\n";
+  spdlog::info("start eunomia...");
   start_trackers();
 
   if (core_config.enable_container_manager)
   { 
-    std::cout << "start container manager...\n";
+    spdlog::info("start container manager...");
     core_container_manager.start_container_tracing();
   }
   if (core_config.enabled_export_types.count(export_type::prometheus))
   {
-    std::cout << "start prometheus server...\n";
+    spdlog::info("start prometheus server...");
     core_prometheus_server.start_prometheus_server();
   }
   if (core_config.is_auto_exit)
   {
-    std::cout << "set exit time...\n";
+    spdlog::info("set exit time...");
     std::this_thread::sleep_for(std::chrono::seconds(core_config.exit_after));
-    std::cout << "auto exit...\n";
+    spdlog::info("auto exit...");
   } else {
-    std::cout << "press 'x' key to exit...\n";
+    spdlog::info("press 'x' key to exit...");
     while (std::cin.get() != 'x')
     {
       std::this_thread::sleep_for(std::chrono::seconds(1));

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/eunomia/myseccomp.h"
-#include "../../include/eunomia/config.h"
+#include "eunomia/myseccomp.h"
+#include "eunomia/config.h"
 
 seccomp_config config;
 
