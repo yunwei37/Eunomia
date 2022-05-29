@@ -5,6 +5,8 @@ set(sources
     src/promethues_server.cpp
     src/files.cpp
     src/ipc.cpp
+    src/tcp.cpp
+    src/syscall.cpp
     src/eunomia_core.cpp
     src/sec_analyzer.cpp
     src/config.cpp

@@ -1,57 +1,68 @@
 #ifndef SYSCALL_CMD_H
 #define SYSCALL_CMD_H
 
-#include <iostream>
+#include <json.hpp>
 #include <mutex>
 #include <thread>
 
 #include "libbpf_print.h"
 #include "model/tracker.h"
+#include "prometheus/counter.h"
+#include "prometheus_server.h"
 
 extern "C" {
 #include <syscall/syscall_tracker.h>
 #include "syscall_helper.h"
 }
 
+using json = nlohmann::json;
+
 struct syscall_tracker : public tracker_with_config<syscall_env, syscall_event> {
-  struct syscall_env current_env = {0};
-  syscall_tracker(syscall_env env) : tracker_with_config(tracker_config<syscall_env, syscall_event>{}) {
-    exiting = false;
-    this->current_env = env;
-    this->current_env.exiting = &exiting;
-  }
-  void start_tracker(void) override {
-    start_syscall_tracker(handle_event, libbpf_print_fn, current_env);
-  }
-  static std::string to_json(const struct syscall_event &e) {
-    json syscall_event = {{"type", "syscall"},
-                          {"time", get_current_time()},
-                          {"pid", e.pid},
-                          {"ppid", e.ppid},
-                          {"mount_namespace_id", e.mntns},
-                          {"syscall_id", e.syscall_id},
-                          {"comm", e.comm},
-                          {"occur_times", e.occur_times}};
-    return syscall_event.dump();
-  }
-  static void print_event(const struct syscall_event *e) {
-    auto time = get_current_time();
+  using config_data = tracker_config<syscall_env, syscall_event>;
+  using tracker_event_handler = std::shared_ptr<event_handler<syscall_event>>;
+  
+  syscall_tracker(config_data config);
 
-    if (e->syscall_id >= syscall_names_x86_64_size)
-      return;
+  // create a tracker with deafult config
+  static std::unique_ptr<syscall_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 
-    printf("%-8s %-16s %-7d %-7d [%lu] %u\t%s\t%d\n", time.c_str(), e->comm,
-           e->pid, e->ppid, e->mntns, e->syscall_id,
-           syscall_names_x86_64[e->syscall_id], e->occur_times);
-  }
-  static int handle_event(void *ctx, void *data, size_t data_sz) {
-    const struct syscall_event *e = (const struct syscall_event *)data;
-    if (!e) {
-      return -1;
-    }
-    print_event(e);
-    return 0;
-  }
+  syscall_tracker(syscall_env env);
+
+  void start_tracker();
+
+  // used for prometheus exporter
+  struct prometheus_event_handler : public event_handler<syscall_event>
+  { 
+    // // read times counter for field reads
+    // prometheus::Family<prometheus::Counter> &eunomia_files_read_counter;
+    // // write times counter for field writes
+    // prometheus::Family<prometheus::Counter> &eunomia_files_write_counter;
+    // // write bytes counter for field write_bytes
+    // prometheus::Family<prometheus::Counter> &eunomia_files_write_bytes;
+    // // read bytes counter for field read_bytes
+    // prometheus::Family<prometheus::Counter> &eunomia_files_read_bytes;
+    void report_prometheus_event(const struct syscall_event &e);
+
+    prometheus_event_handler(prometheus_server &server);
+    void handle(tracker_event<syscall_event> &e);
+  };
+
+  // convert event to json
+  struct json_event_handler : public event_handler<syscall_event>
+  {
+    json to_json(const struct syscall_event &e);
+  };
+
+  // used for json exporter, inherits from json_event_handler
+  struct json_event_printer : public json_event_handler
+  {
+    void handle(tracker_event<syscall_event> &e);
+  };
+
+  struct plain_text_event_printer : public event_handler<syscall_event>
+  {
+    void handle(tracker_event<syscall_event> &e);
+  };
 };
 
 #endif
