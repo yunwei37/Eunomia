@@ -25,7 +25,7 @@ bool is_not_exist(uint32_t syscall_id[], int len, int id);
 
 static int install_syscall_filter(uint32_t syscall_id[], int len);
 
-int get_syscall_id(std::string syscall_name);
+uint32_t get_syscall_id(std::string syscall_name);
 
 // Enable Seccomp syscall
 // param seccomp_config type is defined by include/eunomia/config.h

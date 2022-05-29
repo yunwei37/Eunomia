@@ -46,18 +46,18 @@ jobs:
         cmake --build build --target install --config Release
 
     - name: configure
-      run: cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/$INSTALL_LOCATION -Deunomia_ENABLE_CODE_COVERAGE=1
+      run: cmake -Bbuild -Deunomia_ENABLE_UNIT_TESTING=0 -Deunomia_USE_GTEST=0
       
-    - name: build
-      run: cmake --build build --config $BUILD_TYPE -j4
+    # - name: build
+    #   run: cmake --build build --config $BUILD_TYPE -j4
 
-    - name: run tests
-      run: |
-        cd build
-        sudo ctest -C $BUILD_TYPE -VV
+    # - name: run tests
+    #   run: |
+    #     cd build
+    #     sudo ctest -C $BUILD_TYPE -VV
 
-    - name: Code coverage using Codecov 
-      run: bash <(curl -s https://codecov.io/bash) 
+    # - name: Code coverage using Codecov 
+    #   run: bash <(curl -s https://codecov.io/bash) 
 
     - name: install project
       run: cmake --build build --target install --config Release 
