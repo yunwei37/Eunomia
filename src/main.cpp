@@ -21,25 +21,8 @@ using namespace std::chrono_literals;
 
 void run_mode_operation(
     run_cmd_mode selected,
-    unsigned long contaienr_id,
-    pid_t target_pid,
-    int time_tracing,
-    std::string fmt,
-    std::string config_file_path)
+    config core_config)
 {
-  std::cout << static_cast<std::underlying_type<run_cmd_mode>::type>(selected) << std::endl;
-  std::cout << " " << contaienr_id << " " << target_pid << " " << time_tracing << " " << fmt << std::endl;
-
-  config core_config{
-    .run_selected = eunomia_mode::run,
-    .target_contaienr_id = contaienr_id,
-    .target_pid = target_pid,
-  };
-  if (time_tracing > 0)
-  {
-    core_config.exit_after = time_tracing;
-    core_config.is_auto_exit = true;
-  }
   core_config.enabled_trackers.clear();
   switch (selected)
   {
@@ -61,13 +44,9 @@ void run_mode_operation(
 }
 
 void daemon_mode_opertiaon(
-    unsigned long contaienr_id,
-    pid_t target_pid,
-    std::string config_file,
-    std::string syscall_id_file,
-    std::string config_file_path)
+    config core_config)
 {
-  std::cout << contaienr_id << " " << target_pid << " " << config_file << " " << syscall_id_file << " \n";
+  // std::cout << contaienr_id << " " << target_pid << " " << config_file << " " << syscall_id_file << " \n";
   /*
     TODO
   */
@@ -75,14 +54,10 @@ void daemon_mode_opertiaon(
 
 void server_mode_operation(
     bool prometheus_flag,
-    std::string listening_address,
     std::vector<std::string>& input,
-    std::string config_file_path)
+    config core_config)
 {
-  std::cout << prometheus_flag << " " << listening_address << " " << std::endl;
-  config core_config{
-    .prometheus_listening_address = listening_address,
-  };
+  // std::cout << prometheus_flag << " " << listening_address << " " << std::endl;
   std::cout << "start server mode...\n";
   eunomia_core core(core_config);
   core.start_eunomia();
@@ -91,7 +66,7 @@ void server_mode_operation(
   */
 }
 
-void seccomp_mode_operation(pid_t target_pid, int time_tracing, std::string output_file, std::string config_file_path)
+void seccomp_mode_operation(config core_config)
 {
   spdlog::info("target pid : {0}, tracing time : {1}, outputfile : {2}",target_pid, time_tracing, output_file);
   // get seccomp config from config_file_path
@@ -183,6 +158,21 @@ int main(int argc, char* argv[])
     return 1;
   }
 
+  config core_config {
+    .run_selected = selected,
+    .target_contaienr_id = container_id,
+    .target_pid = target_pid,
+    .prometheus_listening_address = listening_address,
+  };
+  if (time_tracing > 0)
+  {
+    core_config.exit_after = time_tracing;
+    core_config.is_auto_exit = true;
+  }
+  if (config_file != "") {
+    analyze_toml(config_file, core_config);
+  }
+
   tracker_manager manager;
   container_manager container_manager;
   std::cout << "start ebpf...\n";
@@ -190,13 +180,13 @@ int main(int argc, char* argv[])
   switch (selected)
   {
     case eunomia_mode::run:
-      run_mode_operation(run_selected, container_id, target_pid, time_tracing, fmt, config_file);
+      run_mode_operation(run_selected, core_config);
       break;
     case eunomia_mode::daemon:
-      daemon_mode_opertiaon(container_id, target_pid, config_file, syscall_id_file, config_file);
+      daemon_mode_opertiaon(core_config);
       break;
-    case eunomia_mode::server: server_mode_operation(prometheus_flag, listening_address, input, config_file); break;
-    case eunomia_mode::seccomp: seccomp_mode_operation(target_pid, time_tracing, output_file, config_file); break;
+    case eunomia_mode::server: server_mode_operation(prometheus_flag, input, core_config); break;
+    case eunomia_mode::seccomp: seccomp_mode_operation(core_config); break;
     case eunomia_mode::help:
     default: std::cout << clipp::make_man_page(cli, argv[0]); break;
   }
