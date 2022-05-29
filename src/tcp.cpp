@@ -2,13 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-tcp_tracker::tcp_tracker(tcp_env env)
-    : tcp_tracker(config_data{
-          .env = env,
-      })
-{
-}
-
 tcp_tracker::tcp_tracker(config_data config) : tracker_with_config(config)
 {
   exiting = false;
@@ -27,47 +20,15 @@ std::unique_ptr<tcp_tracker> tcp_tracker::create_tracker_with_default_env(tracke
 void tcp_tracker::start_tracker()
 {
   // current_config.env.ctx = (void *)this;
-  start_tcp_tracker(handle_tracker_event<tcp_tracker, tcp_event>, libbpf_print_fn, current_config.env);
+  start_tcp_tracker(handle_tcp_sample_event, libbpf_print_fn, current_config.env);
 }
 
-json tcp_tracker::json_event_handler::to_json(const struct tcp_event &e)
+json tcp_tracker::json_event_handler_base::to_json(const struct tcp_event &e)
 {
-  std::string res;
-  json tcp = { { "type", "tcp" }, { "time", get_current_time() } };
-  json tcp_event_json = json::array();
-
-  char src[INET6_ADDRSTRLEN];
-  char dst[INET6_ADDRSTRLEN];
-  union
-  {
-    struct in_addr x4;
-    struct in6_addr x6;
-  } s, d;
-  if (e.af == AF_INET)
-  {
-    s.x4.s_addr = e.saddr_v4;
-    d.x4.s_addr = e.daddr_v4;
-  }
-  else if (e.af == AF_INET6)
-  {
-    memcpy(&s.x6.s6_addr, e.saddr_v6, sizeof(s.x6.s6_addr));
-    memcpy(&d.x6.s6_addr, e.daddr_v6, sizeof(d.x6.s6_addr));
-  }
-  else
-  {
-    fprintf(stderr, "broken tcp_event: tcp_event->af=%d", e.af);
-    return tcp;
-  }
-
-  tcp_event_json.push_back({
-      { "pid", e.pid },
-      { "task", e.task },
-      { "af", AF_INET ? 4 : 6 },
-      { "src", inet_ntop((int)e.af, &s, src, sizeof(src)) },
-      { "dst", inet_ntop((int)e.af, &d, dst, sizeof(dst)) },
-      { "dport", ntohs(e.dport) },
-  });
-  tcp.push_back({ "tcp", tcp_event_json });
+  json tcp = { { "type", "tcp" }, { "time", get_current_time() } 
+  //TODO: add more fields
+  };
+  
   return tcp;
 }
 
@@ -173,3 +134,8 @@ void tcp_tracker::prometheus_event_handler::handle(tracker_event<tcp_event> &e)
 {
   report_prometheus_event(e.data);
 }
+
+  void tcp_tracker::handle_tcp_sample_event(void *ctx, int cpu, void *data, unsigned int data_sz)
+  {
+      handle_tracker_event<tcp_tracker, tcp_event>(ctx, data, (size_t)data_sz);
+  }

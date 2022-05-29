@@ -34,9 +34,8 @@ generate-tools: ## generate libbpf tools and headers
 	make -C bpftools
 
 install-deps: ## install deps
-	sudo apt update 
-	sudo apt install libgtest-dev 
-	sudo apt-get install libcurl4-openssl-dev libelf-dev clang llvm
+	sudo apt update
+	sudo apt-get install libcurl4-openssl-dev libelf-dev clang llvm ## libgtest-dev 
 	mkdir -p third_party/prometheus-cpp/_build
 	cd third_party/prometheus-cpp/_build && sudo cmake .. -DBUILD_SHARED_LIBS=ON -DENABLE_PUSH=OFF -DENABLE_COMPRESSION=OFF
 	cd third_party/prometheus-cpp/_build && sudo cmake --build . --parallel 4

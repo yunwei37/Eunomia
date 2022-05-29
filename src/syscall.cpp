@@ -64,7 +64,7 @@ void syscall_tracker::plain_text_event_printer::handle(tracker_event<syscall_eve
   if (e.data.syscall_id >= syscall_names_x86_64_size) {
     return;
   }
-  spdlog::info("{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}", e.data.pid, e.data.ppid, e.data.syscall_id, e.data.comm, e.data.occur_times);
+  spdlog::info("{}\t{}\t\t{}\t\t{}\t\t{}", e.data.pid, e.data.ppid, e.data.syscall_id, e.data.comm, e.data.occur_times);
 }
 
 void syscall_tracker::prometheus_event_handler::report_prometheus_event(const struct syscall_event &e)
