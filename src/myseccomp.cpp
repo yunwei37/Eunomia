@@ -22,19 +22,19 @@ static int install_syscall_filter(uint32_t syscall_id[], int len)
                                           BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW)
   };
 
-  int syscalls_size = 439;
+  int syscalls_size = sizeof(syscall_id) / sizeof(syscall_id[0]);
   /* add ban rules All syscalls*/
   for (auto i = 0; i < syscalls_size; i++)
   {
     if (is_not_exist(syscall_id, len, i))
     {
       filter_vec.insert(filter_vec.end() - 1, BPF_JUMP(BPF_JMP + BPF_JEQ, i, 0, 1));
-      printf("banned syscall_id : %d\n", i);
+      //printf("banned syscall_id : %d\n", i);
       filter_vec.insert(filter_vec.end() - 1, BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_KILL));
     }
     else
     {
-      printf("allowed syscall_id : %d\n", i);
+        spdlog::info("allowed syscall_id : {0:d}", i);
     }
   }
 
@@ -80,15 +80,14 @@ int get_syscall_id(std::string syscall_name)
 // param seccomp_config type is defined by include/eunomia/config.h
 int enable_seccomp_white_list(seccomp_config config)
 {
-  printf("enabled seccomp\n");
+  spdlog::info("enabled seccomp");
   std::vector<uint32_t> syscall_vec;  // allow_syscall_id list
   for (int i = 0; i < config.len; i++)
   {
     int id = get_syscall_id(config.allow_syscall[i]);
-    printf("id : %d\n", id);
     if (id == -1)
     {
-      printf("%s error\n", config.allow_syscall[i]);
+      spdlog::error("syscall_id error {0} has no corresponding syscall in x86 system arch", config.allow_syscall[i]);
       continue;
     }
     syscall_vec.push_back(id);

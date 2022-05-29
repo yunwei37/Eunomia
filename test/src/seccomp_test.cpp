@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "eunomia/myseccomp.h"
 #include "eunomia/config.h"
+#include "spdlog/spdlog.h"
 
 seccomp_config config;
 
@@ -40,9 +41,9 @@ int main()
 //  enable_seccomp_white_list(config);
   int d;
   scanf("%d",&d);
-  printf("%d\n if you get the print is equal to your input,congraduation! you are successful to enable seccomp, and don't care about next line print\n",d);
+  spdlog::info("your input is :{0} \nif you get the print is equal to your input,congraduation! you are successful to enable seccomp, and don't care about next line print\n",d);
   //execv("./process_test_Tests",NULL);
-  printf("if you can get here,that means seccomp is wrong\n");
+  spdlog::info("if you can get here,that means seccomp is wrong\n");
 
   return 0;
 }
