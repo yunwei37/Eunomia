@@ -9,7 +9,6 @@
 struct ipc_env
 {
   bool verbose;
-  long min_duration_ms;
   volatile bool *exiting;
 };
 

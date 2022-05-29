@@ -1,40 +1,68 @@
 #ifndef IPC_CMD_H
 #define IPC_CMD_H
 
+#include <json.hpp>
+#include <mutex>
+#include <thread>
+
 #include "libbpf_print.h"
 #include "model/tracker.h"
+#include "prometheus/counter.h"
+#include "prometheus_server.h"
 
 extern "C" {
 #include <ipc/ipc_tracker.h>
 }
 
+using json = nlohmann::json;
+
 struct ipc_tracker : public tracker_with_config<ipc_env, ipc_event> {
+  using config_data = tracker_config<ipc_env, ipc_event>;
+  using tracker_event_handler = std::shared_ptr<event_handler<ipc_event>>;
+  
+  ipc_tracker(config_data config);
+
+  // create a tracker with deafult config
+  static std::unique_ptr<ipc_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+
   struct ipc_env current_env = {0};
-  ipc_tracker(ipc_env env) : tracker_with_config(tracker_config<ipc_env, ipc_event>{}) {
-    this->current_env = env;
-    exiting = false;
-    env.exiting = &exiting;
-  }
+  ipc_tracker(ipc_env env);
 
-  void start_tracker() {
-    start_ipc_tracker(handle_event, libbpf_print_fn, current_env);
-  }
+  void start_tracker();
 
-  static int handle_event(void *ctx, void *data, size_t data_sz) {
-    const struct ipc_event *e = (const struct ipc_event *)data;
-    struct tm *tm;
-    char ts[32];
-    time_t t;
+  // used for prometheus exporter
+  struct prometheus_event_handler : public event_handler<ipc_event>
+  { 
+    // // read times counter for field reads
+    // prometheus::Family<prometheus::Counter> &eunomia_files_read_counter;
+    // // write times counter for field writes
+    // prometheus::Family<prometheus::Counter> &eunomia_files_write_counter;
+    // // write bytes counter for field write_bytes
+    // prometheus::Family<prometheus::Counter> &eunomia_files_write_bytes;
+    // // read bytes counter for field read_bytes
+    // prometheus::Family<prometheus::Counter> &eunomia_files_read_bytes;
+    void report_prometheus_event(const struct ipc_event &e);
 
-    time(&t);
-    tm = localtime(&t);
-    strftime(ts, sizeof(ts), "%H:%M:%S", tm);
+    prometheus_event_handler(prometheus_server &server);
+    void handle(tracker_event<ipc_event> &e);
+  };
 
-    printf("%-8s %u %u %u [%u] %u\n", ts, e->pid, e->uid, e->gid, e->cuid,
-           e->cgid);
+  // convert event to json
+  struct json_event_handler : public event_handler<ipc_event>
+  {
+    json to_json(const struct ipc_event &e);
+  };
 
-    return 0;
-  }
+  // used for json exporter, inherits from json_event_handler
+  struct json_event_printer : public json_event_handler
+  {
+    void handle(tracker_event<ipc_event> &e);
+  };
+
+  struct plain_text_event_printer : public event_handler<ipc_event>
+  {
+    void handle(tracker_event<ipc_event> &e);
+  };
 };
 
 #endif

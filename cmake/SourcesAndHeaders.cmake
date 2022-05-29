@@ -4,6 +4,7 @@ set(sources
     src/container.cpp
     src/promethues_server.cpp
     src/files.cpp
+    src/ipc.cpp
     src/eunomia_core.cpp
     src/sec_analyzer.cpp
     src/config.cpp
