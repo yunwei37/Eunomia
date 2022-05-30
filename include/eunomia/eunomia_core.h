@@ -10,6 +10,7 @@
 #include "eunomia/prometheus_server.h"
 #include "eunomia/tracker_manager.h"
 #include "eunomia/config.h"
+#include "eunomia/myseccomp.h"
 
 // core for building tracker
 // construct tracker with handlers

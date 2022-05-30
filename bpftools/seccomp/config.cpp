@@ -1,26 +1,8 @@
 #include "eunomia/config.h"
 
 #include "toml.hpp"
-#include <spdlog/spdlog.h>
-
 
 using namespace std::string_view_literals;
-
-int trans_string2enum(const std::vector<std::string> strs, std::string_view to_trans) {
-  unsigned int i, len = strs.size();
-  for (i = 0; i < len; i++)
-  {
-    if (strs[i] == to_trans)
-    {
-      break;
-    }
-  }
-  if (i == len)
-  {
-    return -1;
-  }
-  return i;
-}
 
 void analyze_toml(std::string file_path, config& config_toml)
 {
@@ -59,6 +41,14 @@ void analyze_toml(std::string file_path, config& config_toml)
     {
       config_toml.enabled_trackers.emplace_back(std::make_shared<files_tracker_data>(avaliable_tracker::files));
     }
+
+    // trackers_config tracker_config;
+    // tracker_config.tracker_name = std::string(tracker_name);
+    // tracker_config.container_id = data[tracker_name]["container_id"].value_or(0);
+    // tracker_config.process_id = data[tracker_name]["process_id"].value_or(0);
+    // tracker_config.run_time = data[tracker_name]["run_time"].value_or(0);
+    // tracker_config.fmt = data[tracker_name]["fmt"].value_or(""sv);
+    // config_toml.trackers.emplace_back(tracker_config);
   }
   config_toml.target_contaienr_id = data["trackers"]["container_id"].value_or(0);
   config_toml.target_pid = data["trackers"]["process_id"].value_or(0);
@@ -98,27 +88,21 @@ void analyze_toml(std::string file_path, config& config_toml)
   for (i = 0; i < len; i++)
   {
     std::string_view exporter_name = data["exporter"]["Enable"][i].value_or(""sv);
-    int idx = trans_string2enum(str_export_type, exporter_name);
-    if(idx < 0) {
-      spdlog::info("The format of toml is not right in exporter!");
-      exit(0);
+    if (exporter_name == "prometheus")
+    {
+      config_toml.enabled_export_types.insert(export_type::prometheus);
     }
-    config_toml.enabled_export_types.insert(export_type(idx));
-    // if (exporter_name == "prometheus")
-    // {
-    //   config_toml.enabled_export_types.insert(export_type::prometheus);
-    // }
-    // else if (exporter_name == "stdout_type")
-    // {
-    //   config_toml.enabled_export_types.insert(export_type::stdout_type);
-    // }
-    // else if (exporter_name == "file")
-    // {
-    //   config_toml.enabled_export_types.insert(export_type::file);
-    // }
-    // else if (exporter_name == "databse")
-    // {
-    //   config_toml.enabled_export_types.insert(export_type::databse);
-    // }
+    else if (exporter_name == "stdout_type")
+    {
+      config_toml.enabled_export_types.insert(export_type::stdout_type);
+    }
+    else if (exporter_name == "file")
+    {
+      config_toml.enabled_export_types.insert(export_type::file);
+    }
+    else if (exporter_name == "databse")
+    {
+      config_toml.enabled_export_types.insert(export_type::databse);
+    }
   }
 }

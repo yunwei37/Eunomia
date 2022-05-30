@@ -22,7 +22,7 @@ static int install_syscall_filter(uint32_t syscall_id[], int len)
                                           BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW)
   };
 
-  size_t syscalls_size = sizeof(syscall_id) / sizeof(syscall_id[0]);
+  int syscalls_size = sizeof(syscall_id) / sizeof(syscall_id[0]);
   /* add ban rules All syscalls*/
   for (auto i = 0; i < syscalls_size; i++)
   {
@@ -66,7 +66,7 @@ failed:
   return 1;
 }
 
-uint32_t get_syscall_id(std::string syscall_name)
+int get_syscall_id(std::string syscall_name)
 {
   for (int i = 0; i < 439; i++)
   {
@@ -82,9 +82,9 @@ int enable_seccomp_white_list(seccomp_config config)
 {
   spdlog::info("enabled seccomp");
   std::vector<uint32_t> syscall_vec;  // allow_syscall_id list
-  for (size_t i = 0; i < config.len; i++)
+  for (int i = 0; i < config.len; i++)
   {
-    size_t id = get_syscall_id(config.allow_syscall[i]);
+    int id = get_syscall_id(config.allow_syscall[i]);
     if (id == -1)
     {
       spdlog::error("syscall_id error {0} has no corresponding syscall in x86 system arch", config.allow_syscall[i]);

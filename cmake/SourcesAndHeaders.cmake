@@ -44,4 +44,5 @@ set(test_sources
     src/files_test.cpp
     src/seccomp_test.cpp
     src/logger_test.cpp
+    src/analyze_toml_test.cpp
 )

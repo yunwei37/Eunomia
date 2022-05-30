@@ -6,7 +6,6 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <string>
 
 #include "files.h"
 #include "ipc.h"
@@ -29,7 +28,6 @@ enum class export_type
   file,
   databse
 };
-static const std::vector<std::string> str_export_type = {"prometheus", "stdout_type","file", "databse"};
 
 enum class eunomia_mode
 {
@@ -56,7 +54,6 @@ enum class avaliable_tracker
   tcp,
   files
 };
-static const std::vector<std::string> str_avaliable_tracker = {"syscall", "process", "ipc", "tcp", "files"};
 
 // TODO refactor
 // we should not use enum class
@@ -141,23 +138,5 @@ struct seccomp_config {
   std::string allow_syscall[439];
 };
 
-// int trans_string2enum(const std::vector<std::string> strs, std::string to_trans) {
-//   unsigned int i, len = strs.size();
-//   for (i = 0; i < len; i++)
-//   {
-//     if (strs[i] == to_trans)
-//     {
-//       break;
-//     }
-//   }
-//   if (i == len)
-//   {
-//     return -1;
-//   }
-//   return i;
-// }
-
-int trans_string2enum(const std::vector<std::string> strs, std::string_view to_trans);
-
-void analyze_toml(std::string file_path, config &config_toml);
+static void analyze_toml(std::string file_path, config &config_toml);
 #endif
