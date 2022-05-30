@@ -68,21 +68,17 @@ void server_mode_operation(
 
 void seccomp_mode_operation(config core_config)
 {
-  spdlog::info("target pid : {0}, tracing time : {1}, outputfile : {2}",target_pid, time_tracing, output_file);
-  // get seccomp config from config_file_path
-  seccomp_config sec_config;
-  config config_toml;
-  // analyze_toml(config_file_path, config_toml);
-  
-  sec_config.len = config_toml.seccomp.size();
-  for (int i = 0; i < config_toml.seccomp.size(); i++) {
+  // get seccomp config from core_config
+   seccomp_config sec_config;
+   sec_config.len = core_config.seccomp.size();
+   for (int i = 0; i < core_config.seccomp.size(); i++) {
       if (i >= 439) {
         spdlog::error("seccomp config file error : allow syscall cannot bigger than 439");
       }
-      sec_config.allow_syscall[i] = config_toml.seccomp[i];
+      sec_config.allow_syscall[i] = core_config.seccomp[i];
   }
-  // enable seccomp with config white list
-  enable_seccomp_white_list(sec_config);
+   // enable seccomp with config white list
+    enable_seccomp_white_list(sec_config);
 }
 
 int main(int argc, char* argv[])
