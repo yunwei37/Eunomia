@@ -13,6 +13,7 @@
 #include "model/tracker_config.h"
 #include "process.h"
 #include "tcp.h"
+#include "syscall.h"
 
 // export config
 enum class export_format
@@ -76,6 +77,9 @@ struct tracker_data : tracker_data_base
 
 using process_tracker_data = tracker_data<process_tracker::config_data>;
 using files_tracker_data = tracker_data<files_tracker::config_data>;
+using ipc_tracker_data = tracker_data<ipc_tracker::config_data>;
+using syscall_tracker_data = tracker_data<syscall_tracker::config_data>;
+using tcp_tracker_data = tracker_data<tcp_tracker::config_data>;
 
 struct rule_config 
 {

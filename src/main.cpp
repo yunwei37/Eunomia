@@ -23,16 +23,22 @@ void run_mode_operation(
     run_cmd_mode selected,
     config core_config)
 {
-  core_config.enabled_trackers.clear();
   switch (selected)
   {
-    case run_cmd_mode::tcpconnect: break;
-    case run_cmd_mode::syscall: break;
+    case run_cmd_mode::tcpconnect: 
+      core_config.enabled_trackers.push_back(std::make_shared<tcp_tracker_data>(avaliable_tracker::tcp));
+      break;
+    case run_cmd_mode::syscall: 
+      core_config.enabled_trackers.push_back(std::make_shared<syscall_tracker_data>(avaliable_tracker::syscall));
+      break;
     case run_cmd_mode::process:
       core_config.enabled_trackers.push_back(std::make_shared<process_tracker_data>(avaliable_tracker::process));
       break;
     case run_cmd_mode::files:
       core_config.enabled_trackers.push_back(std::make_shared<files_tracker_data>(avaliable_tracker::files));
+      break;
+    case run_cmd_mode::ipc:
+      core_config.enabled_trackers.push_back(std::make_shared<ipc_tracker_data>(avaliable_tracker::ipc));
       break;
     default: break;
   }
@@ -93,7 +99,7 @@ int main(int argc, char* argv[])
   run_cmd_mode run_selected = run_cmd_mode::help;
   unsigned long container_id = 0;
   std::string listening_address = "127.0.0.1:8528";
-  std::string config_file = "../test.toml", module_name = "", syscall_id_file = "";
+  std::string config_file = "", module_name = "", syscall_id_file = "";
   unsigned int listening_port = 0;
   std::vector<std::string> input;
 
@@ -165,10 +171,10 @@ int main(int argc, char* argv[])
     core_config.exit_after = time_tracing;
     core_config.is_auto_exit = true;
   }
+  core_config.enabled_trackers.clear();
   if (config_file != "") {
     analyze_toml(config_file, core_config);
   }
-
   tracker_manager manager;
   container_manager container_manager;
   std::cout << "start ebpf...\n";
@@ -181,8 +187,12 @@ int main(int argc, char* argv[])
     case eunomia_mode::daemon:
       daemon_mode_opertiaon(core_config);
       break;
-    case eunomia_mode::server: server_mode_operation(prometheus_flag, input, core_config); break;
-    case eunomia_mode::seccomp: seccomp_mode_operation(core_config); break;
+    case eunomia_mode::server: 
+      server_mode_operation(prometheus_flag, input, core_config); 
+      break;
+    case eunomia_mode::seccomp: 
+      seccomp_mode_operation(core_config); 
+      break;
     case eunomia_mode::help:
     default: std::cout << clipp::make_man_page(cli, argv[0]); break;
   }
