@@ -142,27 +142,9 @@ struct config
   std::string prometheus_listening_address = "127.0.0.1:8528";
 
   std::vector<rule_config> rules;
-  seccomp_config seccomp;
+  std::vector<std::string> seccomp;
 
 };
-
-
-
-// int trans_string2enum(const std::vector<std::string> strs, std::string to_trans) {
-//   unsigned int i, len = strs.size();
-//   for (i = 0; i < len; i++)
-//   {
-//     if (strs[i] == to_trans)
-//     {
-//       break;
-//     }
-//   }
-//   if (i == len)
-//   {
-//     return -1;
-//   }
-//   return i;
-// }
 
 int trans_string2enum(const std::vector<std::string> &strs, std::string_view to_trans);
 

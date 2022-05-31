@@ -110,7 +110,7 @@ void container_tracker::judge_container(const struct process_event &e)
   }
   else
   {
-    /* parent process exist in map */
+    /* parent process exists in map */
     this_manager.mp_lock.lock();
     auto event = this_manager.container_processes.find(e.common.ppid);
     this_manager.mp_lock.unlock();
@@ -128,10 +128,15 @@ void container_tracker::judge_container(const struct process_event &e)
     }
     else
     {
-      if (1 /* judge the cgroup and other data*/)
+      /* parent process doesn't exist in map */
+      struct process_event p_event = {0};
+      p_event.common.pid = e.common.ppid;
+      fill_event(p_event);
+      if ((p_event.common.user_namespace_id != e.common.user_namespace_id)
+          || (p_event.common.pid_namespace_id != e.common.pid_namespace_id)
+          || (p_event.common.mount_namespace_id != e.common.mount_namespace_id))
       {
         std::unique_ptr<FILE, int (*)(FILE *)> fp(popen("docker ps -q", "r"), pclose);
-        // FILE *fp = ;
         unsigned long cid;
         /* show all alive container */
         pid_t pid, ppid;

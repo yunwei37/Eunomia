@@ -74,17 +74,17 @@ void server_mode_operation(
 
 void seccomp_mode_operation(config core_config)
 {
-  // get seccomp config from core_config
-  //  seccomp_config sec_config;
-  //  sec_config.len = core_config.seccomp.size();
-  //  for (int i = 0; i < core_config.seccomp.size(); i++) {
-  //     if (i >= 439) {
-  //       spdlog::error("seccomp config file error : allow syscall cannot bigger than 439");
-  //     }
-  //     sec_config.allow_syscall[i] = core_config.seccomp[i];
+  /* 
+    TODO 
+  */
+  // enable seccomp with config white list
+  // if (core_config.seccomp.len >= 439)
+  // {
+  //   spdlog::error("seccomp config file error : allow syscall cannot bigger than 439");
+  //   exit(0);
+  // } else {
+  //   enable_seccomp_white_list(core_config.seccomp);
   // }
-   // enable seccomp with config white list
-    enable_seccomp_white_list(core_config.seccomp);
 }
 
 int main(int argc, char* argv[])
