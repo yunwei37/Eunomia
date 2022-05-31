@@ -124,7 +124,7 @@ struct config
   // tracing config
   tracing_type tracing_selected = tracing_type::all;
   // tracing targets
-  // std::string container_name = "";
+  std::string container_name = "";
   unsigned long target_contaienr_id = 0;
   pid_t target_pid = 0;
 
@@ -161,7 +161,7 @@ struct seccomp_config {
 //   return i;
 // }
 
-int trans_string2enum(const std::vector<std::string> strs, std::string_view to_trans);
+int trans_string2enum(const std::vector<std::string> &strs, std::string_view to_trans);
 
 void analyze_toml(std::string file_path, config &config_toml);
 #endif

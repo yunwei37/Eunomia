@@ -117,6 +117,7 @@ int main(int argc, char* argv[])
        clipp::option("ipc").set(run_selected, run_cmd_mode::ipc) |
        clipp::option("process").set(run_selected, run_cmd_mode::process) |
        clipp::option("files").set(run_selected, run_cmd_mode::files));
+  
   auto config_cmd =
       (clipp::option("--config") & clipp::value("config file", config_file)) % "The toml file stores the config data";
 
@@ -127,32 +128,36 @@ int main(int argc, char* argv[])
        process_id_cmd,
        run_time_cmd,
        config_cmd,
-       (clipp::option("--fmt") & clipp::value("output format of the program", fmt)) % "The output format of EUNOMIA");
+       (clipp::option("--fmt") & clipp::value("output format of the program", fmt)) % "The output format of EUNOMIA"
+       );
 
   auto daemon_mode =
       (clipp::command("daemon").set(selected, eunomia_mode::daemon),
        container_id_cmd,
        process_id_cmd,
        config_cmd,
-       (clipp::option("--seccomp") & clipp::opt_value("syscall id file", syscall_id_file)) % "The syscall table");
+       (clipp::option("--seccomp") & clipp::opt_value("syscall id file", syscall_id_file)) % "The syscall table"
+       );
 
   auto seccomp_mode =
       (clipp::command("seccomp").set(selected, eunomia_mode::seccomp),
        process_id_cmd,
        run_time_cmd,
        config_cmd,
-       (clipp::option("-o") & clipp::opt_value("output file name", output_file)) % "The output file name of seccomp");
+       (clipp::option("-o") & clipp::opt_value("output file name", output_file)) % "The output file name of seccomp"
+       );
 
   auto server_cmd =
       (clipp::command("server").set(selected, eunomia_mode::server),
        config_cmd,
        (clipp::option("--prometheus").set(prometheus_flag, true)) % "Start prometheus server",
        (clipp::option("--listen") & clipp::value("listening address", listening_address)) %
-           "Listen http requests on this address",
-       (clipp::option("--config") & clipp::values("config files", input)) % "Config files input");
+           "Listen http requests on this address"
+      );
 
   auto cli =
-      ((run_mode | daemon_mode | seccomp_mode | server_cmd | clipp::command("help").set(selected, eunomia_mode::help)));
+      ((run_mode | daemon_mode | seccomp_mode | server_cmd | clipp::command("help").set(selected, eunomia_mode::help))
+      );
 
   if (!parse(argc, argv, cli))
   {
@@ -173,6 +178,7 @@ int main(int argc, char* argv[])
   }
   core_config.enabled_trackers.clear();
   if (config_file != "") {
+    std::cout<<config_file<<std::endl;
     analyze_toml(config_file, core_config);
   }
   tracker_manager manager;

@@ -26,6 +26,5 @@ type = "file"
 name = "/proc/xxx"
 error_message = "error: bpf exec"
 
-
 [seccomp]
 allow = ["read","write", "connect"]

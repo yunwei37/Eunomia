@@ -6,7 +6,7 @@
 
 using namespace std::string_view_literals;
 
-int trans_string2enum(const std::vector<std::string> strs, std::string_view to_trans) {
+int trans_string2enum(const std::vector<std::string> &strs, std::string_view to_trans) {
   unsigned int i, len = strs.size();
   for (i = 0; i < len; i++)
   {
@@ -30,10 +30,11 @@ void analyze_toml(std::string file_path, config& config_toml)
   {
     data = toml::parse_file(file_path);
   }
-  catch (const std::exception& e)
-  {
-    std::cerr << e.what() << '\n';
-  }
+	catch (const toml::parse_error& err)
+	{
+		std::cerr << err << "\n";
+		return;
+	}
   /* fill trackers */
   len = data["trackers"]["Enable"].as_array()->size();
   for (i = 0; i < len; i++)
@@ -41,7 +42,7 @@ void analyze_toml(std::string file_path, config& config_toml)
     std::string_view tracker_name = data["trackers"]["Enable"][i].value_or(""sv);
     if (tracker_name == "syscall")
     {
-      config_toml.enabled_trackers.emplace_back();
+      config_toml.enabled_trackers.emplace_back(std::make_shared<syscall_tracker_data>(avaliable_tracker::syscall));
     }
     else if (tracker_name == "process")
     {
@@ -49,11 +50,11 @@ void analyze_toml(std::string file_path, config& config_toml)
     }
     else if (tracker_name == "ipc")
     {
-      config_toml.enabled_trackers.emplace_back();
+      config_toml.enabled_trackers.emplace_back(std::make_shared<ipc_tracker_data>(avaliable_tracker::ipc));
     }
     else if (tracker_name == "tcp")
     {
-      config_toml.enabled_trackers.emplace_back();
+      config_toml.enabled_trackers.emplace_back(std::make_shared<tcp_tracker_data>(avaliable_tracker::tcp));
     }
     else if (tracker_name == "files")
     {
@@ -62,7 +63,7 @@ void analyze_toml(std::string file_path, config& config_toml)
   }
   config_toml.target_contaienr_id = data["trackers"]["container_id"].value_or(0);
   config_toml.target_pid = data["trackers"]["process_id"].value_or(0);
-
+  
   if (data["trackers"]["fmt"].value_or(""sv) == "json")
   {
     config_toml.fmt = export_format::json_format;
@@ -77,7 +78,7 @@ void analyze_toml(std::string file_path, config& config_toml)
   }
 
   // /* fill rules */
-  len = data["rules"]["enable"].as_array()->size();
+  len = data["rules"]["Enable"].as_array()->size();
   for (i = 0; i < len; i++)
   {
     std::string_view rule_name = data["rules"]["Enable"][i].value_or(""sv);
@@ -104,21 +105,5 @@ void analyze_toml(std::string file_path, config& config_toml)
       exit(0);
     }
     config_toml.enabled_export_types.insert(export_type(idx));
-    // if (exporter_name == "prometheus")
-    // {
-    //   config_toml.enabled_export_types.insert(export_type::prometheus);
-    // }
-    // else if (exporter_name == "stdout_type")
-    // {
-    //   config_toml.enabled_export_types.insert(export_type::stdout_type);
-    // }
-    // else if (exporter_name == "file")
-    // {
-    //   config_toml.enabled_export_types.insert(export_type::file);
-    // }
-    // else if (exporter_name == "databse")
-    // {
-    //   config_toml.enabled_export_types.insert(export_type::databse);
-    // }
   }
 }
