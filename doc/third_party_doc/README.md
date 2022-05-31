@@ -1,3 +1,9 @@
+> 我们的项目的 `cmake` 构建部分是基于 `Modern C++ Template` :
+> https://github.com/filipdutescu/modern-cpp-template
+> 
+> 搭建的。这是一个使用 Unlicense 协议的模板，因此我把原先的 README 保留在这里，以供参考
+ 
+
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/MacOS/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Windows/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)

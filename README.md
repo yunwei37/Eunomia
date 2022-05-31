@@ -8,63 +8,72 @@ A lightweight eBPF-based CloudNative Monitor tool for Container Security and Obs
 [![codecov](https://codecov.io/gh/filipdutescu/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/filipdutescu/modern-cpp-template)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/yunwei37/Eunomia)](https://github.com/filipdutescu/modern-cpp-template/releases)
 
-We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Eunomia) which runs CI. We also have a mirror on [GitLab](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436), for faster access in China.
+We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Eunomia) which runs CI. We also have a mirror on [GitLab](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436), for faster access in China and OS comp.
 
 <!-- TOC -->
 
 - [Eunomia](#eunomia)
-- [What is Eunomia](#what-is-eunomia)
-  - [Tutorial](#tutorial)
-- [Quickstart](#quickstart)
-  - [Docker and Prometheus](#docker-and-prometheus)
-  - [run as binary](#run-as-binary)
-  - [build On Linux](#build-on-linux)
-- [Why is eBPF](#why-is-ebpf)
-- [Architecture](#architecture)
-    - [Prometheus-exporter 的效果如图：](#prometheus-exporter-的效果如图)
-- [Functionality Overview](#functionality-overview)
-      - [tracker_manager](#tracker_manager)
-      - [container_manager](#container_manager)
-      - [seccomp_manager](#seccomp_manager)
-      - [data_collector](#data_collector)
-      - [container detection](#container-detection)
-      - [security analyzer](#security-analyzer)
-      - [prometheus exporter](#prometheus-exporter)
-      - [config loader](#config-loader)
-      - [cmd](#cmd)
-      - [server](#server)
-- [Roadmap](#roadmap)
-- [Documents](#documents)
-- [Reference](#reference)
+  - [What is Eunomia](#what-is-eunomia)
+    - [Describe](#describe)
+    - [Tutorial](#tutorial)
+  - [Quickstart](#quickstart)
+    - [Prequest](#prequest)
+    - [run as binary](#run-as-binary)
+    - [Docker, Prometheus and Grafana](#docker-prometheus-and-grafana)
+    - [Prometheus and rafana 的效果如图：](#prometheus-and-rafana-的效果如图)
+    - [build On Linux](#build-on-linux)
+  - [Why is eBPF](#why-is-ebpf)
+  - [Architecture](#architecture)
+  - [Roadmap](#roadmap)
+  - [Documents](#documents)
+  - [Reference](#reference)
 - [Contact](#contact)
 
 <!-- /TOC -->
 
-# What is Eunomia
+## What is Eunomia
 
-`Eunomia` 是一个基于eBPF的云原生监控工具，旨在帮助用户了解容器的各项行为、监控可疑的容器安全事件，力求为工业界提供覆盖容器全生命周期的轻量级开源监控解决方案。它使用 `Linux` `eBPF` 技术在运行时跟踪您的系统和应用程序，并分析收集的事件以检测可疑的行为模式。目前，它包含 `profile`、容器集群网络可视化分析、容器安全感知告警、一键部署、持久化存储监控等功能。
+### Describe
 
-* 开箱即用：以单一二进制文件或 `docker` 镜像方式分发，一行代码即可启动，包含多种 ebpf 工具和多种监测点；
-* 可集成 `prometheus` 和 `Grafana`，作为监控可视化和预警平台；
-* 作为守护进程运行，可自定义安全预警规则，也可以自动收集进程系统调用行为并通过 seccomp 进行限制；
-* 可外接时序数据库，如 InfluxDB 等，作为信息持久化存储方案；
-* 可通过 graphql 在远程发起请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行数据分析(`TODO`)；
+`Eunomia` 是一个使用 C/C++ 开发的基于eBPF的云原生监控工具，旨在帮助用户了解容器的各项行为、监控可疑的容器安全事件，力求为工业界提供覆盖容器全生命周期的轻量级开源监控解决方案。它使用 `Linux` `eBPF` 技术在运行时跟踪您的系统和应用程序，并分析收集的事件以检测可疑的行为模式。目前，它包含 `profile`、容器集群网络可视化分析*、容器安全感知告警、一键部署、持久化存储监控等功能。
 
-和过去常用的 BCC 不同，Eunomia 基于 Libbpf + BPF CO-RE（一次编译，到处运行）开发。Libbpf 作为 BPF 程序加载器，接管了重定向、加载、验证等功能，BPF 程序开发者只需要关注 BPF 程序的正确性和性能即可。这种方式将开销降到了最低，且去除了庞大的依赖关系，使得整体开发流程更加顺畅。
+* [X] 开箱即用：以单一二进制文件或 `docker` 镜像方式分发，一次编译，到处运行，一行代码即可启动，包含多种 ebpf 工具和多种监测点，支持多种输出格式（json, csv, etc)；
+* [X] 可集成 `prometheus` 和 `Grafana`，作为监控可视化和预警平台；
+* [X] 可自定义运行时安全预警规则，也可以自动收集进程系统调用行为并通过 seccomp 进行限制；
+* [ ] 可外接时序数据库，如 `InfluxDB` 等，作为可选的信息持久化存储方案；
+* [ ] 可通过 `graphql` 在远程发起 http 请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行在线数据分析；
 
-## Tutorial
+除了收集容器中的一般系统运行时内核指标，例如系统调用、网络连接、文件访问、进程执行等，我们在探索实现过程中还发现目前对于 `lua` 和 `nginx` 相关用户态 `profile` 工具和指标可观测性开源工具存在一定的空白，但又有相当大的潜在需求；因此我们还计划添加一系列基于 uprobe 的用户态 `nginx/lua` 追踪器，作为可选的扩展方案；
 
-Eunomia 的 ebpf 部分是从 libbpf-tools 中得到了部分灵感，但是目前关于 ebpf 的资料还相对零散，这也导致了我们在前期的开发过程中走了不少的弯路。因此, 我们也提供了一系列教程，以及丰富的参考资料，旨在降低新手学习eBPF技术的门槛，试图通过大量的例程解释、丰富对 `eBPF、libbpf、bcc` 等内核技术和容器相关原理的认知，让后来者能更深入地参与到 ebpf 的技术开发中来。
+和过去常用的 `BCC` 不同，`Eunomia` 基于 `Libbpf` + BPF CO-RE（一次编译，到处运行）开发。Libbpf 作为 BPF 程序加载器，接管了重定向、加载、验证等功能，BPF 程序开发者只需要关注 BPF 程序的正确性和性能即可。这种方式将开销降到了最低，且去除了庞大的依赖关系，使得整体开发流程更加顺畅。
 
-see: [tutorial](doc/tutorial)
+### Tutorial
 
-# Quickstart
+`Eunomia` 的 `ebpf` 追踪器部分是从 `libbpf-tools` 中得到了部分灵感，但是目前关于 ebpf 的资料还相对零散且过时，这也导致了我们在前期的开发过程中走了不少的弯路。因此, 我们也提供了一系列教程，以及丰富的参考资料，旨在降低新手学习eBPF技术的门槛，试图通过大量的例程解释、丰富对 `eBPF、libbpf、bcc` 等内核技术和容器相关原理的认知，让后来者能更深入地参与到 ebpf 的技术开发中来。另外，`Eunomia` 也可以被单独编译为 C++ 二进制库进行分发，可以很方便地添加自定义 libbpf检查器，或者直接利用已有的功能来对 syscall 等指标进行监测，教程中也会提供一部分 `EUNOMIA` 扩展开发接口教程。
 
-## Docker and Prometheus
+> 教程目前还在完善中。
 
-> TODO: docker file
+1. [eBPF介绍](doc/tutorial/0_eBPF介绍.md)
+2. [eBPF开发工具介绍: BCC/Libbpf，以及其他](doc/tutorial/1_eBPF开发工具介绍.md)
+3. [基于libbpf的内核级别跟踪和监控: syscall, process, files 和其他](doc/tutorial/2_基于libbpf的内核级别跟踪和监控.md)
+4. [基于uprobe的用户态nginx相关指标监控](doc/tutorial/3_基于uprobe的用户态nginx相关指标监控.md)
+5. [seccomp权限控制](doc/tutorial/4_seccomp权限控制.md)
+6. [上手Eunomia: 基于Eunomia捕捉内核事件](doc/tutorial/x_基于Eunomia捕捉内核事件.md)
 
-## run as binary
+## Quickstart
+
+### Prequest
+
+Your Kconfig should contain the options below
+
+- Compile options
+  ```
+  CONFIG_DEBUG_INFO_BTF=y
+  CONFIG_DEBUG_INFO=y
+  ```
+- The suggested kernel version is `5.13` or higher.
+
+### run as binary
 
 you can use our pre-compiled binary to start a prometheus exporter:
 
@@ -100,7 +109,35 @@ we have provide five default trackers, `process`, `tcp`, `syscall`, `ipc` and `f
 
 for more details, see: [usage.md](doc/usage.md)
 
-## build On Linux
+### Docker, Prometheus and Grafana
+
+> TODO: docker file
+
+
+### Prometheus and rafana 的效果如图：
+
+<div  align="center">  
+ <img src="doc/imgs/prometheus1.png" alt="eunomia_prometheus1" align=center />
+ <p>文件读取的byte数</p>
+ <img src="doc/imgs/prometheus2.png" alt="eunomia_prometheus1" align=center />
+  <p>文件读取的系统调用次数</p>
+ <img src="doc/imgs/prometheus3.png" alt="eunomia_prometheus1" align=center />
+ <p>对于容器中进程的跟踪结果，记录开始和结束时间</p>
+</div>
+
+- 对于详细的 Prometheus 监控指标文档，请参考：[prometheus_metrics.md](doc/prometheus_metrics.md)
+
+- 关于如何集成 Prometheus 和 Grafane，请参考：[intergration.md](doc/intergration.md)
+
+### build On Linux
+
+You may need to install `libcurl`, `libelf-dev` `clang` and `gtest` as deps. On `Debian/Ubuntu`, just run
+
+```
+make install-deps
+```
+
+We used `C++20` as standard， so you need a compiler that supports C++20, for example, `GCC` > 10.0
 
 Makefile build:
 
@@ -109,15 +146,7 @@ git submodule update --init --recursive       # check out deps
 make install
 ```
 
-You may need to install libcurl, libelf-dev clang and gtest as deps. On `Debian/Ubuntu`, run
-
-```
-make install-deps
-```
-
-TODO: other platforms
-
-# Why is eBPF
+## Why is eBPF
 
 eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，而无需更改内核源代码或加载内核模块。通过使Linux内核可编程，基础架构软件可以利用现有的层，从而使它们更加智能和功能丰富，而无需继续为系统增加额外的复杂性层。
 
@@ -134,85 +163,16 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
   eBPF 仅在较新版本的 Linux 内核上可用，这对于在版本更新方面稍有滞后的组织来说可能是令人望而却步的。如果您没有运行 Linux 内核，那么 eBPF 根本不适合您。
 
-# Architecture
-
-从宏观角度来看，代理在Kuberntes中作为DeamonSet运行。它收集所有系统调用和一些其他跟踪点。我们使用不同的exporter对数据进行分发。对于当前版本，我们只需要通过普罗米修斯导出器（Prometheus-exporter）来导出可以存储到普罗米修斯中并在Grafana中可视化的数据。目前，Eunomia已经开源。
+## Architecture
 
 <div  align="center">  
  <img src="doc/imgs/architecture.jpg" width = "600" height = "400" alt="eunomia_architecture" align=center />
  <p>系统架构</p>
 </div>
 
-### Prometheus-exporter 的效果如图：
+关于详细的系统架构设计和模块划分，请参考 [系统设计文档](doc/design_doc)
 
-
-<div  align="center">  
- <img src="doc/imgs/prometheus1.png" alt="eunomia_prometheus1" align=center />
- <p>文件读取的byte数</p>
- <img src="doc/imgs/prometheus2.png" alt="eunomia_prometheus1" align=center />
-  <p>文件读取的系统调用次数</p>
- <img src="doc/imgs/prometheus3.png" alt="eunomia_prometheus1" align=center />
- <p>对于容器中进程的跟踪结果，记录开始和结束时间</p>
-</div>
-
-# Functionality Overview
-
-#### tracker_manager
-
-  负责启动和停止 ebpf collector，并且和 ebpf collector 通信（每个 tracer 是一个线程）；
-
-- start tracker
-- stop tracker(remove tracker)
-
-Currently we have 5 main trackers:
-
-- process
-- syscall
-- tcp
-- files
-- ipc
-
-#### container_manager
-
-  负责观察 container 的启动和停止，在内存中保存每个 container 的相关信息：（cgroup，namespace），同时负责 container id, container name 等 container mata 信息到 pid 的转换（提供查询接口）
-
-#### seccomp_manager
-
-  负责对 process 进行 seccomp 限制
-
-#### data_collector
-
-  收集数据，再决定怎么办；传给 database 还是聚合还是交给别的地方还是打印
-
-- collect_string
-- collect_json
-- collet_object
-
-#### container detection
-
-容器安全检测规则引擎，可以帮助您检测事件流中的可疑行为模式。
-
-#### security analyzer
-
-安全分析模块，通过ebpf采集到的底层相关数据，运用包括AI在内的多种方法进行安全性分析。
-
-#### prometheus exporter
-
-将数据导出成Prometheus需要的格式，在Prometheus中保存时序数据，方便后续持久化和可视化功能。
-
-#### config loader
-
-   解析 toml
-
-#### cmd
-
-   命令行解析模块，将命令行字符串解析成对应的参数选项，对Eunomia进行配置。
-
-#### server
-
-   http 通信
-
-# Roadmap
+## Roadmap
 
 阶段一：学习ebpf相关技术栈（3.10~4.2）
 
@@ -244,8 +204,8 @@ Currently we have 5 main trackers:
 * [X] 输出开发v0.2日志文档
 * [x] 添加可视化模块: prometheus and grafana
 * [X] add more tools from libbpf-tools
-* [ ] 基于上述新增功能，迭代版本v0.3
-* [ ] 输出开发v0.3日志文档
+* [X] 基于上述新增功能，迭代版本v0.3
+* [X] 输出开发v0.3日志文档
 * [ ] 后续更新迭代
 
 阶段四：开发测试（6.2~6.16）
@@ -264,14 +224,15 @@ Currently we have 5 main trackers:
 * [ ] 完善教程文档
 * [ ] 完善labs
 
-# Documents
+## Documents
 
 Eunomia的完整文档如下
 
 - [develop documents](doc/develop_doc)
+- [design documents](doc/design_doc)
 - [tutorial](doc/tutorial)
 
-# Reference
+## Reference
 
 * [基于 eBPF 实现容器运行时安全](https://mp.weixin.qq.com/s/UiR8rjTt2SgJo5zs8n5Sqg)
 * [基于ebpf统计docker容器网络流量](https://blog.csdn.net/qq_32740107/article/details/110224623)
@@ -299,4 +260,4 @@ Eunomia的完整文档如下
 
 指导老师：程泽睿志（华为）李东昂（浙江大学）
 
-学生：郑昱笙，濮雯旭，张典典
+学生：郑昱笙（yunwei37: 1067852565@qq.com），濮雯旭，张典典
