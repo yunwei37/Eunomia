@@ -14,8 +14,7 @@ seccomp_config config;
 
 int main()
 {
-  config.len = 20;
-  std::string str[] = {
+  std::vector<std::string> str = {
       "open",
       "close",
       "fstat",
@@ -32,19 +31,17 @@ int main()
       "lseek",
       "mprotect",
       "exit_group",
-      "read",
+//      "read",
       "write",
       "exit",
       "rt_sigreturn"      
   };
 
-  for (auto i = 0; i < config.len; i++) {
-      config.allow_syscall[i] = str[i];
-  }
+  config.allow_syscall.assign(str.begin(), str.end());
   /*
    * ...
    */
-//  enable_seccomp_white_list(config);
+  enable_seccomp_white_list(config);
   int d;
   scanf("%d",&d);
   spdlog::info("your input is :{0} \nif you get the print is equal to your input,congraduation! you are successful to enable seccomp, and don't care about next line print\n",d);

@@ -88,7 +88,7 @@ int enable_seccomp_white_list(seccomp_config config)
 {
   spdlog::info("enabled seccomp");
   std::vector<uint32_t> syscall_vec;  // allow_syscall_id list
-  for (size_t i = 0; i < config.len; i++)
+  for (size_t i = 0; i < config.allow_syscall.size(); i++)
   {
     size_t id = get_syscall_id(config.allow_syscall[i]);
     if (id == -1)

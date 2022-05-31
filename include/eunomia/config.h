@@ -96,10 +96,8 @@ struct rule_config
 };
 
 struct seccomp_config {
-  // the length of banned syscalls
-  int len = 0;
   // the syscalls name which is allowed
-  std::string allow_syscall[439];
+  std::vector<std::string> allow_syscall;
 };
 
 // config for eunomia
