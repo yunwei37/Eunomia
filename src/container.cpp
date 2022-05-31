@@ -24,7 +24,7 @@ void container_tracker::start_tracker()
 {
   struct process_bpf *skel = nullptr;
   if (current_env.print_result)
-    printf("%-10s %-15s %-20s %-10s\n", "PID", "PARENT_PID", "CONTAINER_ID", "STATE");
+    printf("%-10s %-15s %-20s %-25s %-10s\n", "PID", "PARENT_PID", "CONTAINER_ID", "CONTAINER_NAME", "STATE");
   init_container_table();
   start_process_tracker(handle_event, libbpf_print_fn, current_env.penv, skel, (void *)this);
 }
@@ -55,12 +55,13 @@ void container_tracker::init_container_table()
   std::unique_ptr<FILE, int (*)(FILE *)> ps(popen(ps_cmd.c_str(), "r"), pclose);
   while (fscanf(ps.get(), "%lx\n", &cid) == 1)
   {
-    std::string top_cmd("docker top ");
-    char hex_cid[20];
+    std::string top_cmd("docker top "), name_cmd("docker inspect -f '{{.Name}}' ");
+    char hex_cid[20], container_name[50];
     sprintf(hex_cid, "%lx", cid);
     top_cmd += hex_cid;
-    std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose);
-    // FILE *top = popen(top_cmd.c_str(), "r");
+    name_cmd += hex_cid;
+    std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose), name(popen(name_cmd.c_str(), "r"), pclose);
+    fscanf(name.get(), "/%s", container_name);
     /* delet the first row */
     char useless[150];
     fgets(useless, 150, top.get());
@@ -73,6 +74,7 @@ void container_tracker::init_container_table()
       struct container_event con = {
         .process = event,
         .container_id = cid,
+        .container_name = container_name,
       };
       print_container(con);
       this_manager.mp_lock.lock();
@@ -88,7 +90,7 @@ void container_tracker::print_container(const struct container_event &e)
     return;
   }
   std::string state = e.process.exit_event == true ? "EXIT" : "EXEC";
-  printf("%-10d %-15d %-20lx %-10s\n", e.process.common.pid, e.process.common.ppid, e.container_id, state.c_str());
+  printf("%-10d %-15d %-20lx %-25s %-10s\n", e.process.common.pid, e.process.common.ppid, e.container_id, e.container_name.c_str(), state.c_str());
 }
 
 void container_tracker::judge_container(const struct process_event &e)
@@ -117,6 +119,7 @@ void container_tracker::judge_container(const struct process_event &e)
       struct container_event con = {
         .process = e,
         .container_id = (*event).second.container_id,
+        .container_name = (*event).second.container_name
       };
       this_manager.mp_lock.lock();
       this_manager.container_processes[e.common.pid] = con;
@@ -134,11 +137,13 @@ void container_tracker::judge_container(const struct process_event &e)
         pid_t pid, ppid;
         while (fscanf(fp.get(), "%lx\n", &cid) == 1)
         {
-          std::string top_cmd = "docker top ";
-          char hex_cid[20];
+          std::string top_cmd = "docker top ", name_cmd = "docker inspect -f '{{.Name}}' ";
+          char hex_cid[20], container_name[50];
           sprintf(hex_cid, "%lx", cid);
           top_cmd += hex_cid;
-          std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose);
+          name_cmd += hex_cid;
+          std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose), name(popen(name_cmd.c_str(), "r"), pclose);
+          fscanf(name.get(), "/%s", container_name);
           char useless[150];
           /* delet the first row */
           fgets(useless, 150, top.get());
@@ -151,6 +156,7 @@ void container_tracker::judge_container(const struct process_event &e)
               struct container_event con = {
                 .process = e,
                 .container_id = cid,
+                .container_name = container_name,
               };
               this_manager.container_processes[pid] = con;
               print_container(this_manager.container_processes[pid]);

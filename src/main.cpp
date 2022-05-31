@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
       seccomp_mode_operation(core_config); 
       break;
     case eunomia_mode::help:
-    default: std::cout << clipp::make_man_page(cli, argv[0]); break;
+    gdefault: std::cout << clipp::make_man_page(cli, argv[0]); break;
   }
 
   return 0;

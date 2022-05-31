@@ -4,11 +4,11 @@
 #include "../process/process.h"
 
 struct container_event {
-	int pid;
-	int ppid;
+	// int pid;
+	// int ppid;
 	struct process_event process;
-    // container this process belongs to
-	unsigned long container_id; // container_id
+	unsigned long container_id;
+	std::string container_name;
 };
 
 #endif
