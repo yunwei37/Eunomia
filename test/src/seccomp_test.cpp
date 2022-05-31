@@ -1,10 +1,11 @@
+/* SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
+ *
+ * Copyright (c) 2022, 郑昱笙，濮雯旭，张典典（牛校牛子队）
+ * All rights reserved.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
-// #include <linux/module.h>
-// #include <linux/sched.h>
-// #include <linux/pid.h>
-// #include <sys/thread_info.h>
-// #include <linux/kthread.h>
 #include "eunomia/myseccomp.h"
 #include "eunomia/config.h"
 #include "spdlog/spdlog.h"
