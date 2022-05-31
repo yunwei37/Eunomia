@@ -92,7 +92,7 @@ void analyze_toml(std::string file_path, config& config_toml)
   len = data["seccomp"]["allow"].as_array()->size();
   for (i = 0; i < len; i++)
   {
-    config_toml.seccomp.emplace_back(std::string(data["seccomp"]["allow"][i].value_or(""sv)));
+    config_toml.seccomp.allow_syscall[config_toml.seccomp.len++] = std::string(data["seccomp"]["allow"][i].value_or(""sv));
   }
   // /* fill exporter */
   len = data["exporter"]["Enable"].as_array()->size();

@@ -89,6 +89,13 @@ struct rule_config
     std::string err_msg;
 };
 
+struct seccomp_config {
+  // the length of banned syscalls
+  int len = 0;
+  // the syscalls name which is allowed
+  std::string allow_syscall[439];
+};
+
 // config for eunomia
 // both config from toml and command line should be put here
 struct config
@@ -135,15 +142,11 @@ struct config
   std::string prometheus_listening_address = "127.0.0.1:8528";
 
   std::vector<rule_config> rules;
-  std::vector<std::string> seccomp;
+  seccomp_config seccomp;
+
 };
 
-struct seccomp_config {
-  // the length of banned syscalls
-  int len = 0;
-  // the syscalls name which is allowed
-  std::string allow_syscall[439];
-};
+
 
 // int trans_string2enum(const std::vector<std::string> strs, std::string to_trans) {
 //   unsigned int i, len = strs.size();
