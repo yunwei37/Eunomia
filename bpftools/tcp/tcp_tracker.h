@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
+// Copyright (c) 2020 Anton Protopopov
 #ifndef TCP_TRACKER_H
 #define TCP_TRACKER_H
 

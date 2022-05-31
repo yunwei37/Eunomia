@@ -1,4 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
+/* SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
+ *
+ * Copyright (c) 2020, Andrii Nakryiko
+ * 
+ * modified from https://github.com/libbpf/libbpf-bootstrap/
+ * We use libbpf-bootstrap as a start template for our bpf program.
+ */
 #include "vmlinux.h"
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>

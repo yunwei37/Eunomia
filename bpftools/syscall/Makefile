@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
+# from https://github.com/libbpf/libbpf-bootstrap/
 OUTPUT := .output
 CLANG ?= clang
 LLVM_STRIP ?= llvm-strip

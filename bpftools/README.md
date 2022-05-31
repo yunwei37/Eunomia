@@ -1,6 +1,25 @@
 # tools
 
-基于libbpf构建的一系列tools，分别实现了对进程、进程通信、系统调用等过程的监控和跟踪。
+基于 libbpf 构建的一系列tools，分别实现了对进程、进程通信、系统调用等过程的监控和跟踪。
+
+其中有部分代码文件和模块使我们自己编写，有部分代码文件和模块使用了第三方的代码，如：libbpf-bootstrap, bcc/libbpf-tools 等。所有引用的部分和自己开发的部分均在开头有明确标注 LICENSE 信息，例如我们自己开发的模块：
+
+```c
+/* SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
+ *
+ * Copyright (c) 2022, 郑昱笙，濮雯旭，张典典（牛校牛子队）
+ * All rights reserved.
+ */
+```
+
+引自第三方的代码，例如：
+
+```c
+// SPDX-License-Identifier: GPL-2.0
+// Copyright (c) 2020 Anton Protopopov
+//
+// Based on tcpconnect(8) from BCC by Brendan Gregg
+```
 
 ### process
 
