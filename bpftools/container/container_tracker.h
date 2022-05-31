@@ -83,8 +83,6 @@ static void init_container_map(struct container_bpf *skel, int processes_fd)
       // printf("%d, %d\n", c_pid, ppid);
       struct container_event data = {
         .container_id = strtol(container_id, NULL, 16),
-        .pid = c_pid,
-        .ppid = ppid,
       };
       bpf_map_update_elem(processes_fd, &c_pid, &data, BPF_ANY);
     }
@@ -142,7 +140,7 @@ start_container_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t li
   while (!bpf_map_get_next_key(processes_fd, &to_lookup, &next_key))
   {
     bpf_map_lookup_elem(processes_fd, &next_key, &container_value);
-    printf("%-10u %-15u %lu \n", container_value.pid, container_value.ppid, container_value.container_id);
+    // printf("%-10u %-15u %lu \n", container_value.pid, container_value.ppid, container_value.container_id);
     to_lookup = next_key;
   }
 

@@ -8,11 +8,9 @@
 #include "../process/process.h"
 
 struct container_event {
-	// int pid;
-	// int ppid;
 	struct process_event process;
 	unsigned long container_id;
-	std::string container_name;
+	char container_name[50];
 };
 
 #endif

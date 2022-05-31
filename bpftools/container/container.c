@@ -38,7 +38,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 {
 	const struct container_event *e = data;
 
-	printf("%-10u %-15u %lu \n", e->pid, e->ppid, e->container_id);
+	// printf("%-10u %-15u %lu \n", e->pid, e->ppid, e->container_id);
 	return 0;
 }
 

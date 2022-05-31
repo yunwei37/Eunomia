@@ -5,6 +5,7 @@
  */
 
 #include "eunomia/container.h"
+#include <string.h>
 
 extern "C"
 {
@@ -80,8 +81,8 @@ void container_tracker::init_container_table()
       struct container_event con = {
         .process = event,
         .container_id = cid,
-        .container_name = container_name,
       };
+      strcpy(con.container_name, container_name);
       print_container(con);
       this_manager.mp_lock.lock();
       this_manager.container_processes[pid] = con;
@@ -96,7 +97,7 @@ void container_tracker::print_container(const struct container_event &e)
     return;
   }
   std::string state = e.process.exit_event == true ? "EXIT" : "EXEC";
-  printf("%-10d %-15d %-20lx %-25s %-10s\n", e.process.common.pid, e.process.common.ppid, e.container_id, e.container_name.c_str(), state.c_str());
+  printf("%-10d %-15d %-20lx %-25s %-10s\n", e.process.common.pid, e.process.common.ppid, e.container_id, e.container_name, state.c_str());
 }
 
 void container_tracker::judge_container(const struct process_event &e)
@@ -124,9 +125,9 @@ void container_tracker::judge_container(const struct process_event &e)
     {
       struct container_event con = {
         .process = e,
-        .container_id = (*event).second.container_id,
-        .container_name = (*event).second.container_name
+        .container_id = (*event).second.container_id
       };
+      strcpy(con.container_name, (*event).second.container_name);
       this_manager.mp_lock.lock();
       this_manager.container_processes[e.common.pid] = con;
       print_container(this_manager.container_processes[e.common.pid]);
@@ -167,8 +168,8 @@ void container_tracker::judge_container(const struct process_event &e)
               struct container_event con = {
                 .process = e,
                 .container_id = cid,
-                .container_name = container_name,
               };
+              strcpy(con.container_name, container_name);
               this_manager.container_processes[pid] = con;
               print_container(this_manager.container_processes[pid]);
             }
