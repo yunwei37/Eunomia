@@ -3,21 +3,21 @@
  * Copyright (c) 2022, 郑昱笙，濮雯旭，张典典（牛校牛子队）
  * All rights reserved.
  */
-#include "spdlog/spdlog.h"
 #include "eunomia/myseccomp.h"
 
-// if interger var id is not exist in array syscall_id[] return true, otherwise return false
-bool is_not_exist(uint32_t syscall_id[], uint32_t len, uint32_t id)
+#include "spdlog/spdlog.h"
+
+bool is_not_allow(const std::vector<uint32_t>& syscall_vec, uint32_t id)
 {
-  for (auto i = 0; i < len; i++)
-  {
-    if (id == syscall_id[i])
-      return false;
-  }
+  for (auto allow : syscall_vec)
+    {
+      if (id == allow)
+        return false;
+    }
   return true;
 }
 
-static int install_syscall_filter(uint32_t syscall_id[], uint32_t len)
+static int install_syscall_filter(const std::vector<uint32_t>& syscall_vec)
 {
   std::vector<sock_filter> filter_vec = { /* Validate architecture. */
                                           BPF_STMT(BPF_LD + BPF_W + BPF_ABS, 4),
@@ -28,15 +28,15 @@ static int install_syscall_filter(uint32_t syscall_id[], uint32_t len)
                                           BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW)
   };
 
-  size_t syscalls_size = sizeof(syscall_id) / sizeof(syscall_id[0]);
+  size_t syscalls_size = syscall_names_x86_64_size;
   /* add ban rules All syscalls*/
   for (auto i = 0; i < syscalls_size; i++)
   {
-    if (is_not_exist(syscall_id, len, i))
+    if (is_not_allow(syscall_vec, i))
     {
-      filter_vec.insert(filter_vec.end() - 1, BPF_JUMP(BPF_JMP + BPF_JEQ, i, 0, 1));
+      filter_vec.push_back(BPF_JUMP(BPF_JMP + BPF_JEQ, i, 0, 1));
       // printf("banned syscall_id : %d\n", i);
-      filter_vec.insert(filter_vec.end() - 1, BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_KILL));
+      filter_vec.push_back(BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_KILL));
     }
     else
     {
@@ -98,10 +98,8 @@ int enable_seccomp_white_list(seccomp_config config)
     }
     syscall_vec.push_back(id);
   }
-  uint32_t syscall_id[syscall_vec.size()];
-  std::copy(syscall_vec.begin(), syscall_vec.end(), syscall_id);
   //  printf("ban %d syscalls\n allow %d syscalls\n",config.len,439-config.len);
-  if (install_syscall_filter(syscall_id, syscall_vec.size()))
+  if (install_syscall_filter(syscall_vec))
     return 1;
 
   return 0;

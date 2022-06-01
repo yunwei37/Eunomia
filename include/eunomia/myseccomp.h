@@ -26,9 +26,11 @@
 #include "seccomp-bpf.h"
 #include "syscall_helper.h"
 
-bool is_not_exist(uint32_t syscall_id[], uint32_t len, uint32_t id);
+// if a system call is not in the list, it will be allowed
+bool is_not_allow(const std::vector<uint32_t>& syscall_vec, uint32_t id);
 
-static int install_syscall_filter(uint32_t syscall_id[], uint32_t len);
+// install seccomp filter for all syscalls except those in the list
+static int install_syscall_filter(const std::vector<uint32_t>& syscall_vec);
 
 uint32_t get_syscall_id(std::string syscall_name);
 

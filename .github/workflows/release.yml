@@ -18,11 +18,11 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu Latest GCC",
+            name: "Ubuntu Latest CLANG",
             artifact_ext: '.tar.gz',
             os: ubuntu-latest,
-            cc: "gcc",
-            cxx: "g++",
+            cc: "clang",
+            cxx: "clang++",
           }
     steps:
 
