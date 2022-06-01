@@ -71,7 +71,7 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_data
   cur_tracker_data* data;
   if (!base || !(data = (cur_tracker_data*)(base)))
   {
-    std::cout << "start_tracker got wrong type data\n";
+    spdlog::error("start_tracker got wrong type data");
     return nullptr;
   }
   const cur_tracker_data& files_data = *data;
@@ -79,7 +79,7 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_data
   auto handler = create_tracker_event_handler<TRACKER>();
   if (!handler)
   {
-    std::cout << "no handler was created for tracker\n";
+    spdlog::error("no handler was created for tracker");
     return nullptr;
   }
   auto tracker_ptr = TRACKER::create_tracker_with_default_env(handler);
@@ -94,24 +94,29 @@ void eunomia_core::start_trackers(void)
     spdlog::info("start ebpf tracker...");
     if (!t)
     {
-      std::cout << "tracker data is null\n";
+      spdlog::error("tracker data is null");
       continue;
     }
     switch (t->type)
     {
       case avaliable_tracker::tcp:
+        spdlog::info("tcp tracker is starting");
         core_tracker_manager.start_tracker(create_default_tracker<tcp_tracker>(t.get()));
         break;
       case avaliable_tracker::syscall: 
+        spdlog::info("syscall tracker is starting");
         core_tracker_manager.start_tracker(create_default_tracker<syscall_tracker>(t.get()));
         break;
-      case avaliable_tracker::ipc: 
+      case avaliable_tracker::ipc:
+        spdlog::info("ipc tracker is starting"); 
         core_tracker_manager.start_tracker(create_default_tracker<ipc_tracker>(t.get()));
         break;
       case avaliable_tracker::process:
+        spdlog::info("process tracker is starting");
         core_tracker_manager.start_tracker(create_default_tracker<process_tracker>(t.get()));
         break;
       case avaliable_tracker::files:
+        spdlog::info("files tracker is starting");
         core_tracker_manager.start_tracker(create_default_tracker<files_tracker>(t.get()));
         break;
       default: std::cout << "unsupported tracker type\n"; break;

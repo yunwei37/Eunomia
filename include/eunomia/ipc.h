@@ -7,9 +7,6 @@
 #ifndef IPC_CMD_H
 #define IPC_CMD_H
 
-#include <json.hpp>
-#include <mutex>
-#include <thread>
 
 #include "libbpf_print.h"
 #include "model/tracker.h"
@@ -20,7 +17,7 @@ extern "C" {
 #include <ipc/ipc_tracker.h>
 }
 
-using json = nlohmann::json;
+
 
 struct ipc_tracker : public tracker_with_config<ipc_env, ipc_event> {
   using config_data = tracker_config<ipc_env, ipc_event>;
@@ -55,7 +52,7 @@ struct ipc_tracker : public tracker_with_config<ipc_env, ipc_event> {
   // convert event to json
   struct json_event_handler : public event_handler<ipc_event>
   {
-    json to_json(const struct ipc_event &e);
+    std::string to_json(const struct ipc_event &e);
   };
 
   // used for json exporter, inherits from json_event_handler

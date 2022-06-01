@@ -7,18 +7,12 @@
 #ifndef PROCESS_CMD_H
 #define PROCESS_CMD_H
 
-#include <iostream>
-#include <json.hpp>
-#include <mutex>
 #include <string>
-#include <thread>
 
 #include "libbpf_print.h"
 #include "model/tracker.h"
 #include "prometheus/counter.h"
 #include "prometheus_server.h"
-
-using json = nlohmann::json;
 
 // ebpf process tracker interface
 // the true implementation is in process/process_tracker.h

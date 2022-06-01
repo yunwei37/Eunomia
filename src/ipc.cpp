@@ -5,8 +5,11 @@
  */
 
 #include "eunomia/ipc.h"
+#include <json.hpp>
 
 #include <spdlog/spdlog.h>
+
+using json = nlohmann::json;
 
 ipc_tracker::ipc_tracker(config_data config) : tracker_with_config(config)
 {
@@ -36,7 +39,7 @@ void ipc_tracker::start_tracker()
   start_ipc_tracker(handle_tracker_event<ipc_tracker, ipc_event>, libbpf_print_fn, current_config.env);
 }
 
-json ipc_tracker::json_event_handler::to_json(const struct ipc_event &e)
+std::string ipc_tracker::json_event_handler::to_json(const struct ipc_event &e)
 {
   std::string res;
   json ipc = { { "type", "ipc" }, { "time", get_current_time() } };
@@ -50,12 +53,12 @@ json ipc_tracker::json_event_handler::to_json(const struct ipc_event &e)
       { "cgid", e.cgid },
   });
   ipc.push_back({ "ipc", ipc_event_json });
-  return ipc;
+  return ipc.dump();
 }
 
 void ipc_tracker::json_event_printer::handle(tracker_event<ipc_event> &e)
 {
-  std::cout << to_json(e.data).dump() << std::endl;
+  spdlog::info(to_json(e.data));
 }
 
 void ipc_tracker::plain_text_event_printer::handle(tracker_event<ipc_event> &e)

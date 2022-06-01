@@ -5,8 +5,11 @@
  */
 
 #include "eunomia/tcp.h"
-
+#include <json.hpp>
 #include <spdlog/spdlog.h>
+#include <string>
+
+using json = nlohmann::json;
 
 tcp_tracker::tcp_tracker(config_data config) : tracker_with_config(config)
 {
@@ -73,7 +76,7 @@ std::string tcp_tracker::json_event_handler_base::to_json(const struct tcp_event
 
 void tcp_tracker::json_event_printer::handle(tracker_event<tcp_event> &e)
 {
-  std::cout << to_json(e.data) << std::endl;
+  spdlog::info(to_json(e.data));
 }
 
 void tcp_tracker::plain_text_event_printer::handle(tracker_event<tcp_event> &e)

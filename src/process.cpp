@@ -5,13 +5,15 @@
  */
 
 #include "eunomia/process.h"
-
+#include <json.hpp>
 #include <spdlog/spdlog.h>
 
 extern "C"
 {
 #include <process/process_tracker.h>
 }
+
+using json = nlohmann::json;
 
 void process_tracker::prometheus_event_handler::report_prometheus_event(const struct process_event &e)
 {
@@ -113,7 +115,7 @@ std::string process_tracker::json_event_handler_base::to_json(const struct proce
 
 void process_tracker::json_event_printer::handle(tracker_event<process_event> &e)
 {
-  std::cout << to_json(e.data) << std::endl;
+  spdlog::info(to_json(e.data));
 }
 
 void process_tracker::plain_text_event_printer::handle(tracker_event<process_event> &e)
