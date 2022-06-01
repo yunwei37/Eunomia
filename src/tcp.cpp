@@ -5,8 +5,10 @@
  */
 
 #include "eunomia/tcp.h"
-#include <json.hpp>
+
 #include <spdlog/spdlog.h>
+
+#include <json.hpp>
 #include <string>
 
 using json = nlohmann::json;
@@ -62,21 +64,21 @@ std::string tcp_tracker::json_event_handler_base::to_json(const struct tcp_event
     spdlog::debug("broken tcp_event\n");
   }
 
-  json tcp = {  { "type", "tcp" }, 
-                { "time", get_current_time() },
-                { "pid",  e.pid},
-                { "task", e.task},
-                { "af",   AF_INET ? 4 : 6},
-                { "src",  inet_ntop((int)e.af, &s, src, sizeof(src))},
-                { "dst",  inet_ntop((int)e.af, &d, dst, sizeof(dst))},
-                { "dport",ntohs(e.dport)} };
+  json tcp = { { "type", "tcp" },
+               { "time", get_current_time() },
+               { "pid", e.pid },
+               { "task", e.task },
+               { "af", AF_INET ? 4 : 6 },
+               { "src", inet_ntop((int)e.af, &s, src, sizeof(src)) },
+               { "dst", inet_ntop((int)e.af, &d, dst, sizeof(dst)) },
+               { "dport", ntohs(e.dport) } };
 
   return tcp.dump();
 }
 
 void tcp_tracker::json_event_printer::handle(tracker_event<tcp_event> &e)
 {
-  spdlog::info(to_json(e.data));
+  std::cout << to_json(e.data) << std::endl;
 }
 
 void tcp_tracker::plain_text_event_printer::handle(tracker_event<tcp_event> &e)

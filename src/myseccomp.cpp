@@ -7,7 +7,7 @@
 #include "eunomia/myseccomp.h"
 
 // if interger var id is not exist in array syscall_id[] return true, otherwise return false
-bool is_not_exist(uint32_t syscall_id[], int len, int id)
+bool is_not_exist(uint32_t syscall_id[], uint32_t len, uint32_t id)
 {
   for (auto i = 0; i < len; i++)
   {
@@ -17,7 +17,7 @@ bool is_not_exist(uint32_t syscall_id[], int len, int id)
   return true;
 }
 
-static int install_syscall_filter(uint32_t syscall_id[], int len)
+static int install_syscall_filter(uint32_t syscall_id[], uint32_t len)
 {
   std::vector<sock_filter> filter_vec = { /* Validate architecture. */
                                           BPF_STMT(BPF_LD + BPF_W + BPF_ABS, 4),

@@ -5,8 +5,10 @@
  */
 
 #include "eunomia/syscall.h"
-
+#include <json.hpp>
 #include <spdlog/spdlog.h>
+
+using json = nlohmann::json;
 
 syscall_tracker::syscall_tracker(config_data config) : tracker_with_config(config)
 {
@@ -36,9 +38,8 @@ void syscall_tracker::start_tracker()
   start_syscall_tracker(handle_tracker_event<syscall_tracker, syscall_event>, libbpf_print_fn, current_config.env);
 }
 
-json syscall_tracker::json_event_handler::to_json(const struct syscall_event &e)
+std::string syscall_tracker::json_event_handler::to_json(const struct syscall_event &e)
 {
-  std::string res;
   json syscall = { { "type", "syscall" }, { "time", get_current_time() } };
   json syscall_event_json = json::array();
 
@@ -51,12 +52,12 @@ json syscall_tracker::json_event_handler::to_json(const struct syscall_event &e)
       { "occur times", e.occur_times },
   });
   syscall.push_back({ "syscall", syscall_event_json });
-  return syscall;
+  return syscall.dump();
 }
 
 void syscall_tracker::json_event_printer::handle(tracker_event<syscall_event> &e)
 {
-  std::cout << to_json(e.data).dump() << std::endl;
+  std::cout << to_json(e.data) << std::endl;
 }
 
 void syscall_tracker::plain_text_event_printer::handle(tracker_event<syscall_event> &e)

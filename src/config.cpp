@@ -47,7 +47,7 @@ int trans_string2enum(const std::vector<std::string> &strs, std::string_view to_
 void analyze_toml(std::string file_path, config& config_toml)
 {
   toml::table data;
-  unsigned int i, len;
+  std::size_t i, len;
   try
   {
     data = toml::parse_file(file_path);

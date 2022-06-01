@@ -7,7 +7,6 @@
 #ifndef SYSCALL_CMD_H
 #define SYSCALL_CMD_H
 
-#include <json.hpp>
 #include <mutex>
 #include <thread>
 
@@ -20,8 +19,6 @@ extern "C" {
 #include <syscall/syscall_tracker.h>
 #include "syscall_helper.h"
 }
-
-using json = nlohmann::json;
 
 struct syscall_tracker : public tracker_with_config<syscall_env, syscall_event> {
   using config_data = tracker_config<syscall_env, syscall_event>;
@@ -56,7 +53,7 @@ struct syscall_tracker : public tracker_with_config<syscall_env, syscall_event> 
   // convert event to json
   struct json_event_handler : public event_handler<syscall_event>
   {
-    json to_json(const struct syscall_event &e);
+    std::string to_json(const struct syscall_event &e);
   };
 
   // used for json exporter, inherits from json_event_handler

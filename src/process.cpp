@@ -5,8 +5,10 @@
  */
 
 #include "eunomia/process.h"
-#include <json.hpp>
+
 #include <spdlog/spdlog.h>
+
+#include <json.hpp>
 
 extern "C"
 {
@@ -115,7 +117,7 @@ std::string process_tracker::json_event_handler_base::to_json(const struct proce
 
 void process_tracker::json_event_printer::handle(tracker_event<process_event> &e)
 {
-  spdlog::info(to_json(e.data));
+  std::cout << to_json(e.data) << std::endl;
 }
 
 void process_tracker::plain_text_event_printer::handle(tracker_event<process_event> &e)

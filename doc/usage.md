@@ -5,7 +5,7 @@
 ### files
 
 
-Alternatively, you can simply use eunomia to run a single ebpf tracker, for example:
+You can simply use eunomia to run a single ebpf tracker, for example:
 
 ```
 ./eunomia run files

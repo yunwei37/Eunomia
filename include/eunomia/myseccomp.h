@@ -26,9 +26,9 @@
 #include "seccomp-bpf.h"
 #include "syscall_helper.h"
 
-bool is_not_exist(uint32_t syscall_id[], int len, int id);
+bool is_not_exist(uint32_t syscall_id[], uint32_t len, uint32_t id);
 
-static int install_syscall_filter(uint32_t syscall_id[], int len);
+static int install_syscall_filter(uint32_t syscall_id[], uint32_t len);
 
 uint32_t get_syscall_id(std::string syscall_name);
 

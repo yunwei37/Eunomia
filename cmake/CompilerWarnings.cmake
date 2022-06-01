@@ -63,7 +63,7 @@ function(set_project_warnings project_name)
         -Wno-unused-variable 
         -Wno-unused-parameter
         -Wno-missing-field-initializers
-
+        -Wno-pedantic
         -Wno-pointer-arith
   )
 

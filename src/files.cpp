@@ -5,8 +5,10 @@
  */
 
 #include "eunomia/files.h"
-#include <json.hpp>
+
 #include <spdlog/spdlog.h>
+
+#include <json.hpp>
 
 using json = nlohmann::json;
 
@@ -132,7 +134,7 @@ std::string files_tracker::json_event_handler::to_json(const struct files_event 
 
 void files_tracker::json_event_printer::handle(tracker_event<files_event> &e)
 {
-  spdlog::info(to_json(e.data));
+  std::cout << to_json(e.data) << std::endl;
 }
 
 void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> &e)

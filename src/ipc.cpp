@@ -5,9 +5,12 @@
  */
 
 #include "eunomia/ipc.h"
-#include "prometheus/counter.h"
 
 #include <spdlog/spdlog.h>
+
+#include <json.hpp>
+
+#include "prometheus/counter.h"
 
 using json = nlohmann::json;
 
@@ -58,7 +61,7 @@ std::string ipc_tracker::json_event_handler::to_json(const struct ipc_event &e)
 
 void ipc_tracker::json_event_printer::handle(tracker_event<ipc_event> &e)
 {
-  spdlog::info(to_json(e.data));
+  std::cout << to_json(e.data) << std::endl;
 }
 
 void ipc_tracker::plain_text_event_printer::handle(tracker_event<ipc_event> &e)
@@ -70,12 +73,7 @@ void ipc_tracker::plain_text_event_printer::handle(tracker_event<ipc_event> &e)
     spdlog::info("pid\tuid\tgid\tcuid\tcgid");
   }
 
-  spdlog::info("{}\t{}\t\t{}\t\t{}\t\t{}", 
-                e.data.pid, 
-                e.data.uid, 
-                e.data.gid, 
-                e.data.cuid, 
-                e.data.cgid);
+  spdlog::info("{}\t{}\t\t{}\t\t{}\t\t{}", e.data.pid, e.data.uid, e.data.gid, e.data.cuid, e.data.cgid);
 }
 
 void ipc_tracker::csv_event_printer::handle(tracker_event<ipc_event> &e)
@@ -87,12 +85,7 @@ void ipc_tracker::csv_event_printer::handle(tracker_event<ipc_event> &e)
     spdlog::info("pid,uid,gid,cuid,cgid");
   }
 
-  spdlog::info("{},{},{},{},{}", 
-                e.data.pid, 
-                e.data.uid, 
-                e.data.gid, 
-                e.data.cuid, 
-                e.data.cgid);
+  spdlog::info("{},{},{},{},{}", e.data.pid, e.data.uid, e.data.gid, e.data.cuid, e.data.cgid);
 }
 
 void ipc_tracker::prometheus_event_handler::report_prometheus_event(const struct ipc_event &e)
