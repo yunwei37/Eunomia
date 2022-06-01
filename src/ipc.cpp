@@ -67,7 +67,29 @@ void ipc_tracker::plain_text_event_printer::handle(tracker_event<ipc_event> &e)
     spdlog::info("pid\tuid\tgid\tcuid\tcgid");
   }
 
-  spdlog::info("{}\t{}\t\t{}\t\t{}\t\t{}", e.data.pid, e.data.uid, e.data.gid, e.data.cuid, e.data.cgid);
+  spdlog::info("{}\t{}\t\t{}\t\t{}\t\t{}", 
+                e.data.pid, 
+                e.data.uid, 
+                e.data.gid, 
+                e.data.cuid, 
+                e.data.cgid);
+}
+
+void ipc_tracker::csv_event_printer::handle(tracker_event<ipc_event> &e)
+{
+  static bool is_start = true;
+  if (is_start)
+  {
+    is_start = false;
+    spdlog::info("pid,uid,gid,cuid,cgid");
+  }
+
+  spdlog::info("{},{},{},{},{}", 
+                e.data.pid, 
+                e.data.uid, 
+                e.data.gid, 
+                e.data.cuid, 
+                e.data.cgid);
 }
 
 void ipc_tracker::prometheus_event_handler::report_prometheus_event(const struct ipc_event &e)

@@ -25,6 +25,12 @@ extern "C"
 #include <tcp/tcp_tracker.h>
 }
 
+union sender
+{
+  struct in_addr x4;
+  struct in6_addr x6;
+};
+
 // ebpf tcp tracker interface
 // the true implementation is in tcp/tcp_tracker.h
 //
@@ -53,11 +59,12 @@ struct tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
     prometheus_event_handler(prometheus_server &server);
     void handle(tracker_event<tcp_event> &e);
   };
+  static int fill_src_dst(sender &s, sender &d,const tcp_event &e);
 
   // convert event to json
   struct json_event_handler_base : public event_handler<tcp_event>
   {
-    json to_json(const struct tcp_event &e);
+    std::string to_json(const struct tcp_event &e);
   };
 
   // used for json exporter, inherits from json_event_handler
@@ -70,6 +77,12 @@ struct tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
   {
     void handle(tracker_event<tcp_event> &e);
   };
+  
+  struct csv_event_printer : public event_handler<tcp_event>
+  {
+    void handle(tracker_event<tcp_event> &e);
+  };
+
 private:
     static void handle_tcp_sample_event(void *ctx, int cpu, void *data, unsigned int data_sz);
 };

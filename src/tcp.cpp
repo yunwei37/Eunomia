@@ -29,19 +29,51 @@ void tcp_tracker::start_tracker()
   start_tcp_tracker(handle_tcp_sample_event, libbpf_print_fn, current_config.env);
 }
 
-json tcp_tracker::json_event_handler_base::to_json(const struct tcp_event &e)
+int tcp_tracker::fill_src_dst(sender &s, sender &d, const tcp_event &e)
 {
-  json tcp = {
-    { "type", "tcp" }, { "time", get_current_time() }
-    // TODO: add more fields
-  };
+  if (e.af == AF_INET)
+  {
+    s.x4.s_addr = e.saddr_v4;
+    d.x4.s_addr = e.daddr_v4;
+  }
+  else if (e.af == AF_INET6)
+  {
+    memcpy(&s.x6.s6_addr, e.saddr_v6, sizeof(s.x6.s6_addr));
+    memcpy(&d.x6.s6_addr, e.daddr_v6, sizeof(d.x6.s6_addr));
+  }
+  else
+  {
+    fprintf(stderr, "broken tcp_event: tcp_event->af=%d", e.af);
+    return -1;
+  }
+  return 0;
+}
 
-  return tcp;
+std::string tcp_tracker::json_event_handler_base::to_json(const struct tcp_event &e)
+{
+  char src[INET6_ADDRSTRLEN];
+  char dst[INET6_ADDRSTRLEN];
+  sender s, d;
+  if (tcp_tracker::fill_src_dst(s, d, e) < 0)
+  {
+    spdlog::debug("broken tcp_event\n");
+  }
+
+  json tcp = {  { "type", "tcp" }, 
+                { "time", get_current_time() },
+                { "pid",  e.pid},
+                { "task", e.task},
+                { "af",   AF_INET ? 4 : 6},
+                { "src",  inet_ntop((int)e.af, &s, src, sizeof(src))},
+                { "dst",  inet_ntop((int)e.af, &d, dst, sizeof(dst))},
+                { "dport",ntohs(e.dport)} };
+
+  return tcp.dump();
 }
 
 void tcp_tracker::json_event_printer::handle(tracker_event<tcp_event> &e)
 {
-  std::cout << to_json(e.data).dump() << std::endl;
+  std::cout << to_json(e.data) << std::endl;
 }
 
 void tcp_tracker::plain_text_event_printer::handle(tracker_event<tcp_event> &e)
@@ -54,29 +86,40 @@ void tcp_tracker::plain_text_event_printer::handle(tracker_event<tcp_event> &e)
   }
   char src[INET6_ADDRSTRLEN];
   char dst[INET6_ADDRSTRLEN];
-  union
+  sender s, d;
+  if (tcp_tracker::fill_src_dst(s, d, e.data) < 0)
   {
-    struct in_addr x4;
-    struct in6_addr x6;
-  } s, d;
-  if (e.data.af == AF_INET)
-  {
-    s.x4.s_addr = e.data.saddr_v4;
-    d.x4.s_addr = e.data.daddr_v4;
-  }
-  else if (e.data.af == AF_INET6)
-  {
-    memcpy(&s.x6.s6_addr, e.data.saddr_v6, sizeof(s.x6.s6_addr));
-    memcpy(&d.x6.s6_addr, e.data.daddr_v6, sizeof(d.x6.s6_addr));
-  }
-  else
-  {
-    fprintf(stderr, "broken tcp_event: tcp_event->af=%d", e.data.af);
-    return;
+    spdlog::debug("broken tcp_event\n");
   }
 
   spdlog::info(
       "{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}",
+      e.data.pid,
+      e.data.task,
+      AF_INET ? 4 : 6,
+      inet_ntop((int)e.data.af, &s, src, sizeof(src)),
+      inet_ntop((int)e.data.af, &d, dst, sizeof(dst)),
+      ntohs(e.data.dport));
+}
+
+void tcp_tracker::csv_event_printer::handle(tracker_event<tcp_event> &e)
+{
+  static bool is_start = true;
+  if (is_start)
+  {
+    is_start = false;
+    spdlog::info("pid,task,af,src,dst,dport");
+  }
+  char src[INET6_ADDRSTRLEN];
+  char dst[INET6_ADDRSTRLEN];
+  sender s, d;
+  if (tcp_tracker::fill_src_dst(s, d, e.data) < 0)
+  {
+    spdlog::debug("broken tcp_event\n");
+  }
+
+  spdlog::info(
+      "{},{},{},{},{},{}",
       e.data.pid,
       e.data.task,
       AF_INET ? 4 : 6,

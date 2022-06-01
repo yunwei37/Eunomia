@@ -69,6 +69,11 @@ struct syscall_tracker : public tracker_with_config<syscall_env, syscall_event> 
   {
     void handle(tracker_event<syscall_event> &e);
   };
+
+  struct csv_event_printer : public event_handler<syscall_event>
+  {
+    void handle(tracker_event<syscall_event> &e);
+  };
 };
 
 #endif

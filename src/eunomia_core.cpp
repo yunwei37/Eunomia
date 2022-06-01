@@ -23,6 +23,7 @@ TRACKER::tracker_event_handler eunomia_core::create_print_event_handler(void)
   {
     case export_format::json_format: return std::make_shared<typename TRACKER::json_event_printer>();
     case export_format::plain_text: return std::make_shared<typename TRACKER::plain_text_event_printer>();
+    case export_format::csv: return std::make_shared<typename TRACKER::csv_event_printer>();
     default: spdlog::error("unsupported output format to stdout"); return nullptr;
   }
   return nullptr;
@@ -98,9 +99,15 @@ void eunomia_core::start_trackers(void)
     }
     switch (t->type)
     {
-      case avaliable_tracker::tcp: break;
-      case avaliable_tracker::syscall: break;
-      case avaliable_tracker::ipc: break;
+      case avaliable_tracker::tcp:
+        core_tracker_manager.start_tracker(create_default_tracker<tcp_tracker>(t.get()));
+        break;
+      case avaliable_tracker::syscall: 
+        core_tracker_manager.start_tracker(create_default_tracker<syscall_tracker>(t.get()));
+        break;
+      case avaliable_tracker::ipc: 
+        core_tracker_manager.start_tracker(create_default_tracker<ipc_tracker>(t.get()));
+        break;
       case avaliable_tracker::process:
         core_tracker_manager.start_tracker(create_default_tracker<process_tracker>(t.get()));
         break;

@@ -75,6 +75,11 @@ struct files_tracker : public tracker_with_config<files_env, files_event>
   {
     void handle(tracker_event<files_event> &e);
   };
+
+  struct csv_event_printer : public event_handler<files_event>
+  {
+    void handle(tracker_event<files_event> &e);
+  };
 };
 
 #endif

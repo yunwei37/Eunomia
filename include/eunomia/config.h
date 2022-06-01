@@ -28,6 +28,7 @@ enum class export_format
   csv,
   plain_text
 };
+static const std::vector<std::string> str_export_format = {"json", "csv", "plain_txt"};
 
 enum class export_type
 {
@@ -61,7 +62,8 @@ enum class avaliable_tracker
   process,
   ipc,
   tcp,
-  files
+  files,
+  help
 };
 static const std::vector<std::string> str_avaliable_tracker = {"syscall", "process", "ipc", "tcp", "files"};
 
@@ -150,6 +152,7 @@ struct config
 
 };
 
+int trans_string2enum(const std::vector<std::string> &strs, std::string to_trans);
 int trans_string2enum(const std::vector<std::string> &strs, std::string_view to_trans);
 
 void analyze_toml(std::string file_path, config &config_toml);

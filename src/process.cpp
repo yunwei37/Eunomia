@@ -95,7 +95,6 @@ void process_tracker::start_tracker()
 
 std::string process_tracker::json_event_handler_base::to_json(const struct process_event &e)
 {
-  std::string res;
   json process_event = { { "type", "process" },
                          { "time", get_current_time() },
                          { "pid", e.common.pid },
@@ -150,6 +149,49 @@ void process_tracker::plain_text_event_printer::handle(tracker_event<process_eve
   }
   spdlog::info(
       "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+      e.data.common.pid,
+      e.data.common.ppid,
+      e.data.common.cgroup_id,
+      e.data.common.user_namespace_id,
+      e.data.common.pid_namespace_id,
+      e.data.common.mount_namespace_id,
+      e.data.comm,
+      e.data.filename);
+}
+
+void process_tracker::csv_event_printer::handle(tracker_event<process_event> &e)
+{
+  static bool is_start = true;
+  if (is_start)
+  {
+    is_start = false;
+    spdlog::info(
+        "{},{},{},{},{},{},{},{}",
+        "pid",
+        "ppid",
+        "cgroup_id",
+        "user_namespace_id",
+        "pid_namespace_id",
+        "mount_namespace_id",
+        "exit_code/comm",
+        "duration_ns/filename");
+  }
+  if (e.data.exit_event)
+  {
+    spdlog::info(
+        "{},{},{},{},{},{},{},{}",
+        e.data.common.pid,
+        e.data.common.ppid,
+        e.data.common.cgroup_id,
+        e.data.common.user_namespace_id,
+        e.data.common.pid_namespace_id,
+        e.data.common.mount_namespace_id,
+        e.data.exit_code,
+        e.data.duration_ns);
+    return;
+  }
+  spdlog::info(
+      "{},{},{},{},{},{},{},{}",
       e.data.common.pid,
       e.data.common.ppid,
       e.data.common.cgroup_id,

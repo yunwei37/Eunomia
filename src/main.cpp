@@ -11,57 +11,45 @@
 
 #include "eunomia/eunomia_core.h"
 
-// run mode config
-enum class run_cmd_mode
-{
-  tcpconnect,
-  syscall,
-  ipc,
-  files,
-  process,
-  seccomp,
-  help
-};
 
 using namespace std::chrono_literals;
 
-void run_mode_operation(run_cmd_mode selected, config core_config)
+void run_mode_operation(
+    avaliable_tracker selected,
+    config core_config)
 {
   switch (selected)
   {
-    case run_cmd_mode::tcpconnect:
+    case avaliable_tracker::tcp: 
       core_config.enabled_trackers.push_back(std::make_shared<tcp_tracker_data>(avaliable_tracker::tcp));
       break;
-    case run_cmd_mode::syscall:
+    case avaliable_tracker::syscall: 
       core_config.enabled_trackers.push_back(std::make_shared<syscall_tracker_data>(avaliable_tracker::syscall));
       break;
-    case run_cmd_mode::process:
+    case avaliable_tracker::process:
       core_config.enabled_trackers.push_back(std::make_shared<process_tracker_data>(avaliable_tracker::process));
       break;
-    case run_cmd_mode::files:
+    case avaliable_tracker::files:
       core_config.enabled_trackers.push_back(std::make_shared<files_tracker_data>(avaliable_tracker::files));
       break;
-    case run_cmd_mode::ipc:
+    case avaliable_tracker::ipc:
       core_config.enabled_trackers.push_back(std::make_shared<ipc_tracker_data>(avaliable_tracker::ipc));
       break;
     default: break;
   }
   eunomia_core core(core_config);
   core.start_eunomia();
-  /*
-    TODO
-  */
 }
 
 void daemon_mode_opertiaon(config core_config)
 {
-  // std::cout << contaienr_id << " " << target_pid << " " << config_file << " " << syscall_id_file << " \n";
-  /*
-    TODO
-  */
+  eunomia_core core(core_config);
+  core.start_eunomia();
 }
 
-void server_mode_operation(bool prometheus_flag, std::vector<std::string>& input, config core_config)
+void server_mode_operation(
+    bool prometheus_flag,
+    config core_config)
 {
   // std::cout << prometheus_flag << " " << listening_address << " " << std::endl;
   std::cout << "start server mode...\n";
@@ -89,37 +77,35 @@ void seccomp_mode_operation(config core_config)
 
 int main(int argc, char* argv[])
 {
-  bool process_flag = false, syscall_flag = false, container_flag = false, ipc_flag = false, tcp_flag = false,
-       prometheus_flag = false, file_flag = false;
+  bool prometheus_flag = false, container_flag = false;;
   pid_t target_pid = 0;
   int time_tracing = 0;
-  std::string remote_url = "", fmt = "json", output_file = "";
-
+  std::string fmt = "json", listening_address = "127.0.0.1:8528";
+  std::string config_file = "", output_file = "";
   eunomia_mode selected = eunomia_mode::help;
-  run_cmd_mode run_selected = run_cmd_mode::help;
+  avaliable_tracker run_selected = avaliable_tracker::help;
   unsigned long container_id = 0;
-  std::string listening_address = "127.0.0.1:8528";
-  std::string config_file = "", module_name = "", syscall_id_file = "";
-  unsigned int listening_port = 0;
-  std::vector<std::string> input;
 
   auto container_id_cmd =
-      (clipp::option("-c", "--container").set(container_flag, true) & clipp::value("container id", container_id)) %
-      "The conatienr id of the contaienr the EUNOMIA will monitor";
-  auto process_id_cmd = (clipp::option("-p", "--process").set(process_flag, true) & clipp::value("process id", target_pid)) %
-                        "The process id of the process the EUNOMIA will monitor";
+      (clipp::option("-c", "--container") & clipp::value("container id", container_id)) %
+        "The conatienr id of the contaienr the EUNOMIA will monitor";
+  auto process_id_cmd = 
+      (clipp::option("-p", "--process") & clipp::value("process id", target_pid)) %
+        "The process id of the process the EUNOMIA will monitor";
   auto run_time_cmd =
-      (clipp::option("-T") & clipp::value("trace time in seconds", time_tracing)) % "The time the ENUNOMIA will monitor for";
+      (clipp::option("-T") & clipp::value("trace time in seconds", time_tracing)) % 
+        "The time the ENUNOMIA will monitor for";
 
   auto run_required_cmd =
-      (clipp::option("tcpconnect").set(run_selected, run_cmd_mode::tcpconnect) |
-       clipp::option("syscall").set(run_selected, run_cmd_mode::syscall) |
-       clipp::option("ipc").set(run_selected, run_cmd_mode::ipc) |
-       clipp::option("process").set(run_selected, run_cmd_mode::process) |
-       clipp::option("files").set(run_selected, run_cmd_mode::files));
-
+      (clipp::option("tcpconnect").set(run_selected, avaliable_tracker::tcp) |
+       clipp::option("syscall").set(run_selected, avaliable_tracker::syscall) |
+       clipp::option("ipc").set(run_selected, avaliable_tracker::ipc) |
+       clipp::option("process").set(run_selected, avaliable_tracker::process) |
+       clipp::option("files").set(run_selected, avaliable_tracker::files));
+  
   auto config_cmd =
-      (clipp::option("--config") & clipp::value("config file", config_file)) % "The toml file stores the config data";
+      (clipp::option("--config") & clipp::value("config file", config_file)) % 
+        "The toml file stores the config data";
 
   auto run_mode =
       (clipp::command("run").set(selected, eunomia_mode::run),
@@ -128,14 +114,18 @@ int main(int argc, char* argv[])
        process_id_cmd,
        run_time_cmd,
        config_cmd,
-       (clipp::option("--fmt") & clipp::value("output format of the program", fmt)) % "The output format of EUNOMIA");
+       (clipp::option("-m").set(container_flag, true)) % 
+          "Start container manager to trace contaienr.",
+       (clipp::option("--fmt") & clipp::value("output format of the program", fmt)) % 
+          "The output format of EUNOMIA, it could be \"json\", \"csv\", \"plain_txt\", and \"plain_txt\" is the default choice."
+       );
 
   auto daemon_mode =
       (clipp::command("daemon").set(selected, eunomia_mode::daemon),
        container_id_cmd,
        process_id_cmd,
-       config_cmd,
-       (clipp::option("--seccomp") & clipp::opt_value("syscall id file", syscall_id_file)) % "The syscall table");
+       config_cmd
+       );
 
   auto seccomp_mode =
       (clipp::command("seccomp").set(selected, eunomia_mode::seccomp),
@@ -149,7 +139,8 @@ int main(int argc, char* argv[])
        config_cmd,
        (clipp::option("--prometheus").set(prometheus_flag, true)) % "Start prometheus server",
        (clipp::option("--listen") & clipp::value("listening address", listening_address)) %
-           "Listen http requests on this address");
+           "Listen http requests on this address, the format is like \"127.0.0.1:8528\""
+      );
 
   auto cli =
       ((run_mode | daemon_mode | seccomp_mode | server_cmd | clipp::command("help").set(selected, eunomia_mode::help)));
@@ -171,6 +162,10 @@ int main(int argc, char* argv[])
     core_config.exit_after = time_tracing;
     core_config.is_auto_exit = true;
   }
+  int idx = trans_string2enum(str_export_format, fmt);
+  if(idx >= 0) {
+    core_config.fmt = export_format(idx);
+  }
   core_config.enabled_trackers.clear();
   if (config_file != "")
   {
@@ -183,10 +178,18 @@ int main(int argc, char* argv[])
 
   switch (selected)
   {
-    case eunomia_mode::run: run_mode_operation(run_selected, core_config); break;
-    case eunomia_mode::daemon: daemon_mode_opertiaon(core_config); break;
-    case eunomia_mode::server: server_mode_operation(prometheus_flag, input, core_config); break;
-    case eunomia_mode::seccomp: seccomp_mode_operation(core_config); break;
+    case eunomia_mode::run:
+      run_mode_operation(run_selected, core_config);
+      break;
+    case eunomia_mode::daemon:
+      daemon_mode_opertiaon(core_config);
+      break;
+    case eunomia_mode::server: 
+      server_mode_operation(prometheus_flag, core_config); 
+      break;
+    case eunomia_mode::seccomp: 
+      seccomp_mode_operation(core_config); 
+      break;
     case eunomia_mode::help:
     gdefault:
       std::cout << clipp::make_man_page(cli, argv[0]);

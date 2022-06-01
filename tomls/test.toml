@@ -1,9 +1,9 @@
 
 [trackers]
 Enable = ["process", "tcp", "syscall"]
-container_id = 7895212
+container_id = 137768710737545
 process_id = 100
-run_time = 50
+run_time = 30
 fmt = "json"
 
 [exporter]

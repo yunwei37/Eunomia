@@ -68,6 +68,11 @@ struct ipc_tracker : public tracker_with_config<ipc_env, ipc_event> {
   {
     void handle(tracker_event<ipc_event> &e);
   };
+
+  struct csv_event_printer : public event_handler<ipc_event>
+  {
+    void handle(tracker_event<ipc_event> &e);
+  };
 };
 
 #endif

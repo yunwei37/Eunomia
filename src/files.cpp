@@ -156,3 +156,27 @@ void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> 
         e.data.values[i].filename);
   }
 }
+
+void files_tracker::csv_event_printer::handle(tracker_event<files_event> &e)
+{
+  static bool is_start = true;
+  if (is_start)
+  {
+    is_start = false;
+    spdlog::info("pid,read_bytes,read_count,write_bytes,write count,comm,type,tid,filename");
+  }
+  for (int i = 0; i < e.data.rows; i++)
+  {
+    spdlog::info(
+        "{},{},{},{},{},{},{},{},{}",
+        e.data.values[i].pid,
+        e.data.values[i].read_bytes,
+        e.data.values[i].reads,
+        e.data.values[i].write_bytes,
+        e.data.values[i].writes,
+        e.data.values[i].comm,
+        e.data.values[i].type,
+        e.data.values[i].tid,
+        e.data.values[i].filename);
+  }
+}
