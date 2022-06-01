@@ -31,10 +31,11 @@ void tcp_tracker::start_tracker()
 
 json tcp_tracker::json_event_handler_base::to_json(const struct tcp_event &e)
 {
-  json tcp = { { "type", "tcp" }, { "time", get_current_time() } 
-  //TODO: add more fields
+  json tcp = {
+    { "type", "tcp" }, { "time", get_current_time() }
+    // TODO: add more fields
   };
-  
+
   return tcp;
 }
 
@@ -141,7 +142,7 @@ void tcp_tracker::prometheus_event_handler::handle(tracker_event<tcp_event> &e)
   report_prometheus_event(e.data);
 }
 
-  void tcp_tracker::handle_tcp_sample_event(void *ctx, int cpu, void *data, unsigned int data_sz)
-  {
-      handle_tracker_event<tcp_tracker, tcp_event>(ctx, data, (size_t)data_sz);
-  }
+void tcp_tracker::handle_tcp_sample_event(void *ctx, int cpu, void *data, unsigned int data_sz)
+{
+  handle_tracker_event<tcp_tracker, tcp_event>(ctx, data, (size_t)data_sz);
+}

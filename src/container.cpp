@@ -5,6 +5,7 @@
  */
 
 #include "eunomia/container.h"
+
 #include <string.h>
 
 extern "C"
@@ -67,7 +68,8 @@ void container_tracker::init_container_table()
     sprintf(hex_cid, "%lx", cid);
     top_cmd += hex_cid;
     name_cmd += hex_cid;
-    std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose), name(popen(name_cmd.c_str(), "r"), pclose);
+    std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose),
+        name(popen(name_cmd.c_str(), "r"), pclose);
     fscanf(name.get(), "/%s", container_name);
     /* delet the first row */
     char useless[150];
@@ -97,7 +99,13 @@ void container_tracker::print_container(const struct container_event &e)
     return;
   }
   std::string state = e.process.exit_event == true ? "EXIT" : "EXEC";
-  printf("%-10d %-15d %-20lx %-25s %-10s\n", e.process.common.pid, e.process.common.ppid, e.container_id, e.container_name, state.c_str());
+  printf(
+      "%-10d %-15d %-20lx %-25s %-10s\n",
+      e.process.common.pid,
+      e.process.common.ppid,
+      e.container_id,
+      e.container_name,
+      state.c_str());
 }
 
 void container_tracker::judge_container(const struct process_event &e)
@@ -123,10 +131,7 @@ void container_tracker::judge_container(const struct process_event &e)
     this_manager.mp_lock.unlock();
     if (event != this_manager.container_processes.end())
     {
-      struct container_event con = {
-        .process = e,
-        .container_id = (*event).second.container_id
-      };
+      struct container_event con = { .process = e, .container_id = (*event).second.container_id };
       strcpy(con.container_name, (*event).second.container_name);
       this_manager.mp_lock.lock();
       this_manager.container_processes[e.common.pid] = con;
@@ -136,12 +141,12 @@ void container_tracker::judge_container(const struct process_event &e)
     else
     {
       /* parent process doesn't exist in map */
-      struct process_event p_event = {0};
+      struct process_event p_event = { 0 };
       p_event.common.pid = e.common.ppid;
       fill_event(p_event);
-      if ((p_event.common.user_namespace_id != e.common.user_namespace_id)
-          || (p_event.common.pid_namespace_id != e.common.pid_namespace_id)
-          || (p_event.common.mount_namespace_id != e.common.mount_namespace_id))
+      if ((p_event.common.user_namespace_id != e.common.user_namespace_id) ||
+          (p_event.common.pid_namespace_id != e.common.pid_namespace_id) ||
+          (p_event.common.mount_namespace_id != e.common.mount_namespace_id))
       {
         std::unique_ptr<FILE, int (*)(FILE *)> fp(popen("docker ps -q", "r"), pclose);
         unsigned long cid;
@@ -154,7 +159,8 @@ void container_tracker::judge_container(const struct process_event &e)
           sprintf(hex_cid, "%lx", cid);
           top_cmd += hex_cid;
           name_cmd += hex_cid;
-          std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose), name(popen(name_cmd.c_str(), "r"), pclose);
+          std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose),
+              name(popen(name_cmd.c_str(), "r"), pclose);
           fscanf(name.get(), "/%s", container_name);
           char useless[150];
           /* delet the first row */

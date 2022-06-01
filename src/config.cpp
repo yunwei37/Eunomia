@@ -6,13 +6,14 @@
 
 #include "eunomia/config.h"
 
-#include "toml.hpp"
 #include <spdlog/spdlog.h>
 
+#include "toml.hpp"
 
 using namespace std::string_view_literals;
 
-int trans_string2enum(const std::vector<std::string> &strs, std::string_view to_trans) {
+int trans_string2enum(const std::vector<std::string>& strs, std::string_view to_trans)
+{
   unsigned int i, len = strs.size();
   for (i = 0; i < len; i++)
   {
@@ -36,11 +37,11 @@ void analyze_toml(std::string file_path, config& config_toml)
   {
     data = toml::parse_file(file_path);
   }
-	catch (const toml::parse_error& err)
-	{
-		std::cerr << err << "\n";
-		return;
-	}
+  catch (const toml::parse_error& err)
+  {
+    std::cerr << err << "\n";
+    return;
+  }
   /* fill trackers */
   len = data["trackers"]["Enable"].as_array()->size();
   for (i = 0; i < len; i++)
@@ -69,7 +70,7 @@ void analyze_toml(std::string file_path, config& config_toml)
   }
   config_toml.target_contaienr_id = data["trackers"]["container_id"].value_or(0);
   config_toml.target_pid = data["trackers"]["process_id"].value_or(0);
-  
+
   if (data["trackers"]["fmt"].value_or(""sv) == "json")
   {
     config_toml.fmt = export_format::json_format;
@@ -106,7 +107,8 @@ void analyze_toml(std::string file_path, config& config_toml)
   {
     std::string_view exporter_name = data["exporter"]["Enable"][i].value_or(""sv);
     int idx = trans_string2enum(str_export_type, exporter_name);
-    if(idx < 0) {
+    if (idx < 0)
+    {
       spdlog::info("The format of toml is not right in exporter!");
       exit(0);
     }

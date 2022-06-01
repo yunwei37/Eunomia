@@ -35,12 +35,12 @@ static int install_syscall_filter(uint32_t syscall_id[], int len)
     if (is_not_exist(syscall_id, len, i))
     {
       filter_vec.insert(filter_vec.end() - 1, BPF_JUMP(BPF_JMP + BPF_JEQ, i, 0, 1));
-      //printf("banned syscall_id : %d\n", i);
+      // printf("banned syscall_id : %d\n", i);
       filter_vec.insert(filter_vec.end() - 1, BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_KILL));
     }
     else
     {
-        spdlog::info("allowed syscall_id : {0:d}", i);
+      spdlog::info("allowed syscall_id : {0:d}", i);
     }
   }
 
@@ -106,4 +106,3 @@ int enable_seccomp_white_list(seccomp_config config)
 
   return 0;
 }
-
