@@ -14,6 +14,10 @@
 #include "prometheus/counter.h"
 #include "prometheus_server.h"
 
+extern "C" {
+#include <process/process_tracker.h>
+}
+
 // ebpf process tracker interface
 // the true implementation is in process/process_tracker.h
 //

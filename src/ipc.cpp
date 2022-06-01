@@ -5,7 +5,7 @@
  */
 
 #include "eunomia/ipc.h"
-#include <json.hpp>
+#include "prometheus/counter.h"
 
 #include <spdlog/spdlog.h>
 

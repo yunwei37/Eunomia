@@ -7,10 +7,7 @@
 #ifndef LIBBPF_PRINT_H
 #define LIBBPF_PRINT_H
 
-extern "C" {
-#include <process/process_tracker.h>
-}
-
+#include <bpf/libbpf.h>
 #include <string>
 
 extern bool verbose;

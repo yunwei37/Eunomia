@@ -151,14 +151,14 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  // config core_config{
-  //   .run_selected = selected,
-  //   .target_contaienr_id = container_id,
-  //   .target_pid = target_pid,
-  //   .prometheus_listening_address = listening_address,
-  // };
   config core_config;
+  if (config_file != "")
+  {
+    std::cout << config_file << std::endl;
+    analyze_toml(config_file, core_config);
+  }
   // set base on flags
+  // note: cmd flags will override config file
   if (prometheus_flag) {
     core_config.prometheus_listening_address = listening_address;
   }
@@ -179,13 +179,6 @@ int main(int argc, char* argv[])
     core_config.fmt = export_format(idx);
   }
   core_config.enabled_trackers.clear();
-  if (config_file != "")
-  {
-    std::cout << config_file << std::endl;
-    analyze_toml(config_file, core_config);
-  }
-  tracker_manager manager;
-  container_manager container_manager;
   std::cout << "start ebpf...\n";
 
   switch (selected)

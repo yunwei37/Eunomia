@@ -5,8 +5,10 @@
  */
 
 #include "eunomia/files.h"
-
+#include <json.hpp>
 #include <spdlog/spdlog.h>
+
+using json = nlohmann::json;
 
 void files_tracker::prometheus_event_handler::report_prometheus_event(const struct files_event &e)
 {
@@ -107,7 +109,7 @@ void files_tracker::start_tracker()
   start_file_tracker(handle_tracker_event<files_tracker, files_event>, libbpf_print_fn, current_config.env);
 }
 
-json files_tracker::json_event_handler::to_json(const struct files_event &e)
+std::string files_tracker::json_event_handler::to_json(const struct files_event &e)
 {
   std::string res;
   json files = { { "type", "process" }, { "time", get_current_time() } };
@@ -125,12 +127,12 @@ json files_tracker::json_event_handler::to_json(const struct files_event &e)
                                  { "tid", e.values[i].tid } });
   }
   files.push_back({ "files", files_event_json });
-  return files;
+  return files.dump();
 }
 
 void files_tracker::json_event_printer::handle(tracker_event<files_event> &e)
 {
-  spdlog::info(to_json(e.data).dump());
+  spdlog::info(to_json(e.data));
 }
 
 void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> &e)

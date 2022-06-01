@@ -8,7 +8,6 @@
 #define FILE_CMD_H
 
 #include <iostream>
-#include <json.hpp>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -21,8 +20,6 @@ extern "C"
 {
 #include <files/file_tracker.h>
 }
-
-using json = nlohmann::json;
 
 // ebpf files tracker interface
 // the true implementation is in files/file_tracker.h
@@ -62,7 +59,7 @@ struct files_tracker : public tracker_with_config<files_env, files_event>
   // convert event to json
   struct json_event_handler : public event_handler<files_event>
   {
-    json to_json(const struct files_event &e);
+    std::string to_json(const struct files_event &e);
   };
 
   // used for json exporter, inherits from json_event_handler

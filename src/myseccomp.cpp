@@ -3,7 +3,7 @@
  * Copyright (c) 2022, 郑昱笙，濮雯旭，张典典（牛校牛子队）
  * All rights reserved.
  */
-
+#include "spdlog/spdlog.h"
 #include "eunomia/myseccomp.h"
 
 // if interger var id is not exist in array syscall_id[] return true, otherwise return false

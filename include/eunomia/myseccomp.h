@@ -24,7 +24,6 @@
 
 #include "config.h"
 #include "seccomp-bpf.h"
-#include "spdlog/spdlog.h"
 #include "syscall_helper.h"
 
 bool is_not_exist(uint32_t syscall_id[], int len, int id);

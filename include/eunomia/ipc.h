@@ -10,7 +10,6 @@
 
 #include "libbpf_print.h"
 #include "model/tracker.h"
-#include "prometheus/counter.h"
 #include "prometheus_server.h"
 
 extern "C" {
