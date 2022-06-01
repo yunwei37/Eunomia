@@ -151,12 +151,24 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  config core_config{
-    .run_selected = selected,
-    .target_contaienr_id = container_id,
-    .target_pid = target_pid,
-    .prometheus_listening_address = listening_address,
-  };
+  // config core_config{
+  //   .run_selected = selected,
+  //   .target_contaienr_id = container_id,
+  //   .target_pid = target_pid,
+  //   .prometheus_listening_address = listening_address,
+  // };
+  config core_config;
+  // set base on flags
+  if (prometheus_flag) {
+    core_config.prometheus_listening_address = listening_address;
+  }
+  if (container_id) {
+    core_config.target_contaienr_id = container_id;
+  }
+  if (target_pid) {
+    core_config.target_pid = target_pid;
+  }
+
   if (time_tracing > 0)
   {
     core_config.exit_after = time_tracing;
