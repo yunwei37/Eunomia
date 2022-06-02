@@ -88,19 +88,11 @@ void analyze_toml(std::string file_path, config& config_toml)
   config_toml.target_contaienr_id = data["trackers"]["container_id"].value_or(0);
   config_toml.target_pid = data["trackers"]["process_id"].value_or(0);
 
-  if (data["trackers"]["fmt"].value_or(""sv) == "json")
-  {
-    config_toml.fmt = export_format::json_format;
+  int idx = trans_string2enum(str_export_format, data["trackers"]["fmt"].value_or(""sv));
+  if(idx >= 0) {
+    config_toml.fmt = export_format(idx);
   }
-  else if (data["trackers"]["fmt"].value_or(""sv) == "csv")
-  {
-    config_toml.fmt = export_format::csv;
-  }
-  else
-  {
-    config_toml.fmt = export_format::plain_text;
-  }
-
+  
   // /* fill rules */
   len = data["rules"]["Enable"].as_array()->size();
   for (i = 0; i < len; i++)
@@ -123,7 +115,7 @@ void analyze_toml(std::string file_path, config& config_toml)
   for (i = 0; i < len; i++)
   {
     std::string_view exporter_name = data["exporter"]["Enable"][i].value_or(""sv);
-    int idx = trans_string2enum(str_export_type, exporter_name);
+    idx = trans_string2enum(str_export_type, exporter_name);
     if (idx < 0)
     {
       spdlog::info("The format of toml is not right in exporter!");

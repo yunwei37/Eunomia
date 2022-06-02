@@ -14,6 +14,9 @@ extern "C"
 #include <process/process_tracker.h>
 #include <unistd.h>
 }
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+
+
 
 container_tracker::container_tracker(container_env env, container_manager &manager)
     : tracker_with_config(tracker_config<container_env, container_event>{}),
@@ -30,9 +33,16 @@ container_tracker::container_tracker(container_env env, container_manager &manag
 
 void container_tracker::start_tracker()
 {
+  container_logger->set_level(spdlog::level::trace);
+  container_logger->flush_on(spdlog::level::trace);
   struct process_bpf *skel = nullptr;
   if (current_env.print_result)
-    printf("%-10s %-15s %-20s %-25s %-10s\n", "PID", "PARENT_PID", "CONTAINER_ID", "CONTAINER_NAME", "STATE");
+    container_logger->info("{}\t{}\t{}\t{}\t{}\t",
+                            "PID",
+                            "PARENT_PID",
+                            "CONTAINER_ID",
+                            "CONTAINER_NAME", 
+                            "STATE");
   init_container_table();
   start_process_tracker(handle_event, libbpf_print_fn, current_env.penv, skel, (void *)this);
 }
@@ -55,6 +65,7 @@ void container_tracker::fill_event(struct process_event &event)
   fscanf(fp_pid.get(), "%u %*[^\n]\n", &ns);
   event.common.pid_namespace_id = ns;
 }
+
 void container_tracker::init_container_table()
 {
   unsigned long cid;
@@ -99,13 +110,12 @@ void container_tracker::print_container(const struct container_event &e)
     return;
   }
   std::string state = e.process.exit_event == true ? "EXIT" : "EXEC";
-  printf(
-      "%-10d %-15d %-20lx %-25s %-10s\n",
-      e.process.common.pid,
-      e.process.common.ppid,
-      e.container_id,
-      e.container_name,
-      state.c_str());
+  container_logger->info("{}\t{}\t{}\t{}\t{}\t",
+                          e.process.common.pid,
+                          e.process.common.ppid,
+                          e.container_id,
+                          e.container_name,
+                          state.c_str());
 }
 
 void container_tracker::judge_container(const struct process_event &e)

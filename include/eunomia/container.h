@@ -7,16 +7,14 @@
 #ifndef CONTAINER_CMD_H
 #define CONTAINER_CMD_H
 
-#include <stdio.h>
-
-#include <iostream>
-#include <json.hpp>
 #include <memory>
 #include <mutex>
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/rotating_file_sink.h>
 
 extern "C"
 {
@@ -40,6 +38,8 @@ struct container_tracker : public tracker_with_config<container_env, container_e
 {
   struct container_env current_env = { 0 };
   struct container_manager &this_manager;
+  std::shared_ptr<spdlog::logger> container_logger = 
+      spdlog::rotating_logger_mt("container_logger", "./logs/container_log.txt", 1024 * 1024 * 5, 3);
 
   container_tracker(container_env env, container_manager &manager);
   void start_tracker();
