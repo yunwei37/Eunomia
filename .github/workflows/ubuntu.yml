@@ -52,6 +52,7 @@ jobs:
       env:
         CC:   gcc-10
         CXX:  g++-10
+      
     # - name: build
     #   run: cmake --build build --config $BUILD_TYPE -j4
 
@@ -63,9 +64,13 @@ jobs:
     # - name: Code coverage using Codecov 
     #   run: bash <(curl -s https://codecov.io/bash) 
 
-    - name: install project
-      run: cmake --build build --target install --config Release 
-      env:
-        CC:   gcc-10
-        CXX:  g++-10
-
+    - name: build project
+      run: |
+          mkdir -p build/libbpf/ && cp bpftools/process/.output/libbpf/libbpf.a build/libbpf/libbpf.a
+          cmake --build build --config Release 
+      
+      # shell: bash
+      # env:
+      #   CC:   gcc-10
+      #   CXX:  g++-10
+      
