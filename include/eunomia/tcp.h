@@ -15,8 +15,6 @@
 #include "prometheus/counter.h"
 #include "prometheus_server.h"
 
-
-
 extern "C"
 {
 #include <tcp/tcp_tracker.h>

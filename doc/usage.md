@@ -85,6 +85,77 @@ result:
 
 ### tcp
 
-### 
+test:
+
+```
+sudo bin/Debug/eunomia run tcpconnect
+```
+
+result:
+
+```
+[2022-06-02 07:48:24.527] [info] uid    pid    task             af src                  dst                  dport 
+[2022-06-02 07:48:24.527] [info]   1000   5943 code              4 192.168.187.130      13.69.239.74            443
+[2022-06-02 07:48:27.565] [info]   1000  51677 prometheus        4 127.0.0.1            127.0.0.1              8080
+[2022-06-02 07:48:30.367] [info]   1000  51677 prometheus        4 127.0.0.1            127.0.0.1              8528
+[2022-06-02 07:48:33.522] [info]   1000  51677 prometheus        4 127.0.0.1            127.0.0.1              9091
+[2022-06-02 07:48:42.563] [info]   1000  51677 prometheus        4 127.0.0.1            127.0.0.1              8080
+[2022-06-02 07:48:43.746] [info]   1000  33953 Socket Thread     4 127.0.0.1            127.0.0.1              3000
+[2022-06-02 07:48:43.758] [info]   1000  33953 Socket Thread     4 127.0.0.1            127.0.0.1              3000
+[2022-06-02 07:48:45.367] [info]   1000  51677 prometheus        4 127.0.0.1            127.0.0.1              8528
+[2022-06-02 07:48:46.516] [info]    130   5453 grafana-server    4 127.0.0.1            127.0.0.1              9090
+```
+
+### syscall
+
+```
+sudo bin/Debug/eunomia run syscall
+```
+
+```
+[2022-06-02 07:52:11.917] [info]  65871  65866 arch_prctl sleep                1
+[2022-06-02 07:52:11.917] [info]  65871  65866 access     sleep                1
+[2022-06-02 07:52:11.917] [info]  65871  65866 openat     sleep                1
+[2022-06-02 07:52:11.918] [info]  65871  65866 fstat      sleep                1
+[2022-06-02 07:52:11.918] [info]  65871  65866 mmap       sleep                1
+[2022-06-02 07:52:11.918] [info]  65871  65866 read       sleep                1
+[2022-06-02 07:52:11.918] [info]  65871  65866 pread64    sleep                1
+[2022-06-02 07:52:11.919] [info]  65871  65866 mprotect   sleep                1
+[2022-06-02 07:52:11.919] [info]  65871  65866 munmap     sleep                1
+```
 
 ## config toml example
+
+```
+
+[trackers]
+Enable = ["process", "tcp", "syscall"]
+container_id = 7895212
+process_id = 100
+run_time = 50
+fmt = "json"
+
+[exporter]
+Enable = ["prometheus"]
+
+[prometheus]
+endpoint ="127.0.0.1"
+port = 6789
+
+[rules]
+Enable = ["bpf_rule", "debug"]
+
+[bpf_rule]
+type = "syscall"
+name = "Insert-BPF"
+syscall = "bpf"
+error_message = "BPF program loaded"
+
+[debug]
+type = "syscall"
+name = "Anti-Debugging"
+error_message = "Process uses anti-debugging technique to block debugger"
+
+[seccomp]
+allow = ["read","write", "connect"]
+```

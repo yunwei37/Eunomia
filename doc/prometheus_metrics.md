@@ -5,14 +5,15 @@
 ### Metrics List
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
-| `eunomia_bserved_process_start` | Counter | Number of observed process start |
+| `eunomia_observed_process_start` | Counter | Number of observed process start |
 | `eunomia_observed_process_end` | Counter | Number of observed process end |
 
 ### Labels List
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `node` | worker-1 | Node name represented in Kubernetes cluster |
-| `mount_namespace` | default | Namespace of the pod |
+| `pod` | default | Name of the pod |
+| `mount_namespace` | 46289463245 | Mount Namespace of the pod |
 | `container_name` | Ubuntu | The name of the container |
 | `container_id` | 1a2b3c4d5e6f | The shorten container id which contains 12 characters |
 | `pid` | 12344 | The pid of the running process |
@@ -34,7 +35,20 @@
 
 ## Tcp Connect Metrics
 
+### Metrics List
+| **Metric Name** | **Type** | **Description** |
+| --- | --- | --- |
+| `eunomia_observed_tcp_v4_count` | Counter | Number of observed tcp v4 connect count |
+| `eunomia_observed_tcp_v6_count` | Counter | Number of observed tcp v6 connect count |
+
+
 ## Syscall Metrics
+
+### Metrics List
+| **Metric Name** | **Type** | **Description** |
+| --- | --- | --- |
+| `eunomia_observed_syscall_count` | Counter | Number of observed syscall count |
+
 
 ## Service Metrics
 

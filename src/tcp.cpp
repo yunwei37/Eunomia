@@ -151,6 +151,7 @@ void tcp_tracker::prometheus_event_handler::report_prometheus_event(const struct
   eunomia_tcp_v4_counter
       .Add({ { "uid", std::to_string(e.uid) },
              { "task", std::string(e.task) },
+             { "container_id", "0" },
              { "src", std::string(inet_ntop((int)e.af, &s, src, sizeof(src))) },
              { "dst", std::string(inet_ntop((int)e.af, &d, dst, sizeof(dst))) },
              { "port", std::to_string(e.dport) },
@@ -160,6 +161,7 @@ void tcp_tracker::prometheus_event_handler::report_prometheus_event(const struct
   eunomia_tcp_v6_counter
      .Add({ { "uid", std::to_string(e.uid) },
              { "task", std::string(e.task) },
+             { "container_id", "0" },
              { "src", std::string(inet_ntop((int)e.af, &s, src, sizeof(src))) },
              { "dst", std::string(inet_ntop((int)e.af, &d, dst, sizeof(dst))) },
              { "port", std::to_string(e.dport) },
