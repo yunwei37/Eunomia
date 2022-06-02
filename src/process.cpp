@@ -20,9 +20,9 @@ using json = nlohmann::json;
 void process_tracker::prometheus_event_handler::report_prometheus_event(const struct process_event &e)
 {
   // TODO: fix this
-  std::string ids[] = { "36fca8c5eec1" };//, "e2055f599ca6" };
-  std::string names[] = { "Ubuntu" };//, "Debian" };
-  size_t n = 0; // (size_t)std::rand() % 2;
+  std::string ids[] = { "36fca8c5eec1" };  //, "e2055f599ca6" };
+  std::string names[] = { "Ubuntu" };      //, "Debian" };
+  size_t n = 0;                            // (size_t)std::rand() % 2;
   if (e.exit_event)
   {
     eunomia_process_exit_counter

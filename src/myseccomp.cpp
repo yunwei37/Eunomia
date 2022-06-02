@@ -10,10 +10,10 @@
 bool is_not_allow(const std::vector<uint32_t>& syscall_vec, uint32_t id)
 {
   for (auto allow : syscall_vec)
-    {
-      if (id == allow)
-        return false;
-    }
+  {
+    if (id == allow)
+      return false;
+  }
   return true;
 }
 

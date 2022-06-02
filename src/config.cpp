@@ -12,7 +12,8 @@
 
 using namespace std::string_view_literals;
 
-int trans_string2enum(const std::vector<std::string> &strs, std::string to_trans) {
+int trans_string2enum(const std::vector<std::string>& strs, std::string to_trans)
+{
   unsigned int i, len = strs.size();
   for (i = 0; i < len; i++)
   {
@@ -28,7 +29,8 @@ int trans_string2enum(const std::vector<std::string> &strs, std::string to_trans
   return i;
 }
 
-int trans_string2enum(const std::vector<std::string> &strs, std::string_view to_trans) {
+int trans_string2enum(const std::vector<std::string>& strs, std::string_view to_trans)
+{
   std::size_t i, len = strs.size();
   for (i = 0; i < len; i++)
   {

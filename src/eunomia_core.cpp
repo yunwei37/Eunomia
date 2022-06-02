@@ -46,9 +46,7 @@ TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler(const 
         new_handler = std::make_shared<typename TRACKER::prometheus_event_handler>(
             typename TRACKER::prometheus_event_handler(core_prometheus_server));
         break;
-      case export_type::stdout_type:
-        new_handler = create_print_event_handler<TRACKER>(tracker_ptr);
-        break;
+      case export_type::stdout_type: new_handler = create_print_event_handler<TRACKER>(tracker_ptr); break;
       default: spdlog::error("unsupported export type."); break;
     }
     if (new_handler)
@@ -105,12 +103,12 @@ void eunomia_core::start_trackers(void)
         spdlog::info("tcp tracker is starting");
         core_tracker_manager.start_tracker(create_default_tracker<tcp_tracker>(t.get()));
         break;
-      case avaliable_tracker::syscall: 
+      case avaliable_tracker::syscall:
         spdlog::info("syscall tracker is starting");
         core_tracker_manager.start_tracker(create_default_tracker<syscall_tracker>(t.get()));
         break;
       case avaliable_tracker::ipc:
-        spdlog::info("ipc tracker is starting"); 
+        spdlog::info("ipc tracker is starting");
         core_tracker_manager.start_tracker(create_default_tracker<ipc_tracker>(t.get()));
         break;
       case avaliable_tracker::process:

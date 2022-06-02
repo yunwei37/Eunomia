@@ -24,9 +24,9 @@ std::unique_ptr<tcp_tracker> tcp_tracker::create_tracker_with_default_env(tracke
   config_data config;
   config.handler = handler;
   config.name = "tcp_tracker";
-  config.env = tcp_env{ 
+  config.env = tcp_env{
     .uid = (uid_t)-1,
-   };
+  };
   return std::make_unique<tcp_tracker>(config);
 }
 
@@ -89,8 +89,7 @@ void tcp_tracker::plain_text_event_printer::handle(tracker_event<tcp_event> &e)
   if (is_start)
   {
     is_start = false;
-    spdlog::info(
-      "{:6} {:6} {:16} {:2} {:20} {:20} {:6}","uid", "pid", "task", "af", "src", "dst", "dport");
+    spdlog::info("{:6} {:6} {:16} {:2} {:20} {:20} {:6}", "uid", "pid", "task", "af", "src", "dst", "dport");
   }
   char src[INET6_ADDRSTRLEN];
   char dst[INET6_ADDRSTRLEN];
@@ -147,38 +146,41 @@ void tcp_tracker::prometheus_event_handler::report_prometheus_event(const struct
   {
     spdlog::warn("broken tcp_event\n");
   }
-  if (e.af == AF_INET) {
-  eunomia_tcp_v4_counter
-      .Add({ { "uid", std::to_string(e.uid) },
-             { "task", std::string(e.task) },
-             { "container_id", "0" },
-             { "src", std::string(inet_ntop((int)e.af, &s, src, sizeof(src))) },
-             { "dst", std::string(inet_ntop((int)e.af, &d, dst, sizeof(dst))) },
-             { "port", std::to_string(e.dport) },
-             { "pid", std::to_string(e.pid) } })
-      .Increment();
-  }else {
-  eunomia_tcp_v6_counter
-     .Add({ { "uid", std::to_string(e.uid) },
-             { "task", std::string(e.task) },
-             { "container_id", "0" },
-             { "src", std::string(inet_ntop((int)e.af, &s, src, sizeof(src))) },
-             { "dst", std::string(inet_ntop((int)e.af, &d, dst, sizeof(dst))) },
-             { "port", std::to_string(e.dport) },
-             { "pid", std::to_string(e.pid) } })
-      .Increment();
+  if (e.af == AF_INET)
+  {
+    eunomia_tcp_v4_counter
+        .Add({ { "uid", std::to_string(e.uid) },
+               { "task", std::string(e.task) },
+               { "container_id", "0" },
+               { "src", std::string(inet_ntop((int)e.af, &s, src, sizeof(src))) },
+               { "dst", std::string(inet_ntop((int)e.af, &d, dst, sizeof(dst))) },
+               { "port", std::to_string(e.dport) },
+               { "pid", std::to_string(e.pid) } })
+        .Increment();
+  }
+  else
+  {
+    eunomia_tcp_v6_counter
+        .Add({ { "uid", std::to_string(e.uid) },
+               { "task", std::string(e.task) },
+               { "container_id", "0" },
+               { "src", std::string(inet_ntop((int)e.af, &s, src, sizeof(src))) },
+               { "dst", std::string(inet_ntop((int)e.af, &d, dst, sizeof(dst))) },
+               { "port", std::to_string(e.dport) },
+               { "pid", std::to_string(e.pid) } })
+        .Increment();
   }
 }
 
 tcp_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_server &server)
-: eunomia_tcp_v4_counter(prometheus::BuildCounter()
+    : eunomia_tcp_v4_counter(prometheus::BuildCounter()
                                  .Name("eunomia_observed_tcp_v4_count")
                                  .Help("Number of observed tcp4 connect count")
                                  .Register(*server.registry)),
-  eunomia_tcp_v6_counter(prometheus::BuildCounter()
-                                  .Name("eunomia_observed_tcp_v6_count")
-                                  .Help("Number of observed tcp6 connect count")
-                                  .Register(*server.registry))
+      eunomia_tcp_v6_counter(prometheus::BuildCounter()
+                                 .Name("eunomia_observed_tcp_v6_count")
+                                 .Help("Number of observed tcp6 connect count")
+                                 .Register(*server.registry))
 {
 }
 

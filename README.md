@@ -20,7 +20,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
     - [Prequest](#prequest)
     - [run as binary](#run-as-binary)
     - [Docker, Prometheus and Grafana](#docker-prometheus-and-grafana)
-    - [Prometheus and rafana 的效果如图：](#prometheus-and-rafana-的效果如图)
+    - [Prometheus and rafana result：](#prometheus-and-rafana-result)
     - [build On Linux](#build-on-linux)
   - [Why is eBPF](#why-is-ebpf)
   - [Architecture](#architecture)
@@ -40,8 +40,9 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 
 * [X] 开箱即用：以单一二进制文件或 `docker` 镜像方式分发，一次编译，到处运行，一行代码即可启动，包含多种 ebpf 工具和多种监测点，支持多种输出格式（json, csv, etc)；
 * [X] 可集成 `prometheus` 和 `Grafana`，作为监控可视化和预警平台；
-* [X] 可自定义运行时安全预警规则，也可以自动收集进程系统调用行为并通过 seccomp 进行限制；
-* [ ] 可外接时序数据库，如 `InfluxDB` 等，作为可选的信息持久化存储方案；
+* [X] 可自定义运行时安全预警规则, 并通过 prometheus 等实现监控告警; 
+* [X] 可以自动收集进程系统调用行为并通过 seccomp 进行限制；
+* [ ] 可外接时序数据库，如 `InfluxDB` 等，作为可选的信息持久化存储和数据分析方案；
 * [ ] 可通过 `graphql` 在远程发起 http 请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行在线数据分析；
 
 除了收集容器中的一般系统运行时内核指标，例如系统调用、网络连接、文件访问、进程执行等，我们在探索实现过程中还发现目前对于 `lua` 和 `nginx` 相关用户态 `profile` 工具和指标可观测性开源工具存在一定的空白，但又有相当大的潜在需求；因此我们还计划添加一系列基于 uprobe 的用户态 `nginx/lua` 追踪器，作为可选的扩展方案；（这部分需求来自中科院开源之夏， APISIX 社区）
@@ -97,10 +98,14 @@ will trace all files read or write in the system at a defaut interval of 3s, and
 [2022-05-28 11:23:10.699] [info] start ebpf tracker...
 [2022-05-28 11:23:10.699] [info] start prometheus server...
 [2022-05-28 11:23:10.699] [info] press 'Ctrl C' key to exit...
-[2022-05-28 11:23:13.785] [info] pid    read_bytes      read count      write_bytes     write count     comm    type    tid     filename
-[2022-05-28 11:23:13.785] [info] 34802  2048            1               0               0               ps      R       34802   status
-[2022-05-28 11:23:13.785] [info] 34802  2048            1               0               0               ps      R       34802   stat
-[2022-05-28 11:23:13.785] [info] 34802  2048            1               0               0               ps      R       34802   status
+[2022-06-02 11:18:20.173] [info] pid    container_name reads  writes read_bytes write_bytes type   comm         filename    
+[2022-06-02 11:18:20.173] [info] 142326 ubuntu          0      1          0          1      R      postgres     oom_score_adj
+[2022-06-02 11:18:20.173] [info]   5824 ubuntu          1      0         16          0      R      code         state.vscdb 
+[2022-06-02 11:18:20.173] [info]   5453 ubuntu          1      0         16          0      R      grafana-server grafana.db  
+[2022-06-02 11:18:20.173] [info] 142327 ubuntu          1      0         18          0      R      git          .gitignore  
+[2022-06-02 11:18:20.173] [info] 142327 ubuntu          1      0         18          0      R      git          .gitignore  
+[2022-06-02 11:18:20.173] [info] 142327 ubuntu          1      0         18          0      R      git          .gitignore  
+[2022-06-02 11:18:20.173] [info]   5824 ubuntu          1      1          8         12      R      code         state.vscdb-journal
 ....
 ```
 
@@ -112,10 +117,9 @@ for more details, see: [usage.md](doc/usage.md)
 
 ### Docker, Prometheus and Grafana
 
-> TODO: docker file
+see [quickstart/deploy.md](doc/quickstart/deploy.md)
 
-
-### Prometheus and rafana 的效果如图：
+### Prometheus and rafana result：
 
 <div  align="center">  
  <img src="doc/imgs/prometheus1.png" alt="eunomia_prometheus1" align=center />
@@ -124,11 +128,37 @@ for more details, see: [usage.md](doc/usage.md)
   <p>文件读取的系统调用次数</p>
  <img src="doc/imgs/prometheus3.png" alt="eunomia_prometheus1" align=center />
  <p>对于容器中进程的跟踪结果，记录开始和结束时间</p>
+ <img src="doc/imgs/grafana.png" alt="eunomia_grafana1" align=center />
+ <p>一个简单的 grafana dashboard 例子，包含了多种监控指标</p>
 </div>
 
 - 对于详细的 Prometheus 监控指标文档，请参考：[prometheus_metrics.md](doc/prometheus_metrics.md)
 
 - 关于如何集成 Prometheus 和 Grafane，请参考：[intergration.md](doc/intergration.md)
+
+### security rules
+
+Use eunomia to detect security related events, for example, after started eunomia server, run:
+
+```
+sudo bpftools/tcp/tcp
+```
+
+And you will get an alert in eunomia output:
+
+```
+[2022-06-02 11:26:40.830] [info] Security Rule Detection:
+[2022-06-02 11:26:40.831] [info] level: event
+[2022-06-02 11:26:40.831] [info] name: Insert-BPF
+[2022-06-02 11:26:40.832] [info] message: BPF program loaded: tcp
+[2022-06-02 11:26:40.832] [info] pid: 143856
+[2022-06-02 11:26:40.833] [info] container_id: 36fca8c5eec1
+[2022-06-02 11:26:40.833] [info] container_name: Ubuntu
+```
+
+This message means some program inserts a bpf program to the kernel, which may cause container escape. Note that alrough `eunomia` use ebpf as well, it will not trigger this warnning itself. This will also be exported to Prometheus, in metrix `eunomia_seccurity_event_count`.
+
+For more details, please refer to [rules_index](doc/rules.md)
 
 ### build On Linux
 

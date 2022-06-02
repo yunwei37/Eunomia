@@ -36,9 +36,11 @@ struct syscall_env
   unsigned char filter_report_times;
 };
 
-static int
-start_syscall_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, struct syscall_env env,
-  void *ctx)
+static int start_syscall_tracker(
+    ring_buffer_sample_fn handle_event,
+    libbpf_print_fn_t libbpf_print_fn,
+    struct syscall_env env,
+    void *ctx)
 {
   struct ring_buffer *rb = NULL;
   struct syscall_bpf *skel;

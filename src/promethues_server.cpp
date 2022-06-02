@@ -17,10 +17,10 @@
 #include "prometheus/exposer.h"
 #include "prometheus/family.h"
 
-prometheus_server::prometheus_server(std::string bind_address) : exposer(bind_address) {
-        
-        registry = std::make_shared<prometheus::Registry>();
-    }
+prometheus_server::prometheus_server(std::string bind_address) : exposer(bind_address)
+{
+  registry = std::make_shared<prometheus::Registry>();
+}
 
 int prometheus_server::start_prometheus_server()
 {

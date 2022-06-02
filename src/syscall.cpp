@@ -5,8 +5,10 @@
  */
 
 #include "eunomia/syscall.h"
-#include <json.hpp>
+
 #include <spdlog/spdlog.h>
+
+#include <json.hpp>
 
 using json = nlohmann::json;
 
@@ -21,7 +23,7 @@ std::unique_ptr<syscall_tracker> syscall_tracker::create_tracker_with_default_en
   config_data config;
   config.handler = handler;
   config.name = "syscall_tracker";
-  config.env = syscall_env{0};
+  config.env = syscall_env{ 0 };
   return std::make_unique<syscall_tracker>(config);
 }
 
@@ -72,12 +74,13 @@ void syscall_tracker::plain_text_event_printer::handle(tracker_event<syscall_eve
   {
     return;
   }
-  spdlog::info("{:6} {:6} {:10} {:16} {:5}", 
-                  e.data.pid, 
-                  e.data.ppid, 
-                  syscall_names_x86_64[e.data.syscall_id], 
-                  e.data.comm, 
-                  e.data.occur_times);
+  spdlog::info(
+      "{:6} {:6} {:10} {:16} {:5}",
+      e.data.pid,
+      e.data.ppid,
+      syscall_names_x86_64[e.data.syscall_id],
+      e.data.comm,
+      e.data.occur_times);
 }
 
 void syscall_tracker::csv_event_printer::handle(tracker_event<syscall_event> &e)
@@ -87,17 +90,19 @@ void syscall_tracker::csv_event_printer::handle(tracker_event<syscall_event> &e)
   {
     is_start = false;
     spdlog::info("{:6},{:6},{:10},{:16},{:5}", "pid", "ppid", "syscall_id", "command", "occur time");
-    //spdlog::info("pid,ppid,syscall_id,mnt ns,command,occur time");
+    // spdlog::info("pid,ppid,syscall_id,mnt ns,command,occur time");
   }
-  if (e.data.syscall_id >= syscall_names_x86_64_size) {
+  if (e.data.syscall_id >= syscall_names_x86_64_size)
+  {
     return;
   }
-  spdlog::info("{:6},{:6},{:10},{:16},{:5}", 
-                e.data.pid, 
-                e.data.ppid, 
-                syscall_names_x86_64[e.data.syscall_id], 
-                e.data.comm, 
-                e.data.occur_times);
+  spdlog::info(
+      "{:6},{:6},{:10},{:16},{:5}",
+      e.data.pid,
+      e.data.ppid,
+      syscall_names_x86_64[e.data.syscall_id],
+      e.data.comm,
+      e.data.occur_times);
 }
 
 void syscall_tracker::prometheus_event_handler::report_prometheus_event(const struct syscall_event &e)
@@ -111,10 +116,10 @@ void syscall_tracker::prometheus_event_handler::report_prometheus_event(const st
 }
 
 syscall_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_server &server)
-: eunomia_files_syscall_counter(prometheus::BuildCounter()
-                                 .Name("eunomia_observed_syscall_count")
-                                 .Help("Number of observed syscall count")
-                                 .Register(*server.registry))
+    : eunomia_files_syscall_counter(prometheus::BuildCounter()
+                                        .Name("eunomia_observed_syscall_count")
+                                        .Help("Number of observed syscall count")
+                                        .Register(*server.registry))
 {
 }
 

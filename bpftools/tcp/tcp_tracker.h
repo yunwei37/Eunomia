@@ -29,7 +29,7 @@ struct tcp_env
 {
   bool verbose;
   volatile bool *exiting;
-  void* ctx;
+  void *ctx;
 
   bool count;
   void (*count_collector)(struct tcp_count_event);

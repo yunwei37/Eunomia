@@ -20,8 +20,7 @@ void files_tracker::prometheus_event_handler::report_prometheus_event(const stru
         .Add({ { "type", std::to_string(e.values[i].type) },
                { "filename", std::string(e.values[i].filename) },
                { "comm", std::string(e.values[i].comm) },
-               { "pid", std::to_string(e.values[i].pid) } 
-               })
+               { "pid", std::to_string(e.values[i].pid) } })
         .Increment((double)e.values[i].writes);
     eunomia_files_read_counter
         .Add({
@@ -35,8 +34,7 @@ void files_tracker::prometheus_event_handler::report_prometheus_event(const stru
         .Add({ { "type", std::to_string(e.values[i].type) },
                { "filename", std::string(e.values[i].filename) },
                { "comm", std::string(e.values[i].comm) },
-               { "pid", std::to_string(e.values[i].pid) }
-                })
+               { "pid", std::to_string(e.values[i].pid) } })
         .Increment((double)e.values[i].write_bytes);
     eunomia_files_read_bytes
         .Add({
@@ -144,8 +142,9 @@ static int sort_column(const void *obj1, const void *obj2)
   struct file_stat *s1 = (struct file_stat *)obj1;
   struct file_stat *s2 = (struct file_stat *)obj2;
 
-  return (int)(-((long long int)(s2->reads + s2->writes + s2->read_bytes + s2->write_bytes) -
-           (s1->reads + s1->writes + s1->read_bytes + s1->write_bytes)));
+  return (int)(-(
+      (long long int)(s2->reads + s2->writes + s2->read_bytes + s2->write_bytes) -
+      (s1->reads + s1->writes + s1->read_bytes + s1->write_bytes)));
 }
 
 void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> &e)
@@ -153,20 +152,31 @@ void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> 
   static const int default_size = 20;
   std::system("clear");
   qsort(e.data.values, e.data.rows, sizeof(struct file_stat), sort_column);
-
-  spdlog::info("pid\tread_bytes\tread count\twrite_bytes\twrite count\tcomm\ttype\ttid\tfilename");
+  spdlog::info(
+      "{:6} {:10} {:6} {:6} {:10} {:10} {:6} {:12} {:12}",
+      "pid",
+      "container_name",
+      "reads",
+      "writes",
+      "read_bytes",
+      "write_bytes",
+      "type",
+      "comm",
+      "filename");
+  // spdlog::info("pid\tread_bytes\tread count\twrite_bytes\twrite count\tcomm\ttype\ttid\tfilename");
   for (int i = 0; i < default_size; i++)
   {
     spdlog::info(
-        "{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\t{}\t{}",
+        "{:6} {:10} {:6} {:6} {:10} {:10} {:6} {:12} {:12}",
         e.data.values[i].pid,
-        e.data.values[i].read_bytes,
+        // TODO: get container name
+        "ubuntu",
         e.data.values[i].reads,
-        e.data.values[i].write_bytes,
         e.data.values[i].writes,
-        e.data.values[i].comm,
+        e.data.values[i].read_bytes,
+        e.data.values[i].write_bytes,
         e.data.values[i].type,
-        e.data.values[i].tid,
+        e.data.values[i].comm,
         e.data.values[i].filename);
   }
 }
@@ -177,19 +187,12 @@ void files_tracker::csv_event_printer::handle(tracker_event<files_event> &e)
   if (is_start)
   {
     is_start = false;
-     std::cout << "pid,read_bytes,read_count,write_bytes,write count,comm,type,tid,filename" << std::endl;
+    std::cout << "pid,read_bytes,read_count,write_bytes,write count,comm,type,tid,filename" << std::endl;
   }
   for (size_t i = 0; i < e.data.rows; i++)
   {
-    std::cout << 
-        e.data.values[i].pid  << "," <<
-        e.data.values[i].read_bytes  << "," <<
-        e.data.values[i].reads  << "," <<
-        e.data.values[i].write_bytes  << "," <<
-        e.data.values[i].writes  << "," <<
-        e.data.values[i].comm  << "," <<
-        e.data.values[i].type  << "," <<
-        e.data.values[i].tid << "," <<
-        e.data.values[i].filename << std::endl;
+    std::cout << e.data.values[i].pid << "," << e.data.values[i].read_bytes << "," << e.data.values[i].reads << ","
+              << e.data.values[i].write_bytes << "," << e.data.values[i].writes << "," << e.data.values[i].comm << ","
+              << e.data.values[i].type << "," << e.data.values[i].tid << "," << e.data.values[i].filename << std::endl;
   }
 }
