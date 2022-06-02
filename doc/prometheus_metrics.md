@@ -67,4 +67,6 @@ Here are some examples of how to use these metrics in Prometheus, which can help
 
 | **Describe** | **PromQL** |
 | --- | --- |
-| Request counts | `sum(increase(eunomia_run_tracker_total{namespace="$namespace",workload_name="$workload"}[5m])) by(namespace, workload_name)` |
+| Request counts | `sum(increase(eunomia_observed_tcp_v4_count{}[1m])) by(task)` |
+| read rate | `sum(rate(eunomia_observed_files_read_bytes{}[1m])) by(comm)` |
+| write rate | `sum(rate(eunomia_observed_files_write_count{}[1m])) by(comm)` |
