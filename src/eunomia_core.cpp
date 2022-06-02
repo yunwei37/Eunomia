@@ -24,6 +24,7 @@ TRACKER::tracker_event_handler eunomia_core::create_print_event_handler(const TR
     case export_format::json_format: return std::make_shared<typename TRACKER::json_event_printer>();
     case export_format::plain_text: return std::make_shared<typename TRACKER::plain_text_event_printer>();
     case export_format::csv: return std::make_shared<typename TRACKER::csv_event_printer>();
+    case export_format::none: return nullptr;
     default: spdlog::error("unsupported output format to stdout"); return nullptr;
   }
   return nullptr;

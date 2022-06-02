@@ -29,9 +29,10 @@ struct tcp_env
 {
   bool verbose;
   volatile bool *exiting;
+  void* ctx;
 
   bool count;
-  void (*collector)(struct tcp_count_event);
+  void (*count_collector)(struct tcp_count_event);
 
   bool print_timestamp;
   bool print_uid;
@@ -53,7 +54,7 @@ static void print_events(int perf_map_fd, perf_buffer_sample_fn handle_event, st
   struct perf_buffer *pb;
   int err;
 
-  pb = perf_buffer__new(perf_map_fd, 128, handle_event, handle_lost_events, NULL, NULL);
+  pb = perf_buffer__new(perf_map_fd, 128, handle_event, handle_lost_events, env.ctx, NULL);
   if (!pb)
   {
     err = -errno;
@@ -77,7 +78,7 @@ cleanup:
   perf_buffer__free(pb);
 }
 
-static void print_count_ipv4(int map_fd, void (*collector)(struct tcp_count_event))
+static void print_count_ipv4(int map_fd, void (*count_collector)(struct tcp_count_event))
 {
   static struct ipv4_flow_key keys[MAX_ENTRIES];
   uint32_t value_size = sizeof(uint64_t);
@@ -108,11 +109,11 @@ static void print_count_ipv4(int map_fd, void (*collector)(struct tcp_count_even
     tcp_event.CONNECTS = counts[i];
     tcp_event.is_ipv4 = true;
 
-    collector(tcp_event);
+    count_collector(tcp_event);
   }
 }
 
-static void print_count_ipv6(int map_fd, void (*collector)(struct tcp_count_event))
+static void print_count_ipv6(int map_fd, void (*count_collector)(struct tcp_count_event))
 {
   static struct ipv6_flow_key keys[MAX_ENTRIES];
   uint32_t value_size = sizeof(uint64_t);
@@ -147,7 +148,7 @@ static void print_count_ipv6(int map_fd, void (*collector)(struct tcp_count_even
     tcp_event.CONNECTS = counts[i];
     tcp_event.is_ipv4 = false;
 
-    collector(tcp_event);
+    count_collector(tcp_event);
   }
 }
 
@@ -159,8 +160,8 @@ static void print_count(int map_fd_ipv4, int map_fd_ipv6, struct tcp_env env)
     pause();
 
   // printf(header_fmt, "LADDR", "RADDR", "RPORT", "CONNECTS");
-  print_count_ipv4(map_fd_ipv4, env.collector);
-  print_count_ipv6(map_fd_ipv6, env.collector);
+  print_count_ipv4(map_fd_ipv4, env.count_collector);
+  print_count_ipv6(map_fd_ipv6, env.count_collector);
 }
 
 static int start_tcp_tracker(perf_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, struct tcp_env env)
@@ -189,9 +190,9 @@ static int start_tcp_tracker(perf_buffer_sample_fn handle_event, libbpf_print_fn
   if (env.count)
   {
     obj->rodata->do_count = true;
-    if (!env.collector)
+    if (!env.count_collector)
     {
-      fprintf(stderr, "env.collector is not set.\n");
+      fprintf(stderr, "env.count_collector is not set.\n");
       return -1;
     }
   }

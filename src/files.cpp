@@ -20,13 +20,14 @@ void files_tracker::prometheus_event_handler::report_prometheus_event(const stru
         .Add({ { "type", std::to_string(e.values[i].type) },
                { "filename", std::string(e.values[i].filename) },
                { "comm", std::string(e.values[i].comm) },
-               { "pid", std::to_string(e.values[i].pid) } })
+               //{ "pid", std::to_string(e.values[i].pid) } 
+               })
         .Increment((double)e.values[i].writes);
     eunomia_files_read_counter
         .Add({
             { "comm", std::string(e.values[i].comm) },
             { "filename", std::string(e.values[i].filename) },
-            { "pid", std::to_string(e.values[i].pid) },
+            //{ "pid", std::to_string(e.values[i].pid) },
             { "type", std::to_string(e.values[i].type) },
         })
         .Increment((double)e.values[i].reads);
@@ -34,13 +35,14 @@ void files_tracker::prometheus_event_handler::report_prometheus_event(const stru
         .Add({ { "type", std::to_string(e.values[i].type) },
                { "filename", std::string(e.values[i].filename) },
                { "comm", std::string(e.values[i].comm) },
-               { "pid", std::to_string(e.values[i].pid) } })
+               //{ "pid", std::to_string(e.values[i].pid) }
+                })
         .Increment((double)e.values[i].write_bytes);
     eunomia_files_read_bytes
         .Add({
             { "comm", std::string(e.values[i].comm) },
             { "filename", std::string(e.values[i].filename) },
-            { "pid", std::to_string(e.values[i].pid) },
+            //{ "pid", std::to_string(e.values[i].pid) },
             { "type", std::to_string(e.values[i].type) },
         })
         .Increment((double)e.values[i].read_bytes);
@@ -142,8 +144,8 @@ static int sort_column(const void *obj1, const void *obj2)
   struct file_stat *s1 = (struct file_stat *)obj1;
   struct file_stat *s2 = (struct file_stat *)obj2;
 
-  return -((long long int)(s2->reads + s2->writes + s2->read_bytes + s2->write_bytes) -
-           (s1->reads + s1->writes + s1->read_bytes + s1->write_bytes));
+  return (int)(-((long long int)(s2->reads + s2->writes + s2->read_bytes + s2->write_bytes) -
+           (s1->reads + s1->writes + s1->read_bytes + s1->write_bytes)));
 }
 
 void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> &e)
@@ -177,7 +179,7 @@ void files_tracker::csv_event_printer::handle(tracker_event<files_event> &e)
     is_start = false;
      std::cout << "pid,read_bytes,read_count,write_bytes,write count,comm,type,tid,filename" << std::endl;
   }
-  for (int i = 0; i < e.data.rows; i++)
+  for (size_t i = 0; i < e.data.rows; i++)
   {
     std::cout << 
         e.data.values[i].pid  << "," <<

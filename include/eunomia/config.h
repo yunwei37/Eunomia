@@ -118,8 +118,8 @@ struct config
   std::vector<std::shared_ptr<tracker_data_base>> enabled_trackers = {
         std::make_shared<process_tracker_data>(avaliable_tracker::process),
         std::make_shared<files_tracker_data>(avaliable_tracker::files),
-        std::make_shared<files_tracker_data>(avaliable_tracker::syscall),
-        std::make_shared<files_tracker_data>(avaliable_tracker::tcp),
+        std::make_shared<syscall_tracker_data>(avaliable_tracker::syscall),
+        std::make_shared<tcp_tracker_data>(avaliable_tracker::tcp),
   };
 
   // export config

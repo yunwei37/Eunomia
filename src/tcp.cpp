@@ -24,13 +24,15 @@ std::unique_ptr<tcp_tracker> tcp_tracker::create_tracker_with_default_env(tracke
   config_data config;
   config.handler = handler;
   config.name = "tcp_tracker";
-  config.env = tcp_env{ 0 };
+  config.env = tcp_env{ 
+    .uid = (uid_t)-1,
+   };
   return std::make_unique<tcp_tracker>(config);
 }
 
 void tcp_tracker::start_tracker()
 {
-  // current_config.env.ctx = (void *)this;
+  current_config.env.ctx = (void *)this;
   start_tcp_tracker(handle_tcp_sample_event, libbpf_print_fn, current_config.env);
 }
 
@@ -61,7 +63,7 @@ std::string tcp_tracker::json_event_handler_base::to_json(const struct tcp_event
   sender s, d;
   if (tcp_tracker::fill_src_dst(s, d, e) < 0)
   {
-    spdlog::debug("broken tcp_event\n");
+    spdlog::warn("broken tcp_event\n");
   }
 
   json tcp = { { "type", "tcp" },
@@ -87,7 +89,8 @@ void tcp_tracker::plain_text_event_printer::handle(tracker_event<tcp_event> &e)
   if (is_start)
   {
     is_start = false;
-    spdlog::info("pid\ttask\taf\tsrc\tdst\tdport");
+    spdlog::info(
+      "{:6} {:6} {:16} {:2} {:20} {:20} {:6}","uid", "pid", "task", "af", "src", "dst", "dport");
   }
   char src[INET6_ADDRSTRLEN];
   char dst[INET6_ADDRSTRLEN];
@@ -98,7 +101,8 @@ void tcp_tracker::plain_text_event_printer::handle(tracker_event<tcp_event> &e)
   }
 
   spdlog::info(
-      "{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}",
+      "{:6} {:6} {:16} {:2} {:20} {:20} {:6}",
+      e.data.uid,
       e.data.pid,
       e.data.task,
       AF_INET ? 4 : 6,
@@ -113,18 +117,19 @@ void tcp_tracker::csv_event_printer::handle(tracker_event<tcp_event> &e)
   if (is_start)
   {
     is_start = false;
-    spdlog::info("pid,task,af,src,dst,dport");
+    spdlog::info("uid,pid,task,af,src,dst,dport");
   }
   char src[INET6_ADDRSTRLEN];
   char dst[INET6_ADDRSTRLEN];
   sender s, d;
   if (tcp_tracker::fill_src_dst(s, d, e.data) < 0)
   {
-    spdlog::debug("broken tcp_event\n");
+    spdlog::warn("broken tcp_event\n");
   }
 
   spdlog::info(
-      "{},{},{},{},{},{}",
+      "{},{},{},{},{},{},{}",
+      e.data.uid,
       e.data.pid,
       e.data.task,
       AF_INET ? 4 : 6,

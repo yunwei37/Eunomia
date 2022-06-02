@@ -73,6 +73,7 @@ static int handle_tracker_event(void *ctx, void *data, size_t data_sz)
 {
   if (!data || !ctx)
   {
+    std::cout<< "warn: no data or no ctx" << std::endl;
     return 0;
   }
   const EVENT &e = *(const EVENT *)data;

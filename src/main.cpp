@@ -49,11 +49,13 @@ void daemon_mode_opertiaon(config core_config)
 }
 
 void server_mode_operation(
-    bool prometheus_flag,
+    bool load_from_config_file,
     config core_config)
 {
   // std::cout << prometheus_flag << " " << listening_address << " " << std::endl;
-  
+  if (!load_from_config_file) {
+    core_config.fmt = export_format::none;  
+  }
   std::cout << "start server mode...\n";
   eunomia_core core(core_config);
   core.start_eunomia();
@@ -80,6 +82,7 @@ void seccomp_mode_operation(config core_config)
 int main(int argc, char* argv[])
 {
   bool prometheus_flag = false, container_flag = false;;
+  bool load_from_config_file = false;
   pid_t target_pid = 0;
   int time_tracing = 0;
   std::string fmt = "", listening_address = "127.0.0.1:8528";
@@ -87,6 +90,8 @@ int main(int argc, char* argv[])
   eunomia_mode selected = eunomia_mode::help;
   avaliable_tracker run_selected = avaliable_tracker::help;
   unsigned long container_id = 0;
+
+  //spdlog::set_level(spdlog::level::debug);
 
   auto container_id_cmd =
       (clipp::option("-c", "--container") & clipp::value("container id", container_id)) %
@@ -158,6 +163,7 @@ int main(int argc, char* argv[])
   {
     std::cout << config_file << std::endl;
     analyze_toml(config_file, core_config);
+    load_from_config_file = true;
   }
   // set base on flags
   // note: cmd flags will override config file
@@ -175,7 +181,7 @@ int main(int argc, char* argv[])
     core_config.exit_after = time_tracing;
     core_config.is_auto_exit = true;
   }
-  if (fmt != "")
+  if (!load_from_config_file && fmt != "")
   {
     int idx = trans_string2enum(str_export_format, fmt);
     if(idx >= 0) {
@@ -193,7 +199,7 @@ int main(int argc, char* argv[])
       daemon_mode_opertiaon(core_config);
       break;
     case eunomia_mode::server: 
-      server_mode_operation(prometheus_flag, core_config); 
+      server_mode_operation(load_from_config_file, core_config); 
       break;
     case eunomia_mode::seccomp: 
       seccomp_mode_operation(core_config); 

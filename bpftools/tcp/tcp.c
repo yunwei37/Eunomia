@@ -271,6 +271,6 @@ int main(int argc, char **argv)
   }
   print_events_header();
   env.exiting = &exiting;
-  env.collector = tcp_count_collector;
+  env.count_collector = tcp_count_collector;
   return start_tcp_tracker(handle_event, libbpf_print_fn, env);
 }

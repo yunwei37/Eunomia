@@ -32,7 +32,7 @@ static int install_syscall_filter(const std::vector<uint32_t>& syscall_vec)
   /* add ban rules All syscalls*/
   for (size_t i = 0; i < syscalls_size; i++)
   {
-    if (is_not_allow(syscall_vec, i))
+    if (is_not_allow(syscall_vec, (uint32_t)i))
     {
       filter_vec.push_back(BPF_JUMP(BPF_JMP + BPF_JEQ, i, 0, 1));
       // printf("banned syscall_id : %d\n", i);
