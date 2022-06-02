@@ -158,10 +158,12 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  config core_config;
+  config core_config = {
+    .enable_container_manager = container_flag
+  };
   if (config_file != "")
   {
-    std::cout << config_file << std::endl;
+    core_config.enabled_trackers.clear();
     analyze_toml(config_file, core_config);
     load_from_config_file = true;
   }
