@@ -8,8 +8,9 @@
 
 #include <spdlog/spdlog.h>
 
-sec_analyzer_prometheus::sec_analyzer_prometheus(prometheus_server &server, const std::vector<sec_rule_describe> &rules)
-    : eunomia_sec_warn_counter(prometheus::BuildCounter()
+sec_analyzer_prometheus::sec_analyzer_prometheus(prometheus_server &server, const std::vector<sec_rule_describe> &in_rules)
+    : sec_analyzer(in_rules),
+      eunomia_sec_warn_counter(prometheus::BuildCounter()
                                    .Name("eunomia_seccurity_warn_count")
                                    .Help("Number of observed security warnings")
                                    .Register(*server.registry)),
@@ -20,8 +21,7 @@ sec_analyzer_prometheus::sec_analyzer_prometheus(prometheus_server &server, cons
       eunomia_sec_alert_counter(prometheus::BuildCounter()
                                     .Name("eunomia_seccurity_alert_count")
                                     .Help("Number of observed security alert")
-                                    .Register(*server.registry)),
-      sec_analyzer(rules)
+                                    .Register(*server.registry))
 {
 }
 
@@ -96,18 +96,74 @@ void sec_analyzer_prometheus::report_prometheus_event(const struct rule_message 
   }
 }
 
-int syscall_rule::check_rule(const syscall_event &e)
+int syscall_rule_checker::check_rule(const tracker_event<syscall_event> &e, rule_message &msg)
 {
   if (!analyzer)
   {
     return -1;
   }
-  for (auto i = 0; i < analyzer->rules.size(); i++)
+  if (e.data.pid == getpid())
   {
-    if (analyzer->rules[i].name == syscall_names_x86_64[e.syscall_id])
+    return -1;
+  }
+  for (std::size_t i = 0; i < analyzer->rules.size(); i++)
+  {
+    if (analyzer->rules[i].type == sec_rule_type::syscall &&
+        analyzer->rules[i].signature == syscall_names_x86_64[e.data.syscall_id])
     {
-      return i;
+      msg.level = analyzer->rules[i].level;
+      msg.name = analyzer->rules[i].name;
+      msg.message = analyzer->rules[i].message + ": " + e.data.comm;
+      msg.pid = e.data.pid;
+      // EVNETODO: fix get container id
+      msg.container_id = "36fca8c5eec1";
+      msg.container_name = "Ubuntu";
+      return (int)i;
     }
   }
   return -1;
+}
+
+/*
+
+examples:
+
+[bpf_rule]
+type = "syscall"
+name = "Insert-BPF"
+syscall = "bpf"
+error_message = "BPF program loaded"
+
+[debug]
+type = "syscall"
+name = "Anti-Debugging"
+error_message = "Process uses anti-debugging technique to block debugger"
+*/
+
+std::shared_ptr<sec_analyzer> sec_analyzer::create_sec_analyzer_with_default_rules(void)
+{
+  return create_sec_analyzer_with_additional_rules(std::vector<sec_rule_describe>());
+}
+
+std::shared_ptr<sec_analyzer> sec_analyzer::create_sec_analyzer_with_additional_rules(
+    const std::vector<sec_rule_describe> &rules)
+{
+  std::vector<sec_rule_describe> default_rules = {
+    sec_rule_describe{
+        .level = sec_rule_level::event,
+        .type = sec_rule_type::syscall,
+        .name = "Insert-BPF",
+        .message = "BPF program loaded",
+        .signature = "bpf",
+    },
+    sec_rule_describe{
+        .level = sec_rule_level::event,
+        .type = sec_rule_type::syscall,
+        .name = "Anti-Debugging",
+        .message = "Process uses anti-debugging technique to block debugger",
+        .signature = "ptrace",
+    },
+  };
+  default_rules.insert(default_rules.end(), rules.begin(), rules.end());
+  return std::make_shared<sec_analyzer>(default_rules);
 }

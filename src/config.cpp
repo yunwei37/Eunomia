@@ -41,7 +41,7 @@ int trans_string2enum(const std::vector<std::string> &strs, std::string_view to_
   {
     return -1;
   }
-  return i;
+  return (int)i;
 }
 
 void analyze_toml(std::string file_path, config& config_toml)

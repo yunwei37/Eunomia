@@ -61,11 +61,14 @@ struct sec_analyzer
   std::mutex mutex;
   const std::vector<sec_rule_describe> rules;
 
-  sec_analyzer(const std::vector<sec_rule_describe> &rules) : rules(rules)
+  sec_analyzer(const std::vector<sec_rule_describe> &in_rules) : rules(in_rules)
   {
   }
   virtual void report_event(const rule_message &msg);
   void print_event(const rule_message &msg);
+
+  static std::shared_ptr<sec_analyzer> create_sec_analyzer_with_default_rules(void);
+  static std::shared_ptr<sec_analyzer> create_sec_analyzer_with_additional_rules(const std::vector<sec_rule_describe> &rules);
 };
 
 struct sec_analyzer_prometheus : sec_analyzer
@@ -91,28 +94,22 @@ template<typename EVNET>
 struct rule_base : event_handler<EVNET>
 {
   std::shared_ptr<sec_analyzer> analyzer;
-  sec_rule_level level;
+  rule_base(std::shared_ptr<sec_analyzer> analyzer_ptr) : analyzer(analyzer_ptr) {}
   virtual ~rule_base() = default;
 
   // return rule id if matched
   // return -1 if not matched
-  virtual int check_rule(tracker_event<EVNET> &e) = 0;
+  virtual int check_rule(const tracker_event<EVNET> &e, rule_message &msg) = 0;
   void handle(tracker_event<EVNET> &e)
   {
-    if (!analyzer) {
-        std::cout << "analyzer is null" << std::endl;
+    if (!analyzer)
+    {
+      std::cout << "analyzer is null" << std::endl;
     }
-    int res = check_rule(e);
+    struct rule_message msg;
+    int res = check_rule(e, msg);
     if (res != -1)
     {
-      struct rule_message msg;
-      msg.level = level;
-      msg.name = analyzer->rules[res].name;
-      msg.message = analyzer->rules[res].message;
-      msg.pid = e.pid;
-      // EVNETODO: fix get container id
-      msg.container_id = "36fca8c5eec1";
-      msg.container_name = "Ubuntu";
       analyzer->report_event(msg);
     }
   }
@@ -124,7 +121,7 @@ struct rule_base : event_handler<EVNET>
 struct files_rule_base : rule_base<files_event>
 {
   virtual ~files_rule_base() = default;
-  int check_rule(const files_event &);
+  int check_rule(const tracker_event<files_event> &e, rule_message &msg);
 };
 
 // process rule:
@@ -133,15 +130,17 @@ struct files_rule_base : rule_base<files_event>
 struct process_rule_base : rule_base<process_event>
 {
   virtual ~process_rule_base() = default;
-  int check_rule(const process_event &);
+  int check_rule(const tracker_event<process_event> &e, rule_message &msg);
 };
 
 // syscall rule:
 //
 // for example, a process is using a syscall
-struct syscall_rule : rule_base<syscall_event>
+struct syscall_rule_checker : rule_base<syscall_event>
 {
-  int check_rule(const syscall_event &);
+  syscall_rule_checker(std::shared_ptr<sec_analyzer> analyzer_ptr) : rule_base(analyzer_ptr)
+  {}
+  int check_rule(const tracker_event<syscall_event> &e, rule_message &msg);
 };
 
 #endif
