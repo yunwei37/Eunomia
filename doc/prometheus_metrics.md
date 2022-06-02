@@ -1,6 +1,19 @@
 # Prometheus Metrics Description
+
+## Process Metrics
+
+
+## Tcp Connect Metrics
+
+## Syscall Metrics
+
+
+## files Metrics
+
 ## Service Metrics
-Service metrics are generated from the server-side events, which are used to show the quality of service. 
+
+Service metrics are generated from the  eunomia server-side events, which are used to show the quality of service.
+ 
 ### Metrics List
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
@@ -21,17 +34,6 @@ Service metrics are generated from the server-side events, which are used to sho
 **Note 1**: xxxx
 
 **Note 2**: xxxx
-
-## Process Metrics
-
-
-## Tcp Connect Metrics
-
-## Syscall Metrics
-
-
-## files Metrics
-
 
 ## PromQL Example
 

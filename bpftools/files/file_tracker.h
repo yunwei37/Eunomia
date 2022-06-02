@@ -45,7 +45,7 @@ struct files_env
 
 struct files_event
 {
-  int rows;
+  size_t rows;
   struct file_stat *values;
 };
 
@@ -53,7 +53,8 @@ static int print_stat(struct files_bpf *obj, struct files_env env, ring_buffer_s
 {
   struct file_id key, *prev_key = NULL;
   static struct file_stat values[OUTPUT_ROWS_LIMIT];
-  int err = 0, rows = 0;
+  int err = 0;
+  size_t rows = 0;
   int fd = bpf_map__fd(obj->maps.entries);
 
   while (1)

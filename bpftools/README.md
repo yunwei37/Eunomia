@@ -15,10 +15,8 @@
 引自第三方的代码，例如：
 
 ```c
-// SPDX-License-Identifier: GPL-2.0
-// Copyright (c) 2020 Anton Protopopov
-//
-// Based on tcpconnect(8) from BCC by Brendan Gregg
+/* SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause) */
+/* Copyright (c) 2020 Facebook */
 ```
 
 ### process

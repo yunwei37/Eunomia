@@ -29,7 +29,7 @@ int trans_string2enum(const std::vector<std::string> &strs, std::string to_trans
 }
 
 int trans_string2enum(const std::vector<std::string> &strs, std::string_view to_trans) {
-  unsigned int i, len = strs.size();
+  std::size_t i, len = strs.size();
   for (i = 0; i < len; i++)
   {
     if (strs[i] == to_trans)

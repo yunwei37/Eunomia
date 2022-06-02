@@ -17,7 +17,7 @@ eunomia_core::eunomia_core(config& config) : core_config(config), core_prometheu
 
 // create event handler for print to console
 template<tracker_concept TRACKER>
-TRACKER::tracker_event_handler eunomia_core::create_print_event_handler(void)
+TRACKER::tracker_event_handler eunomia_core::create_print_event_handler(const TRACKER* tracker_ptr)
 {
   switch (core_config.fmt)
   {
@@ -29,11 +29,13 @@ TRACKER::tracker_event_handler eunomia_core::create_print_event_handler(void)
   return nullptr;
 }
 
+// create all event handlers for a tracker
 template<tracker_concept TRACKER>
-TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler()
+TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler(const TRACKER* tracker_ptr)
 {
   typename TRACKER::tracker_event_handler handler = nullptr;
 
+  // create event handler based on export types
   for (auto e : core_config.enabled_export_types)
   {
     typename TRACKER::tracker_event_handler new_handler = nullptr;
@@ -44,8 +46,7 @@ TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler()
             typename TRACKER::prometheus_event_handler(core_prometheus_server));
         break;
       case export_type::stdout_type:
-        // new_handler = std::make_shared<typename TRACKER::json_event_printer>(typename TRACKER::json_event_printer{});
-        new_handler = create_print_event_handler<TRACKER>();
+        new_handler = create_print_event_handler<TRACKER>(tracker_ptr);
         break;
       default: spdlog::error("unsupported export type."); break;
     }
@@ -76,7 +77,7 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_data
   }
   const cur_tracker_data& files_data = *data;
 
-  auto handler = create_tracker_event_handler<TRACKER>();
+  auto handler = create_tracker_event_handler<TRACKER>(nullptr);
   if (!handler)
   {
     spdlog::error("no handler was created for tracker");

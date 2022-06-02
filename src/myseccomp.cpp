@@ -30,7 +30,7 @@ static int install_syscall_filter(const std::vector<uint32_t>& syscall_vec)
 
   size_t syscalls_size = syscall_names_x86_64_size;
   /* add ban rules All syscalls*/
-  for (auto i = 0; i < syscalls_size; i++)
+  for (size_t i = 0; i < syscalls_size; i++)
   {
     if (is_not_allow(syscall_vec, i))
     {
@@ -72,7 +72,7 @@ failed:
   return 1;
 }
 
-uint32_t get_syscall_id(std::string syscall_name)
+int get_syscall_id(std::string syscall_name)
 {
   for (int i = 0; i < 439; i++)
   {
@@ -90,7 +90,7 @@ int enable_seccomp_white_list(seccomp_config config)
   std::vector<uint32_t> syscall_vec;  // allow_syscall_id list
   for (size_t i = 0; i < config.allow_syscall.size(); i++)
   {
-    size_t id = get_syscall_id(config.allow_syscall[i]);
+    int id = get_syscall_id(config.allow_syscall[i]);
     if (id == -1)
     {
       spdlog::error("syscall_id error {0} has no corresponding syscall in x86 system arch", config.allow_syscall[i]);

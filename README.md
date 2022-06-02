@@ -106,7 +106,7 @@ will trace all files read or write in the system at a defaut interval of 3s, and
 
 You can also use `--container-id` to trace a container, or use `toml` config file. You can specify the interval of tracing or sampling, the output format, the log level, etc.
 
-we have provide five default trackers, `process`, `tcp`, `syscall`, `ipc` and `files`. You can also add your own trackers from libbpf-tools easily.
+we have provide four default trackers, `process`, `tcp`, `syscall` and `files`. You can also add your own trackers from libbpf-tools easily.
 
 for more details, see: [usage.md](doc/usage.md)
 

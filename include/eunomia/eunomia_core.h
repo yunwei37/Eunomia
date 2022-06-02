@@ -31,12 +31,12 @@ private:
     // create all event handlers for a tracker
     template <tracker_concept TRACKER>
     TRACKER::tracker_event_handler
-    create_tracker_event_handler(void);
+    create_tracker_event_handler(const TRACKER* tracker_ptr);
 
     // create event handler for print to console
     template <tracker_concept TRACKER>
     TRACKER::tracker_event_handler
-    create_print_event_handler(void);
+    create_print_event_handler(const TRACKER* tracker_ptr);
 
     // create a default tracker with default env
     template <tracker_concept TRACKER>

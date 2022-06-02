@@ -32,7 +32,7 @@ bool is_not_allow(const std::vector<uint32_t>& syscall_vec, uint32_t id);
 // install seccomp filter for all syscalls except those in the list
 static int install_syscall_filter(const std::vector<uint32_t>& syscall_vec);
 
-uint32_t get_syscall_id(std::string syscall_name);
+int get_syscall_id(std::string syscall_name);
 
 // Enable Seccomp syscall
 // param seccomp_config type is defined by include/eunomia/config.h

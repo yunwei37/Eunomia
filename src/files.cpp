@@ -137,15 +137,28 @@ void files_tracker::json_event_printer::handle(tracker_event<files_event> &e)
   std::cout << to_json(e.data) << std::endl;
 }
 
+static int sort_column(const void *obj1, const void *obj2)
+{
+  struct file_stat *s1 = (struct file_stat *)obj1;
+  struct file_stat *s2 = (struct file_stat *)obj2;
+
+  return ((long long int)(s2->reads + s2->writes + s2->read_bytes + s2->write_bytes) -
+           (s1->reads + s1->writes + s1->read_bytes + s1->write_bytes));
+}
+
 void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> &e)
 {
+  static const int default_size = 20;
+  std::system("clear");
+  qsort(e.data.values, e.data.rows, sizeof(struct file_stat), sort_column);
+
   static bool is_start = true;
   if (is_start)
   {
     is_start = false;
     spdlog::info("pid\tread_bytes\tread count\twrite_bytes\twrite count\tcomm\ttype\ttid\tfilename");
   }
-  for (int i = 0; i < e.data.rows; i++)
+  for (int i = 0; i < default_size; i++)
   {
     spdlog::info(
         "{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\t{}\t{}",
@@ -167,20 +180,19 @@ void files_tracker::csv_event_printer::handle(tracker_event<files_event> &e)
   if (is_start)
   {
     is_start = false;
-    spdlog::info("pid,read_bytes,read_count,write_bytes,write count,comm,type,tid,filename");
+     std::cout << "pid,read_bytes,read_count,write_bytes,write count,comm,type,tid,filename" << std::endl;
   }
   for (int i = 0; i < e.data.rows; i++)
   {
-    spdlog::info(
-        "{},{},{},{},{},{},{},{},{}",
-        e.data.values[i].pid,
-        e.data.values[i].read_bytes,
-        e.data.values[i].reads,
-        e.data.values[i].write_bytes,
-        e.data.values[i].writes,
-        e.data.values[i].comm,
-        e.data.values[i].type,
-        e.data.values[i].tid,
-        e.data.values[i].filename);
+    std::cout << 
+        e.data.values[i].pid  << "," <<
+        e.data.values[i].read_bytes  << "," <<
+        e.data.values[i].reads  << "," <<
+        e.data.values[i].write_bytes  << "," <<
+        e.data.values[i].writes  << "," <<
+        e.data.values[i].comm  << "," <<
+        e.data.values[i].type  << "," <<
+        e.data.values[i].tid << "," <<
+        e.data.values[i].filename << std::endl;
   }
 }

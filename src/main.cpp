@@ -18,6 +18,7 @@ void run_mode_operation(
     avaliable_tracker selected,
     config core_config)
 {
+  core_config.enabled_trackers.clear();
   switch (selected)
   {
     case avaliable_tracker::tcp: 
@@ -80,7 +81,7 @@ int main(int argc, char* argv[])
   bool prometheus_flag = false, container_flag = false;;
   pid_t target_pid = 0;
   int time_tracing = 0;
-  std::string fmt = "json", listening_address = "127.0.0.1:8528";
+  std::string fmt = "", listening_address = "127.0.0.1:8528";
   std::string config_file = "", output_file = "";
   eunomia_mode selected = eunomia_mode::help;
   avaliable_tracker run_selected = avaliable_tracker::help;
@@ -168,17 +169,18 @@ int main(int argc, char* argv[])
   if (target_pid) {
     core_config.target_pid = target_pid;
   }
-
   if (time_tracing > 0)
   {
     core_config.exit_after = time_tracing;
     core_config.is_auto_exit = true;
   }
-  int idx = trans_string2enum(str_export_format, fmt);
-  if(idx >= 0) {
-    core_config.fmt = export_format(idx);
+  if (fmt != "")
+  {
+    int idx = trans_string2enum(str_export_format, fmt);
+    if(idx >= 0) {
+      core_config.fmt = export_format(idx);
+    }
   }
-  core_config.enabled_trackers.clear();
   std::cout << "start ebpf...\n";
 
   switch (selected)
