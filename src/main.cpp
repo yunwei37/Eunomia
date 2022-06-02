@@ -145,9 +145,7 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  config core_config = {
-    .enable_container_manager = container_flag
-  };
+  config core_config = { .enable_container_manager = container_flag };
   if (config_file != "")
   {
     core_config.enabled_trackers.clear();

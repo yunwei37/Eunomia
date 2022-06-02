@@ -151,7 +151,8 @@ struct config
   std::string prometheus_listening_address = "127.0.0.1:8528";
 
   bool enable_sec_rule_detect = false;
-  std::vector<rule_config> add_rules;
+  // TODO: fix rule config
+  std::vector<rule_config> rules;
 
   // seccomp enabled syscalls
   std::vector<std::string> seccomp;

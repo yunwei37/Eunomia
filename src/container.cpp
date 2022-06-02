@@ -14,9 +14,6 @@ extern "C"
 #include <process/process_tracker.h>
 #include <unistd.h>
 }
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
-
-
 
 container_tracker::container_tracker(container_env env, container_manager &manager)
     : tracker_with_config(tracker_config<container_env, container_event>{}),
@@ -37,12 +34,7 @@ void container_tracker::start_tracker()
   container_logger->flush_on(spdlog::level::trace);
   struct process_bpf *skel = nullptr;
   if (current_env.print_result)
-    container_logger->info("{}\t{}\t{}\t{}\t{}\t",
-                            "PID",
-                            "PARENT_PID",
-                            "CONTAINER_ID",
-                            "CONTAINER_NAME", 
-                            "STATE");
+    container_logger->info("{}\t{}\t{}\t{}\t{}\t", "PID", "PARENT_PID", "CONTAINER_ID", "CONTAINER_NAME", "STATE");
   init_container_table();
   start_process_tracker(handle_event, libbpf_print_fn, current_env.penv, skel, (void *)this);
 }
@@ -110,12 +102,8 @@ void container_tracker::print_container(const struct container_event &e)
     return;
   }
   std::string state = e.process.exit_event == true ? "EXIT" : "EXEC";
-  container_logger->info("{}\t{}\t{}\t{}\t{}\t",
-                          e.process.common.pid,
-                          e.process.common.ppid,
-                          e.container_id,
-                          e.container_name,
-                          state.c_str());
+  container_logger->info(
+      "{}\t{}\t{}\t{}\t{}\t", e.process.common.pid, e.process.common.ppid, e.container_id, e.container_name, state.c_str());
 }
 
 void container_tracker::judge_container(const struct process_event &e)

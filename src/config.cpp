@@ -89,10 +89,11 @@ void analyze_toml(std::string file_path, config& config_toml)
   config_toml.target_pid = data["trackers"]["process_id"].value_or(0);
 
   int idx = trans_string2enum(str_export_format, data["trackers"]["fmt"].value_or(""sv));
-  if(idx >= 0) {
+  if (idx >= 0)
+  {
     config_toml.fmt = export_format(idx);
   }
-  
+
   // /* fill rules */
   len = data["rules"]["Enable"].as_array()->size();
   for (i = 0; i < len; i++)
