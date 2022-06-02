@@ -36,14 +36,8 @@ struct syscall_tracker : public tracker_with_config<syscall_env, syscall_event> 
   // used for prometheus exporter
   struct prometheus_event_handler : public event_handler<syscall_event>
   { 
-    // // read times counter for field reads
-    // prometheus::Family<prometheus::Counter> &eunomia_files_read_counter;
-    // // write times counter for field writes
-    // prometheus::Family<prometheus::Counter> &eunomia_files_write_counter;
-    // // write bytes counter for field write_bytes
-    // prometheus::Family<prometheus::Counter> &eunomia_files_write_bytes;
-    // // read bytes counter for field read_bytes
-    // prometheus::Family<prometheus::Counter> &eunomia_files_read_bytes;
+    // read times counter for field reads
+    prometheus::Family<prometheus::Counter> &eunomia_files_syscall_counter;
     void report_prometheus_event(const struct syscall_event &e);
 
     prometheus_event_handler(prometheus_server &server);

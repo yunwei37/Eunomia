@@ -20,14 +20,14 @@ void files_tracker::prometheus_event_handler::report_prometheus_event(const stru
         .Add({ { "type", std::to_string(e.values[i].type) },
                { "filename", std::string(e.values[i].filename) },
                { "comm", std::string(e.values[i].comm) },
-               //{ "pid", std::to_string(e.values[i].pid) } 
+               { "pid", std::to_string(e.values[i].pid) } 
                })
         .Increment((double)e.values[i].writes);
     eunomia_files_read_counter
         .Add({
             { "comm", std::string(e.values[i].comm) },
             { "filename", std::string(e.values[i].filename) },
-            //{ "pid", std::to_string(e.values[i].pid) },
+            { "pid", std::to_string(e.values[i].pid) },
             { "type", std::to_string(e.values[i].type) },
         })
         .Increment((double)e.values[i].reads);
@@ -35,14 +35,14 @@ void files_tracker::prometheus_event_handler::report_prometheus_event(const stru
         .Add({ { "type", std::to_string(e.values[i].type) },
                { "filename", std::string(e.values[i].filename) },
                { "comm", std::string(e.values[i].comm) },
-               //{ "pid", std::to_string(e.values[i].pid) }
+               { "pid", std::to_string(e.values[i].pid) }
                 })
         .Increment((double)e.values[i].write_bytes);
     eunomia_files_read_bytes
         .Add({
             { "comm", std::string(e.values[i].comm) },
             { "filename", std::string(e.values[i].filename) },
-            //{ "pid", std::to_string(e.values[i].pid) },
+            { "pid", std::to_string(e.values[i].pid) },
             { "type", std::to_string(e.values[i].type) },
         })
         .Increment((double)e.values[i].read_bytes);

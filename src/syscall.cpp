@@ -21,7 +21,7 @@ std::unique_ptr<syscall_tracker> syscall_tracker::create_tracker_with_default_en
   config_data config;
   config.handler = handler;
   config.name = "syscall_tracker";
-  config.env = syscall_env{ 0 };
+  config.env = syscall_env{0};
   return std::make_unique<syscall_tracker>(config);
 }
 
@@ -66,13 +66,18 @@ void syscall_tracker::plain_text_event_printer::handle(tracker_event<syscall_eve
   if (is_start)
   {
     is_start = false;
-    spdlog::info("pid\tppid\tsyscall_id\tmnt ns\tcommand\toccur time");
+    spdlog::info("{:6} {:6} {:10} {:16} {:5}", "pid", "ppid", "syscall_id", "command", "occur time");
   }
   if (e.data.syscall_id >= syscall_names_x86_64_size)
   {
     return;
   }
-  spdlog::info("{}\t{}\t\t{}\t\t{}\t\t{}", e.data.pid, e.data.ppid, e.data.syscall_id, e.data.comm, e.data.occur_times);
+  spdlog::info("{:6} {:6} {:10} {:16} {:5}", 
+                  e.data.pid, 
+                  e.data.ppid, 
+                  syscall_names_x86_64[e.data.syscall_id], 
+                  e.data.comm, 
+                  e.data.occur_times);
 }
 
 void syscall_tracker::csv_event_printer::handle(tracker_event<syscall_event> &e)
@@ -81,68 +86,35 @@ void syscall_tracker::csv_event_printer::handle(tracker_event<syscall_event> &e)
   if (is_start)
   {
     is_start = false;
-    spdlog::info("pid,ppid,syscall_id,mnt ns,command,occur time");
+    spdlog::info("{:6},{:6},{:10},{:16},{:5}", "pid", "ppid", "syscall_id", "command", "occur time");
+    //spdlog::info("pid,ppid,syscall_id,mnt ns,command,occur time");
   }
   if (e.data.syscall_id >= syscall_names_x86_64_size) {
     return;
   }
-  spdlog::info("{},{},{},{},{}", 
+  spdlog::info("{:6},{:6},{:10},{:16},{:5}", 
                 e.data.pid, 
                 e.data.ppid, 
-                e.data.syscall_id, 
+                syscall_names_x86_64[e.data.syscall_id], 
                 e.data.comm, 
                 e.data.occur_times);
 }
 
 void syscall_tracker::prometheus_event_handler::report_prometheus_event(const struct syscall_event &e)
 {
-  // eunomia_syscall_write_counter
-  //     .Add({ { "type", std::to_string(e.values[i].type) },
-  //            { "filename", std::string(e.values[i].filename) },
-  //            { "comm", std::string(e.values[i].comm) },
-  //            { "pid", std::to_string(e.values[i].pid) } })
-  //     .Increment((double)e.values[i].writes);
-  // eunomia_syscall_read_counter
-  //     .Add({
-  //         { "comm", std::string(e.values[i].comm) },
-  //         { "filename", std::string(e.values[i].filename) },
-  //         { "pid", std::to_string(e.values[i].pid) },
-  //         { "type", std::to_string(e.values[i].type) },
-  //     })
-  //     .Increment((double)e.values[i].reads);
-  // eunomia_syscall_write_bytes
-  //     .Add({ { "type", std::to_string(e.values[i].type) },
-  //            { "filename", std::string(e.values[i].filename) },
-  //            { "comm", std::string(e.values[i].comm) },
-  //            { "pid", std::to_string(e.values[i].pid) } })
-  //     .Increment((double)e.values[i].write_bytes);
-  // eunomia_syscall_read_bytes
-  //     .Add({
-  //         { "comm", std::string(e.values[i].comm) },
-  //         { "filename", std::string(e.values[i].filename) },
-  //         { "pid", std::to_string(e.values[i].pid) },
-  //         { "type", std::to_string(e.values[i].type) },
-  //     })
-  //     .Increment((double)e.values[i].read_bytes);
+  eunomia_files_syscall_counter
+      .Add({
+          { "comm", std::string(e.comm) },
+          { "syscall", std::string(syscall_names_x86_64[e.syscall_id]) },
+      })
+      .Increment((double)e.occur_times);
 }
 
 syscall_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_server &server)
-// : eunomia_syscall_read_counter(prometheus::BuildCounter()
-//                                  .Name("eunomia_observed_syscall_read_count")
-//                                  .Help("Number of observed syscall read count")
-//                                  .Register(*server.registry)),
-//   eunomia_syscall_write_counter(prometheus::BuildCounter()
-//                                   .Name("eunomia_observed_syscall_write_count")
-//                                   .Help("Number of observed syscall write count")
-//                                   .Register(*server.registry)),
-//   eunomia_syscall_write_bytes(prometheus::BuildCounter()
-//                                 .Name("eunomia_observed_syscall_write_bytes")
-//                                 .Help("Number of observed syscall write bytes")
-//                                 .Register(*server.registry)),
-//   eunomia_syscall_read_bytes(prometheus::BuildCounter()
-//                                .Name("eunomia_observed_syscall_read_bytes")
-//                                .Help("Number of observed syscall read bytes")
-//                                .Register(*server.registry))
+: eunomia_files_syscall_counter(prometheus::BuildCounter()
+                                 .Name("eunomia_observed_syscall_count")
+                                 .Help("Number of observed syscall count")
+                                 .Register(*server.registry))
 {
 }
 

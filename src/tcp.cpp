@@ -70,7 +70,7 @@ std::string tcp_tracker::json_event_handler_base::to_json(const struct tcp_event
                { "time", get_current_time() },
                { "pid", e.pid },
                { "task", e.task },
-               { "af", AF_INET ? 4 : 6 },
+               { "af", e.af == AF_INET ? 4 : 6 },
                { "src", inet_ntop((int)e.af, &s, src, sizeof(src)) },
                { "dst", inet_ntop((int)e.af, &d, dst, sizeof(dst)) },
                { "dport", ntohs(e.dport) } };
@@ -105,7 +105,7 @@ void tcp_tracker::plain_text_event_printer::handle(tracker_event<tcp_event> &e)
       e.data.uid,
       e.data.pid,
       e.data.task,
-      AF_INET ? 4 : 6,
+      e.data.af == AF_INET ? 4 : 6,
       inet_ntop((int)e.data.af, &s, src, sizeof(src)),
       inet_ntop((int)e.data.af, &d, dst, sizeof(dst)),
       ntohs(e.data.dport));
@@ -140,53 +140,43 @@ void tcp_tracker::csv_event_printer::handle(tracker_event<tcp_event> &e)
 
 void tcp_tracker::prometheus_event_handler::report_prometheus_event(const struct tcp_event &e)
 {
-  // eunomia_tcp_write_counter
-  //     .Add({ { "type", std::to_string(e.values[i].type) },
-  //            { "filename", std::string(e.values[i].filename) },
-  //            { "comm", std::string(e.values[i].comm) },
-  //            { "pid", std::to_string(e.values[i].pid) } })
-  //     .Increment((double)e.values[i].writes);
-  // eunomia_tcp_read_counter
-  //     .Add({
-  //         { "comm", std::string(e.values[i].comm) },
-  //         { "filename", std::string(e.values[i].filename) },
-  //         { "pid", std::to_string(e.values[i].pid) },
-  //         { "type", std::to_string(e.values[i].type) },
-  //     })
-  //     .Increment((double)e.values[i].reads);
-  // eunomia_tcp_write_bytes
-  //     .Add({ { "type", std::to_string(e.values[i].type) },
-  //            { "filename", std::string(e.values[i].filename) },
-  //            { "comm", std::string(e.values[i].comm) },
-  //            { "pid", std::to_string(e.values[i].pid) } })
-  //     .Increment((double)e.values[i].write_bytes);
-  // eunomia_tcp_read_bytes
-  //     .Add({
-  //         { "comm", std::string(e.values[i].comm) },
-  //         { "filename", std::string(e.values[i].filename) },
-  //         { "pid", std::to_string(e.values[i].pid) },
-  //         { "type", std::to_string(e.values[i].type) },
-  //     })
-  //     .Increment((double)e.values[i].read_bytes);
+  char src[INET6_ADDRSTRLEN];
+  char dst[INET6_ADDRSTRLEN];
+  sender s, d;
+  if (tcp_tracker::fill_src_dst(s, d, e) < 0)
+  {
+    spdlog::warn("broken tcp_event\n");
+  }
+  if (e.af == AF_INET) {
+  eunomia_tcp_v4_counter
+      .Add({ { "uid", std::to_string(e.uid) },
+             { "task", std::string(e.task) },
+             { "src", std::string(inet_ntop((int)e.af, &s, src, sizeof(src))) },
+             { "dst", std::string(inet_ntop((int)e.af, &d, dst, sizeof(dst))) },
+             { "port", std::to_string(e.dport) },
+             { "pid", std::to_string(e.pid) } })
+      .Increment();
+  }else {
+  eunomia_tcp_v6_counter
+     .Add({ { "uid", std::to_string(e.uid) },
+             { "task", std::string(e.task) },
+             { "src", std::string(inet_ntop((int)e.af, &s, src, sizeof(src))) },
+             { "dst", std::string(inet_ntop((int)e.af, &d, dst, sizeof(dst))) },
+             { "port", std::to_string(e.dport) },
+             { "pid", std::to_string(e.pid) } })
+      .Increment();
+  }
 }
 
 tcp_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_server &server)
-// : eunomia_tcp_read_counter(prometheus::BuildCounter()
-//                                  .Name("eunomia_observed_tcp_read_count")
-//                                  .Help("Number of observed tcp read count")
-//                                  .Register(*server.registry)),
-//   eunomia_tcp_write_counter(prometheus::BuildCounter()
-//                                   .Name("eunomia_observed_tcp_write_count")
-//                                   .Help("Number of observed tcp write count")
-//                                   .Register(*server.registry)),
-//   eunomia_tcp_write_bytes(prometheus::BuildCounter()
-//                                 .Name("eunomia_observed_tcp_write_bytes")
-//                                 .Help("Number of observed tcp write bytes")
-//                                 .Register(*server.registry)),
-//   eunomia_tcp_read_bytes(prometheus::BuildCounter()
-//                                .Name("eunomia_observed_tcp_read_bytes")
-//                                .Help("Number of observed tcp read bytes")
-//                                .Register(*server.registry))
+: eunomia_tcp_v4_counter(prometheus::BuildCounter()
+                                 .Name("eunomia_observed_tcp_v4_count")
+                                 .Help("Number of observed tcp4 connect count")
+                                 .Register(*server.registry)),
+  eunomia_tcp_v6_counter(prometheus::BuildCounter()
+                                  .Name("eunomia_observed_tcp_v6_count")
+                                  .Help("Number of observed tcp6 connect count")
+                                  .Register(*server.registry))
 {
 }
 

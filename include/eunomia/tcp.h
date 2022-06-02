@@ -49,8 +49,8 @@ struct tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
   // used for prometheus exporter
   struct prometheus_event_handler : public event_handler<tcp_event>
   {
-    //prometheus::Family<prometheus::Counter> &eunomia_tcp_start_counter;
-    //prometheus::Family<prometheus::Counter> &eunomia_tcp_exit_counter;
+    prometheus::Family<prometheus::Counter> &eunomia_tcp_v4_counter;
+    prometheus::Family<prometheus::Counter> &eunomia_tcp_v6_counter;
     void report_prometheus_event(const struct tcp_event &e);
 
     prometheus_event_handler(prometheus_server &server);
