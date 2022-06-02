@@ -142,7 +142,7 @@ static int sort_column(const void *obj1, const void *obj2)
   struct file_stat *s1 = (struct file_stat *)obj1;
   struct file_stat *s2 = (struct file_stat *)obj2;
 
-  return ((long long int)(s2->reads + s2->writes + s2->read_bytes + s2->write_bytes) -
+  return -((long long int)(s2->reads + s2->writes + s2->read_bytes + s2->write_bytes) -
            (s1->reads + s1->writes + s1->read_bytes + s1->write_bytes));
 }
 
@@ -152,12 +152,7 @@ void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> 
   std::system("clear");
   qsort(e.data.values, e.data.rows, sizeof(struct file_stat), sort_column);
 
-  static bool is_start = true;
-  if (is_start)
-  {
-    is_start = false;
-    spdlog::info("pid\tread_bytes\tread count\twrite_bytes\twrite count\tcomm\ttype\ttid\tfilename");
-  }
+  spdlog::info("pid\tread_bytes\tread count\twrite_bytes\twrite count\tcomm\ttype\ttid\tfilename");
   for (int i = 0; i < default_size; i++)
   {
     spdlog::info(

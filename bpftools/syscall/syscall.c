@@ -59,5 +59,5 @@ int main(int argc, char **argv)
 	// syscall_env.target_pid = 9666;
 	// syscall_env.filter_report_times = 200;
 	// syscall_env.min_duration_ms = 50;
-	return start_syscall_tracker(handle_event, libbpf_print_fn, syscall_env);
+	return start_syscall_tracker(handle_event, libbpf_print_fn, syscall_env, NULL);
 }

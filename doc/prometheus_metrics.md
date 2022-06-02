@@ -2,18 +2,44 @@
 
 ## Process Metrics
 
+### Metrics List
+| **Metric Name** | **Type** | **Description** |
+| --- | --- | --- |
+| `eunomia_bserved_process_start` | Counter | Number of observed process start |
+| `eunomia_observed_process_end` | Counter | Number of observed process end |
+
+### Labels List
+| **Label Name** | **Example** | **Notes** |
+| --- | --- | --- |
+| `node` | worker-1 | Node name represented in Kubernetes cluster |
+| `mount_namespace` | default | Namespace of the pod |
+| `container_name` | Ubuntu | The name of the container |
+| `container_id` | 1a2b3c4d5e6f | The shorten container id which contains 12 characters |
+| `pid` | 12344 | The pid of the running process |
+| `comm` | ps | The command of the running process |
+| `filename` | /usr/bin/ps | The exec file name |
+| `exit_code` | 0 | The exit code |
+| `duration_ms` | 375 | The running time |
+
+
+## files Metrics
+
+### Metrics List
+| **Metric Name** | **Type** | **Description** |
+| --- | --- | --- |
+| `eunomia_observed_files_read_count` | Counter | Number of observed files read count |
+| `eunomia_observed_files_write_count` | Counter | Number of observed files write count |
+| `eunomia_observed_files_write_bytes` | Counter | Number of observed files read bytes |
+| `eunomia_observed_files_read_bytes` | Counter | Number of observed files write bytes |
 
 ## Tcp Connect Metrics
 
 ## Syscall Metrics
 
-
-## files Metrics
-
 ## Service Metrics
 
 Service metrics are generated from the  eunomia server-side events, which are used to show the quality of service.
- 
+
 ### Metrics List
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |

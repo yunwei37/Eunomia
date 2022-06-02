@@ -35,7 +35,7 @@ syscall_tracker::syscall_tracker(syscall_env env)
 void syscall_tracker::start_tracker()
 {
   // current_config.env.ctx = (void *)this;
-  start_syscall_tracker(handle_tracker_event<syscall_tracker, syscall_event>, libbpf_print_fn, current_config.env);
+  start_syscall_tracker(handle_tracker_event<syscall_tracker, syscall_event>, libbpf_print_fn, current_config.env, this);
 }
 
 std::string syscall_tracker::json_event_handler::to_json(const struct syscall_event &e)

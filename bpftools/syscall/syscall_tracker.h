@@ -37,7 +37,8 @@ struct syscall_env
 };
 
 static int
-start_syscall_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, struct syscall_env env)
+start_syscall_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libbpf_print_fn, struct syscall_env env,
+  void *ctx)
 {
   struct ring_buffer *rb = NULL;
   struct syscall_bpf *skel;
@@ -109,7 +110,7 @@ start_syscall_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t libb
   }
 
   /* Set up ring buffer polling */
-  rb = ring_buffer__new(bpf_map__fd(skel->maps.events), handle_event, NULL, NULL);
+  rb = ring_buffer__new(bpf_map__fd(skel->maps.events), handle_event, ctx, NULL);
   if (!rb)
   {
     err = -1;

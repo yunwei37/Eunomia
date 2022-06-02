@@ -20,16 +20,16 @@ using json = nlohmann::json;
 void process_tracker::prometheus_event_handler::report_prometheus_event(const struct process_event &e)
 {
   // TODO: fix this
-  std::string ids[] = { "36fca8c5eec1", "e2055f599ca6" };
-  std::string names[] = { "Ubuntu", "Debian" };
-  size_t n = (size_t)std::rand() % 2;
+  std::string ids[] = { "36fca8c5eec1" };//, "e2055f599ca6" };
+  std::string names[] = { "Ubuntu" };//, "Debian" };
+  size_t n = 0; // (size_t)std::rand() % 2;
   if (e.exit_event)
   {
     eunomia_process_exit_counter
         .Add({ { "exit_code", std::to_string(e.exit_code) },
                { "duration_ms", std::to_string(e.duration_ns / 1000000) },
                { "comm", std::string(e.comm) },
-               //  // TODO: fix container part
+               // TODO: fix container part
                { "container_name", names[n] },
                { "container_id", ids[n] },
                { "pid", std::to_string(e.common.pid) } })
@@ -40,6 +40,7 @@ void process_tracker::prometheus_event_handler::report_prometheus_event(const st
     eunomia_process_start_counter
         .Add({ { "comm", std::string(e.comm) },
                { "filename", std::string(e.filename) },
+               { "mount_namespace", std::to_string(e.common.mount_namespace_id) },
                // TODO: fix container part
                { "container_name", names[n] },
                { "container_id", ids[n] },
@@ -55,7 +56,7 @@ process_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_s
                                         .Register(*server.registry)),
       eunomia_process_exit_counter(prometheus::BuildCounter()
                                        .Name("eunomia_observed_process_end")
-                                       .Help("Number of observed process start")
+                                       .Help("Number of observed process end")
                                        .Register(*server.registry))
 {
 }
@@ -140,7 +141,7 @@ void process_tracker::plain_text_event_printer::handle(tracker_event<process_eve
   if (e.data.exit_event)
   {
     spdlog::info(
-        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+        "{}\t{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}",
         e.data.common.pid,
         e.data.common.ppid,
         e.data.common.cgroup_id,
@@ -152,7 +153,7 @@ void process_tracker::plain_text_event_printer::handle(tracker_event<process_eve
     return;
   }
   spdlog::info(
-      "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+      "{}\t{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}",
       e.data.common.pid,
       e.data.common.ppid,
       e.data.common.cgroup_id,

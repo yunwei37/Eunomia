@@ -53,6 +53,7 @@ void server_mode_operation(
     config core_config)
 {
   // std::cout << prometheus_flag << " " << listening_address << " " << std::endl;
+  
   std::cout << "start server mode...\n";
   eunomia_core core(core_config);
   core.start_eunomia();

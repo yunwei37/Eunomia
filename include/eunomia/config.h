@@ -26,7 +26,8 @@ enum class export_format
 {
   json_format,
   csv,
-  plain_text
+  plain_text,
+  none,
 };
 static const std::vector<std::string> str_export_format = {"json", "csv", "plain_txt"};
 
@@ -35,7 +36,7 @@ enum class export_type
   prometheus,
   stdout_type,
   file,
-  databse
+  database
 };
 static const std::vector<std::string> str_export_type = {"prometheus", "stdout_type","file", "databse"};
 
@@ -117,7 +118,6 @@ struct config
   std::vector<std::shared_ptr<tracker_data_base>> enabled_trackers = {
         std::make_shared<process_tracker_data>(avaliable_tracker::process),
         std::make_shared<files_tracker_data>(avaliable_tracker::files),
-        std::make_shared<files_tracker_data>(avaliable_tracker::ipc),
         std::make_shared<files_tracker_data>(avaliable_tracker::syscall),
         std::make_shared<files_tracker_data>(avaliable_tracker::tcp),
   };

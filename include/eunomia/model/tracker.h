@@ -73,7 +73,7 @@ static int handle_tracker_event(void *ctx, void *data, size_t data_sz)
 {
   if (!data || !ctx)
   {
-    return -1;
+    return 0;
   }
   const EVENT &e = *(const EVENT *)data;
   TRACKER &pt = *(TRACKER *)ctx;
