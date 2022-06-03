@@ -260,7 +260,10 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 ### 7.1. 快速上手
 
+
 ### 7.2. 命令行测试情况
+各项命令测试结果如下：
+
 
 
 ### 7.3. 容器测试情况
@@ -275,14 +278,20 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 ### 8.1. 如何设计 ebpf 挂载点
 &ensp;&ensp;&ensp;&ensp;如何设计挂载点是ebpf程序在书写时首先需要考虑的问题。ebpf程序是事件驱动的，即只有系统中发生了我们预先规定的事件，我们的程序才会被调用。因此，ebpf挂载点的选择直接关系到程序能否在我们需要的场合下被启动。
-&ensp;&ensp;&ensp;&ensp;ebpf的挂载点有多种类型，分别是
-- tracepoint
-- k/uprobe
+&ensp;&ensp;&ensp;&ensp;我们在选择挂载点时，首先需要明白的是我们需要在什么情况下触发处理函数，然后去寻找合适的挂载点。ebpf的挂载点有多种类型，较为常用的挂载点是`tracepoint`，`k/uprobe`，`lsm`等。
+&ensp;&ensp;&ensp;&ensp;`tracepoint`是一段静态的代码，以打桩的形式存在于程序源码中，并向外界提供钩子以挂载。一旦处理函数挂载到了钩子上，那么当钩子对应的事件发生时，处理函数就会被调用。由于`tracepoint`使用较为方便，且覆盖面广，ABI也较为稳定，他是我们设计挂载点的一个重要考虑对象。目前Linux已经有1000多个tracepoint可供选择，其支持的所有类型可以在`/sys/kernel/debug/tracing/events/`目录下看到，而至于涉及到的参数格式和返回形式，用户可以使用`cat`命令，查看对应`tracepoint`事件下的format文件得到。如下便是`sched_process_exec`事件的输出格式。
+![](./imgs/report/tracepoint_example1.png)
+&ensp;&ensp;&ensp;&ensp;用户也可以直接访问`tracepoint`的源码获得更多信息。在Linux源码的`./include/trace/events`目录下，用户可以看到Linux中实现tracepoint的源码。  
+&ensp;&ensp;&ensp;&ensp;`k/uprobe`是Linux提供的，允许用户动态插桩的方式。由于`tracepoint`是静态的，如果用户临时需要对一些其不支持的函数进行追踪，就无法使用`tracepoint`，而`k/uprobe`允许用户事实对内核态/用户态中某条指令进行追踪。用户在指定了该指令的位置并启用`k/uprobe`后，当程序运行到该指令时，内核会自动跳转到我们处理代码，待处理完成后返回到原处。相较于`tracepoint`，`k/uprobe`更为灵活，如果你需要追踪的指令不被`tracepoint`所支持，可以考虑使用`k/uprobe`。  
+&ensp;&ensp;&ensp;&ensp; `lsm`是Linux内核安全模块的一套框架，其本质也是插桩。相较于`tracepoint`，`lsm`主要在内核安全的相关路径中插入了hook点。因此如果你希望你的代码检测一些和安全相关的内容，可以考虑使用`lsm`。其所有钩子的定义在Linux源码的`./include/linux/lsm_hook_defs.h`中，你可以从中选择初你所需要的hook点。
 
 
 ### 8.2. 如何进行内核态数据过滤和数据综合
 
+
 ### 8.3. 如何定位容器元信息
+
+&ensp;&ensp;&ensp;&ensp;容器的信息
 
 ### 8.4. 如何设计支持可扩展性的数据结构
 
