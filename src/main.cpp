@@ -41,7 +41,7 @@ void run_mode_operation(avaliable_tracker selected, config core_config)
 
 void safe_mode_opertiaon(config core_config)
 {
-  core_config.enabled_trackers.clear();
+  core_config.fmt = export_format::none;
   eunomia_core core(core_config);
   core.start_eunomia();
 }
@@ -66,6 +66,7 @@ void seccomp_mode_operation(config core_config)
   /*
     TODO
   */
+  spdlog::warn("seccomp mode is not ready yet");
   // enable seccomp with config white list
   // if (core_config.seccomp.len >= 439)
   // {
@@ -186,21 +187,16 @@ int main(int argc, char* argv[])
     }
   }
   
-  
-  std::cout << "start ebpf...\n";
+  spdlog::info("eunomia run in cmd...");
 
   switch (selected)
   {
     case eunomia_mode::run: run_mode_operation(run_selected, core_config); break;
     case eunomia_mode::safe:
-      core_config.enable_safe_module = true;
+      core_config.enable_sec_rule_detect = true;
       safe_mode_opertiaon(core_config); 
       break;
     case eunomia_mode::server: 
-      if (!safe_flag)
-      {
-        core_config.enable_safe_module = false;
-      }
       server_mode_operation(load_from_config_file, core_config); break;
     case eunomia_mode::seccomp: seccomp_mode_operation(core_config); break;
     case eunomia_mode::help:

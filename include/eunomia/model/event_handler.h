@@ -8,6 +8,7 @@
 #define EVENT_HANDLER_H
 
 #include <mutex>
+#include <iostream>
 #include <string>
 #include <thread>
 #include <memory>
@@ -50,11 +51,17 @@ public:
         return handler;
     }
     // do the handle event
-    // pass the event to 
+    // pass the event to next handler
     void do_handle_event(tracker_event<T> &e)
-    {
-        handle(e);
-        if (next_handler)
+    {   
+        bool is_catched = false;
+        try {
+            handle(e);
+        } catch (const std::exception& error) {
+            std::cerr << "exception: " << error.what() << std::endl;
+            is_catched = true;
+        }
+        if (!is_catched && next_handler)
             next_handler->do_handle_event(e);
         return;
     }

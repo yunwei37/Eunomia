@@ -9,8 +9,8 @@
 #include <spdlog/spdlog.h>
 
 #include "eunomia/container.h"
-#include "eunomia/tracker_manager.h"
 #include "eunomia/sec_analyzer.h"
+#include "eunomia/tracker_manager.h"
 
 eunomia_core::eunomia_core(config& config) : core_config(config), core_prometheus_server(config.prometheus_listening_address)
 {
@@ -65,8 +65,11 @@ TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler(const 
   return handler;
 }
 
+// create a default tracker with other handlers
 template<tracker_concept TRACKER>
-std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_data_base* base)
+std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_handler(
+    const tracker_data_base* base,
+    TRACKER::tracker_event_handler additional_handler)
 {
   using cur_tracker_data = const tracker_data<typename TRACKER::config_data>;
   cur_tracker_data* data;
@@ -83,9 +86,20 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_data
     spdlog::error("no handler was created for tracker");
     return nullptr;
   }
+  if (additional_handler)
+  {
+    additional_handler->add_handler(handler);
+    handler = additional_handler;
+  }
   auto tracker_ptr = TRACKER::create_tracker_with_default_env(handler);
 
   return tracker_ptr;
+}
+
+template<tracker_concept TRACKER>
+std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_data_base* base)
+{
+  return create_default_tracker_with_handler<TRACKER>(base, nullptr);
 }
 
 void eunomia_core::start_trackers(void)
@@ -101,23 +115,23 @@ void eunomia_core::start_trackers(void)
     switch (t->type)
     {
       case avaliable_tracker::tcp:
-        spdlog::info("tcp tracker is starting");
+        spdlog::info("tcp tracker is started");
         core_tracker_manager.start_tracker(create_default_tracker<tcp_tracker>(t.get()));
         break;
       case avaliable_tracker::syscall:
-        spdlog::info("syscall tracker is starting");
+        spdlog::info("syscall tracker is started");
         core_tracker_manager.start_tracker(create_default_tracker<syscall_tracker>(t.get()));
         break;
       case avaliable_tracker::ipc:
-        spdlog::info("ipc tracker is starting");
+        spdlog::info("ipc tracker is started");
         core_tracker_manager.start_tracker(create_default_tracker<ipc_tracker>(t.get()));
         break;
       case avaliable_tracker::process:
-        spdlog::info("process tracker is starting");
+        spdlog::info("process tracker is started");
         core_tracker_manager.start_tracker(create_default_tracker<process_tracker>(t.get()));
         break;
       case avaliable_tracker::files:
-        spdlog::info("files tracker is starting");
+        spdlog::info("files tracker is started");
         core_tracker_manager.start_tracker(create_default_tracker<files_tracker>(t.get()));
         break;
       default: std::cout << "unsupported tracker type\n"; break;
@@ -125,34 +139,8 @@ void eunomia_core::start_trackers(void)
   }
 }
 
-int eunomia_core::start_eunomia(void)
+void eunomia_core::check_auto_exit(void)
 {
-  spdlog::info("start eunomia...");
-  if (core_config.enable_safe_module)
-  {
-    spdlog::info("start safe module...");
-    auto sec_analyzer = sec_analyzer::create_sec_analyzer_with_default_rules();
-  }
-  try
-  {
-    start_trackers();
-  }
-  catch (const std::exception& e)
-  {
-    spdlog::error("eunomia start tracker failed: {}", e.what());
-    return 1;
-  }
-
-  if (core_config.enable_container_manager)
-  {
-    spdlog::info("start container manager...");
-    core_container_manager.start_container_tracing(core_config.container_log_path);
-  }
-  if (core_config.enabled_export_types.count(export_type::prometheus))
-  {
-    spdlog::info("start prometheus server...");
-    core_prometheus_server.start_prometheus_server();
-  }
   if (core_config.is_auto_exit)
   {
     spdlog::info("set exit time...");
@@ -166,6 +154,48 @@ int eunomia_core::start_eunomia(void)
     {
       std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+  }
+}
+
+void eunomia_core::start_prometheus_server(void) {
+  if (core_config.enabled_export_types.count(export_type::prometheus))
+  {
+    spdlog::info("start prometheus server...");
+    core_prometheus_server.start_prometheus_server();
+  }
+}
+
+void eunomia_core::start_sec_analyzer(void) {
+  if (core_config.enable_sec_rule_detect)
+  {
+    spdlog::info("start safe module...");
+    core_sec_analyzer = sec_analyzer::create_sec_analyzer_with_default_rules();
+  }
+}
+
+void eunomia_core::start_container_manager(void) {
+  if (core_config.enable_container_manager)
+  {
+    spdlog::info("start container manager...");
+    core_container_manager.start_container_tracing(core_config.container_log_path);
+  }
+}
+
+int eunomia_core::start_eunomia(void)
+{
+  spdlog::info("start eunomia...");
+  try
+  {
+    start_sec_analyzer();
+    start_container_manager();
+    start_trackers();
+    start_prometheus_server();
+    check_auto_exit();
+  }
+  catch (const std::exception& e)
+  {
+    spdlog::error("eunomia start failed: {}", e.what());
+    return 1;
   }
   return 0;
 }

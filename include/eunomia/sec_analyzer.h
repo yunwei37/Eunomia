@@ -64,6 +64,7 @@ struct sec_analyzer
   sec_analyzer(const std::vector<sec_rule_describe> &in_rules) : rules(in_rules)
   {
   }
+  virtual ~sec_analyzer() = default;
   virtual void report_event(const rule_message &msg);
   void print_event(const rule_message &msg);
 

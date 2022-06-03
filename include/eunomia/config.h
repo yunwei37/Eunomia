@@ -12,14 +12,13 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <string>
 
 #include "files.h"
 #include "ipc.h"
 #include "model/tracker_config.h"
 #include "process.h"
-#include "tcp.h"
 #include "syscall.h"
+#include "tcp.h"
 
 // export config
 enum class export_format
@@ -29,7 +28,7 @@ enum class export_format
   plain_text,
   none,
 };
-static const std::vector<std::string> str_export_format = {"json", "csv", "plain_txt"};
+static const std::vector<std::string> str_export_format = { "json", "csv", "plain_txt" };
 
 enum class export_type
 {
@@ -38,7 +37,7 @@ enum class export_type
   file,
   database
 };
-static const std::vector<std::string> str_export_type = {"prometheus", "stdout_type","file", "databse"};
+static const std::vector<std::string> str_export_type = { "prometheus", "stdout_type", "file", "databse" };
 
 enum class eunomia_mode
 {
@@ -66,7 +65,7 @@ enum class avaliable_tracker
   files,
   help
 };
-static const std::vector<std::string> str_avaliable_tracker = {"syscall", "process", "ipc", "tcp", "files"};
+static const std::vector<std::string> str_avaliable_tracker = { "syscall", "process", "ipc", "tcp", "files" };
 
 // TODO refactor
 // we should not use enum class
@@ -81,7 +80,9 @@ template<typename T>
 struct tracker_data : tracker_data_base
 {
   T config;
-  tracker_data(avaliable_tracker t) : tracker_data_base{t} {}
+  tracker_data(avaliable_tracker t) : tracker_data_base{ t }
+  {
+  }
 };
 
 using process_tracker_data = tracker_data<process_tracker::config_data>;
@@ -90,15 +91,16 @@ using ipc_tracker_data = tracker_data<ipc_tracker::config_data>;
 using syscall_tracker_data = tracker_data<syscall_tracker::config_data>;
 using tcp_tracker_data = tracker_data<tcp_tracker::config_data>;
 
-struct rule_config 
+struct rule_config
 {
-    std::string rule_name;
-    std::string type;
-    std::string trigger;
-    std::string err_msg;
+  std::string rule_name;
+  std::string type;
+  std::string trigger;
+  std::string err_msg;
 };
 
-struct seccomp_config {
+struct seccomp_config
+{
   // the syscalls name which is allowed
   std::vector<std::string> allow_syscall;
 };
@@ -116,10 +118,10 @@ struct config
   // see:
   // using config_data = tracker_config<process_env, process_event>;
   std::vector<std::shared_ptr<tracker_data_base>> enabled_trackers = {
-        std::make_shared<process_tracker_data>(avaliable_tracker::process),
-        std::make_shared<files_tracker_data>(avaliable_tracker::files),
-        std::make_shared<syscall_tracker_data>(avaliable_tracker::syscall),
-        std::make_shared<tcp_tracker_data>(avaliable_tracker::tcp),
+    std::make_shared<process_tracker_data>(avaliable_tracker::process),
+    std::make_shared<files_tracker_data>(avaliable_tracker::files),
+    std::make_shared<syscall_tracker_data>(avaliable_tracker::syscall),
+    std::make_shared<tcp_tracker_data>(avaliable_tracker::tcp),
   };
 
   // tracing config
@@ -128,7 +130,7 @@ struct config
   std::string container_name = "";
   unsigned long target_contaienr_id = 0;
   pid_t target_pid = 0;
-  
+
   // auto exit mode
   bool is_auto_exit = false;
   int exit_after = 0;
@@ -136,7 +138,7 @@ struct config
   // export config
   // may be we should have config similar to tracker_config
   // TODO
-  std::set<export_type> enabled_export_types = {export_type::prometheus, export_type::stdout_type};
+  std::set<export_type> enabled_export_types = { export_type::prometheus, export_type::stdout_type };
 
   // export format
   // this should be set as well
@@ -152,15 +154,15 @@ struct config
   // TODO: this should be add to export config
   std::string prometheus_listening_address = "127.0.0.1:8528";
 
+  // enable sec rule analyzer and detect
   bool enable_sec_rule_detect = false;
   // TODO: fix rule config
   std::vector<rule_config> rules;
 
   // seccomp enabled syscalls
   std::vector<std::string> seccomp;
-
-  bool enable_safe_module = false;
-
+  // run container under seccomp
+  bool enable_seccomp_module = false;
 };
 
 int trans_string2enum(const std::vector<std::string> &strs, std::string to_trans);
