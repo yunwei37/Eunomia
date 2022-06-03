@@ -20,13 +20,13 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
     - [Prequest](#prequest)
     - [run as binary](#run-as-binary)
     - [Docker, Prometheus and Grafana](#docker-prometheus-and-grafana)
-    - [Prometheus and rafana result：](#prometheus-and-rafana-result)
+    - [Prometheus and grafana result](#prometheus-and-grafana-result)
+    - [security rules](#security-rules)
     - [build On Linux](#build-on-linux)
   - [Why is eBPF](#why-is-ebpf)
   - [Architecture](#architecture)
   - [Roadmap](#roadmap)
   - [Documents](#documents)
-  - [目录路径：](#目录路径)
   - [Reference](#reference)
   - [Contact](#contact)
 
@@ -38,16 +38,16 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 
 `Eunomia` 是一个使用 C/C++ 开发的基于eBPF的云原生监控工具，旨在帮助用户了解容器的各项行为、监控可疑的容器安全事件，力求为工业界提供覆盖容器全生命周期的轻量级开源监控解决方案。它使用 `Linux` `eBPF` 技术在运行时跟踪您的系统和应用程序，并分析收集的事件以检测可疑的行为模式。目前，它包含 `profile`、容器集群网络可视化分析*、容器安全感知告警、一键部署、持久化存储监控等功能。
 
-* [X] 开箱即用：以单一二进制文件或 `docker` 镜像方式分发，一次编译，到处运行，一行代码即可启动，包含多种 ebpf 工具和多种监测点，支持多种输出格式（json, csv, etc)；
+* [X] 开箱即用：以单一二进制文件或 `docker` 镜像方式分发，一次编译，到处运行，一行代码即可启动，包含多种 ebpf 工具和多种监测点，支持多种输出格式（json, csv, etc) 并保存到文件；
+* [X] 通过 `ebpf` 自动收集容器相关元信息，并和多种指标相结合；
 * [X] 可集成 `prometheus` 和 `Grafana`，作为监控可视化和预警平台；
 * [X] 可自定义运行时安全预警规则, 并通过 prometheus 等实现监控告警; 
 * [X] 可以自动收集进程系统调用行为并通过 seccomp 进行限制；
-* [ ] 可外接时序数据库，如 `InfluxDB` 等，作为可选的信息持久化存储和数据分析方案；
-* [ ] 可通过 `graphql` 在远程发起 http 请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行在线数据分析；
+* [ ] 可通过 `graphql` 在远程发起 http 请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行在线数据分析；可外接时序数据库，如 `InfluxDB` 等，作为可选的信息持久化存储和数据分析方案；
 
-除了收集容器中的一般系统运行时内核指标，例如系统调用、网络连接、文件访问、进程执行等，我们在探索实现过程中还发现目前对于 `lua` 和 `nginx` 相关用户态 `profile` 工具和指标可观测性开源工具存在一定的空白，但又有相当大的潜在需求；因此我们还计划添加一系列基于 uprobe 的用户态 `nginx/lua` 追踪器，作为可选的扩展方案；（这部分需求来自中科院开源之夏， APISIX 社区）
+除了收集容器中的一般系统运行时内核指标，例如系统调用、网络连接、文件访问、进程执行等，我们在探索实现过程中还发现目前对于 `lua` 和 `nginx` 相关用户态 `profile` 工具和指标可观测性开源工具存在一定的空白，但又有相当大的潜在需求；因此我们还计划添加一系列基于 uprobe 的用户态 `nginx/lua` 追踪器，作为可选的扩展方案；（这部分需求来自中科院开源之夏， APISIX 社区的选题）
 
-和过去常用的 `BCC` 不同，`Eunomia` 基于 `Libbpf` + BPF CO-RE（一次编译，到处运行）开发。Libbpf 作为 BPF 程序加载器，接管了重定向、加载、验证等功能，BPF 程序开发者只需要关注 BPF 程序的正确性和性能即可。这种方式将开销降到了最低，且去除了庞大的依赖关系，使得整体开发流程更加顺畅。
+和过去常用的 `BCC` 不同，`Eunomia` 基于 `Libbpf` + BPF CO-RE（一次编译，到处运行）开发。Libbpf 作为 BPF 程序加载器，接管了重定向、加载、验证等功能，BPF 程序开发者只需要关注 BPF 程序的正确性和性能即可。这种方式将开销降到了最低，且去除了庞大的依赖关系，使得整体开发流程更加顺畅。目前，我们已经发布了 `pre-release` 的版本，其中部分功能已经可以试用，只需下载二进制文件即可运行，
 
 ### Tutorial
 
@@ -119,7 +119,7 @@ for more details, see: [usage.md](doc/usage.md)
 
 see [quickstart/deploy.md](doc/quickstart/deploy.md)
 
-### Prometheus and rafana result：
+### Prometheus and grafana result
 
 <div  align="center">  
  <img src="doc/imgs/prometheus1.png" alt="eunomia_prometheus1" align=center />
@@ -262,8 +262,6 @@ Eunomia的完整文档如下
 - [develop documents](doc/develop_doc)
 - [design documents](doc/design_doc)
 - [tutorial](doc/tutorial)
-
-## 目录路径：
 
 ## Reference
 
