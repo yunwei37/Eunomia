@@ -16,4 +16,5 @@ EXPOSE 80
 COPY ./ /usr/local/src
 
 ENTRYPOINT ["/bin/bash","-l","-c"]
+# ./eunomia server --prometheus --config test.toml && ./prometheus --config.file=./prometheus.yml && ./grafana-server --config=./defaults.ini
 CMD ["./eunomia server --prometheus --config test.toml"]

@@ -1,6 +1,6 @@
 
 [trackers]
-Enable = ["process", "tcp", "syscall"]
+Enable = ["tcp", "syscall", "files", "process", "ipc"]
 container_id = 7895212
 process_id = 100
 run_time = 50
@@ -11,7 +11,7 @@ Enable = ["prometheus"]
 
 [prometheus]
 endpoint ="127.0.0.1"
-port = 6789
+port = 8528
 
 [rules]
 Enable = ["rule1", "rule2"]
