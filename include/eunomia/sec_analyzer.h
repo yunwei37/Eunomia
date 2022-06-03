@@ -81,6 +81,9 @@ struct sec_analyzer_prometheus : sec_analyzer
   void report_prometheus_event(const struct rule_message &msg);
   void report_event(const rule_message &msg);
   sec_analyzer_prometheus(prometheus_server &server, const std::vector<sec_rule_describe> &rules);
+
+  static std::shared_ptr<sec_analyzer> create_sec_analyzer_with_default_rules(prometheus_server &server);
+  static std::shared_ptr<sec_analyzer> create_sec_analyzer_with_additional_rules(const std::vector<sec_rule_describe> &rules, prometheus_server &server);
 };
 
 // all events will need pid

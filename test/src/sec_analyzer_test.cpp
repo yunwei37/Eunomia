@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 
   auto server = prometheus_server("127.0.0.1:8528");
   auto sec_analyzer = sec_analyzer::create_sec_analyzer_with_default_rules();
-  auto syscall_checker = std::make_shared<syscall_rule_checker>(std::move(sec_analyzer));
+  auto syscall_checker = std::make_shared<syscall_rule_checker>(sec_analyzer);
 
   auto prometheus_event_handler =
       std::make_shared<syscall_tracker::prometheus_event_handler>(syscall_tracker::prometheus_event_handler(server));

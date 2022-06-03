@@ -102,6 +102,17 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_data
   return create_default_tracker_with_handler<TRACKER>(base, nullptr);
 }
 
+template<tracker_concept TRACKER, typename CHECKER>
+std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_sec_analyzer(const tracker_data_base* base)
+{
+  std::shared_ptr<CHECKER> handler = nullptr;
+  if (core_config.enable_sec_rule_detect)
+  {
+    handler = std::make_shared<CHECKER>(core_sec_analyzer);
+  }
+  return create_default_tracker_with_handler<TRACKER>(base, handler);
+}
+
 void eunomia_core::start_trackers(void)
 {
   for (auto t : core_config.enabled_trackers)
@@ -120,7 +131,8 @@ void eunomia_core::start_trackers(void)
         break;
       case avaliable_tracker::syscall:
         spdlog::info("syscall tracker is started");
-        core_tracker_manager.start_tracker(create_default_tracker<syscall_tracker>(t.get()));
+        core_tracker_manager.start_tracker(
+            create_default_tracker_with_sec_analyzer<syscall_tracker, syscall_rule_checker>(t.get()));
         break;
       case avaliable_tracker::ipc:
         spdlog::info("ipc tracker is started");
@@ -157,7 +169,8 @@ void eunomia_core::check_auto_exit(void)
   }
 }
 
-void eunomia_core::start_prometheus_server(void) {
+void eunomia_core::start_prometheus_server(void)
+{
   if (core_config.enabled_export_types.count(export_type::prometheus))
   {
     spdlog::info("start prometheus server...");
@@ -165,15 +178,24 @@ void eunomia_core::start_prometheus_server(void) {
   }
 }
 
-void eunomia_core::start_sec_analyzer(void) {
+void eunomia_core::start_sec_analyzer(void)
+{
   if (core_config.enable_sec_rule_detect)
   {
     spdlog::info("start safe module...");
-    core_sec_analyzer = sec_analyzer::create_sec_analyzer_with_default_rules();
+    if (core_config.enabled_export_types.count(export_type::prometheus))
+    {
+      core_sec_analyzer = sec_analyzer_prometheus::create_sec_analyzer_with_default_rules(core_prometheus_server);
+    }
+    else
+    {
+      core_sec_analyzer = sec_analyzer::create_sec_analyzer_with_default_rules();
+    }
   }
 }
 
-void eunomia_core::start_container_manager(void) {
+void eunomia_core::start_container_manager(void)
+{
   if (core_config.enable_container_manager)
   {
     spdlog::info("start container manager...");

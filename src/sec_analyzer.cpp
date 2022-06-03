@@ -8,6 +8,23 @@
 
 #include <spdlog/spdlog.h>
 
+const static sec_rule_describe default_rules[] = {
+  sec_rule_describe{
+      .level = sec_rule_level::event,
+      .type = sec_rule_type::syscall,
+      .name = "Insert-BPF",
+      .message = "BPF program loaded",
+      .signature = "bpf",
+  },
+  sec_rule_describe{
+      .level = sec_rule_level::event,
+      .type = sec_rule_type::syscall,
+      .name = "Anti-Debugging",
+      .message = "Process uses anti-debugging technique to block debugger",
+      .signature = "ptrace",
+  },
+};
+
 sec_analyzer_prometheus::sec_analyzer_prometheus(prometheus_server &server, const std::vector<sec_rule_describe> &in_rules)
     : sec_analyzer(in_rules),
       eunomia_sec_warn_counter(prometheus::BuildCounter()
@@ -148,22 +165,29 @@ std::shared_ptr<sec_analyzer> sec_analyzer::create_sec_analyzer_with_default_rul
 std::shared_ptr<sec_analyzer> sec_analyzer::create_sec_analyzer_with_additional_rules(
     const std::vector<sec_rule_describe> &rules)
 {
-  std::vector<sec_rule_describe> default_rules = {
-    sec_rule_describe{
-        .level = sec_rule_level::event,
-        .type = sec_rule_type::syscall,
-        .name = "Insert-BPF",
-        .message = "BPF program loaded",
-        .signature = "bpf",
-    },
-    sec_rule_describe{
-        .level = sec_rule_level::event,
-        .type = sec_rule_type::syscall,
-        .name = "Anti-Debugging",
-        .message = "Process uses anti-debugging technique to block debugger",
-        .signature = "ptrace",
-    },
-  };
-  default_rules.insert(default_rules.end(), rules.begin(), rules.end());
-  return std::make_shared<sec_analyzer>(default_rules);
+  std::vector<sec_rule_describe> all_rules;
+  for (auto &rule : default_rules)
+  {
+    all_rules.push_back(rule);
+  }
+  all_rules.insert(all_rules.end(), rules.begin(), rules.end());
+  return std::make_shared<sec_analyzer>(all_rules);
+}
+
+std::shared_ptr<sec_analyzer> sec_analyzer_prometheus::create_sec_analyzer_with_default_rules(prometheus_server &server)
+{
+  return create_sec_analyzer_with_additional_rules(std::vector<sec_rule_describe>(), server);
+}
+
+std::shared_ptr<sec_analyzer> sec_analyzer_prometheus::create_sec_analyzer_with_additional_rules(
+    const std::vector<sec_rule_describe> &rules,
+    prometheus_server &server)
+{
+  std::vector<sec_rule_describe> all_rules;
+  for (auto &rule : default_rules)
+  {
+    all_rules.push_back(rule);
+  }
+  all_rules.insert(all_rules.end(), rules.begin(), rules.end());
+  return std::make_shared<sec_analyzer_prometheus>(server, all_rules);
 }

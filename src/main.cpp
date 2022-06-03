@@ -42,6 +42,7 @@ void run_mode_operation(avaliable_tracker selected, config core_config)
 void safe_mode_opertiaon(config core_config)
 {
   core_config.fmt = export_format::none;
+  core_config.enable_sec_rule_detect = true;
   eunomia_core core(core_config);
   core.start_eunomia();
 }
@@ -52,6 +53,7 @@ void server_mode_operation(bool load_from_config_file, config core_config)
   if (!load_from_config_file)
   {
     core_config.fmt = export_format::none;
+    core_config.enable_sec_rule_detect = true;
   }
   std::cout << "start server mode...\n";
   eunomia_core core(core_config);
@@ -116,14 +118,13 @@ int main(int argc, char* argv[])
        process_id_cmd,
        run_time_cmd,
        config_cmd,
-       (clipp::option("-m").set(container_flag, true) & clipp::opt_value("path to store dir", container_log_path)) % 
-            "Start container manager to trace contaienr.",
+       (clipp::option("-m").set(container_flag, true) & clipp::opt_value("path to store dir", container_log_path)) %
+           "Start container manager to trace contaienr.",
        (clipp::option("--fmt") & clipp::value("output format of the program", fmt)) %
            "The output format of EUNOMIA, it could be \"json\", \"csv\", \"plain_txt\", and \"plain_txt\" is the default "
            "choice.");
 
-  auto safe_mode =
-      (clipp::command("safe").set(selected, eunomia_mode::safe), config_cmd);
+  auto safe_mode = (clipp::command("safe").set(selected, eunomia_mode::safe), config_cmd);
 
   auto seccomp_mode =
       (clipp::command("seccomp").set(selected, eunomia_mode::seccomp),
@@ -140,8 +141,7 @@ int main(int argc, char* argv[])
        (clipp::option("--listen") & clipp::value("listening address", listening_address)) %
            "Listen http requests on this address, the format is like \"127.0.0.1:8528\"");
 
-  auto cli =
-      ((run_mode | safe_mode | seccomp_mode | server_cmd | clipp::command("help").set(selected, eunomia_mode::help)));
+  auto cli = ((run_mode | safe_mode | seccomp_mode | server_cmd | clipp::command("help").set(selected, eunomia_mode::help)));
 
   if (!parse(argc, argv, cli))
   {
@@ -149,10 +149,7 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  config core_config = { 
-    .enable_container_manager = container_flag,
-    .container_log_path = container_log_path
-    };
+  config core_config = { .enable_container_manager = container_flag, .container_log_path = container_log_path };
   if (config_file != "")
   {
     core_config.enabled_trackers.clear();
@@ -186,7 +183,7 @@ int main(int argc, char* argv[])
       core_config.fmt = export_format(idx);
     }
   }
-  
+
   spdlog::info("eunomia run in cmd...");
 
   switch (selected)
@@ -194,10 +191,9 @@ int main(int argc, char* argv[])
     case eunomia_mode::run: run_mode_operation(run_selected, core_config); break;
     case eunomia_mode::safe:
       core_config.enable_sec_rule_detect = true;
-      safe_mode_opertiaon(core_config); 
+      safe_mode_opertiaon(core_config);
       break;
-    case eunomia_mode::server: 
-      server_mode_operation(load_from_config_file, core_config); break;
+    case eunomia_mode::server: server_mode_operation(load_from_config_file, core_config); break;
     case eunomia_mode::seccomp: seccomp_mode_operation(core_config); break;
     case eunomia_mode::help:
     gdefault:
