@@ -41,7 +41,6 @@
 | `pid` | 7686 | The pid of the running proces |
 | `type` | 82 | Type of comm |
 
-
 ## Tcp Connect Metrics
 
 ### Metrics List
@@ -57,6 +56,7 @@
 | `pid` | 4036 | The pid of the running proces |
 | `port` | 20513 | TCP exposed ports |
 | `src` | 127.0.0.1 | Resources of TCP connection |
+| `container_id` | 1a2b3c4d5e6f | The shorten container id which contains 12 characters |
 | `task` | Socket Thread | The task of the running process |
 | `uid` | 1000 | The uid of the running proces |
 
@@ -72,12 +72,29 @@
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `comm` | firefox | The command of the running process |
+| `pid` | 4036 | The pid of the running proces |
+| `syscall` | writev | Name of the syscall called by running process |
+
+## Security Event Metrics
+
+### Metrics List
+| **Metric Name** | **Type** | **Description** |
+| --- | --- | --- |
+| `eunomia_seccurity_warn_count` | Counter | Number of observed security warnings |
+| `eunomia_seccurity_event_count` | Counter | Number of observed security event |
+| `eunomia_seccurity_alert_count` | Counter | Number of observed security alert |
+
+### Labels List
+| **Label Name** | **Example** | **Notes** |
+| --- | --- | --- |
+| `comm` | firefox | The command of the running process |
+| `pid` | 4036 | The pid of the running proces |
 | `syscall` | writev | Name of the syscall called by running process |
 
 
 ## Service Metrics
 
-Service metrics are generated from the  eunomia server-side events, which are used to show the quality of service.
+Service metrics are generated from the eunomia server-side events, which are used to show the quality of eunomia own service.
 
 ### Metrics List
 | **Metric Name** | **Type** | **Description** |

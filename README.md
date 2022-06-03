@@ -4,9 +4,9 @@ A lightweight eBPF-based CloudNative Monitor tool for Container Security and Obs
 
 > NOTE: This repo is under heavily development and `NOT YET COMPLETE`, it shall not be used in product environments now.
 
-[![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/filipdutescu/modern-cpp-template/actions)
+[![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/yunwei37/Eunomia/actions)
 [![codecov](https://codecov.io/gh/filipdutescu/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/filipdutescu/modern-cpp-template)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/yunwei37/Eunomia)](https://github.com/filipdutescu/modern-cpp-template/releases)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/yunwei37/Eunomia?include_prereleases)](https://github.com/yunwei37/Eunomia/releases)
 
 We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Eunomia) which runs CI. We also have a mirror on [GitLab](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436), for faster access in China and OS comp.
 
