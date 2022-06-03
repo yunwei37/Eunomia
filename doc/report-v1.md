@@ -3,7 +3,6 @@
 基于 eBPF 的轻量级 CloudNative Monitor 工具，用于容器安全性和可观察性
 
 ## 1. 目录
-
 <!-- TOC -->
 
 - [项目设计报告: Eunomia](#项目设计报告-eunomia)
@@ -45,18 +44,18 @@
     - [8.4. 如何设计支持可扩展性的数据结构](#84-如何设计支持可扩展性的数据结构)
   - [9. 分工和协作](#9-分工和协作)
   - [10. 提交仓库目录和文件描述](#10-提交仓库目录和文件描述)
-    - [10.1. 项目仓库](#101-项目仓库)
-    - [10.2. 文件描述](#102-文件描述)
-  - [bpftools目录](#bpftools目录)
-  - [cmake目录](#cmake目录)
-  - [doc目录](#doc目录)
-  - [include目录](#include目录)
-  - [libbpf目录](#libbpf目录)
-  - [src目录](#src目录)
-  - [test目录](#test目录)
-  - [third_party目录](#third_party目录)
-  - [tools目录](#tools目录)
-  - [vmlinux目录](#vmlinux目录)
+    - [10.1. 项目仓库目录结构](#101-项目仓库目录结构)
+    - [10.2. 各目录及其文件描述](#102-各目录及其文件描述)
+      - [bpftools目录](#bpftools目录)
+      - [cmake目录](#cmake目录)
+      - [doc目录](#doc目录)
+      - [include目录](#include目录)
+      - [libbpf目录](#libbpf目录)
+      - [src目录](#src目录)
+      - [test目录](#test目录)
+      - [third_party目录](#third_party目录)
+      - [tools目录](#tools目录)
+      - [vmlinux目录](#vmlinux目录)
   - [11. 比赛收获](#11-比赛收获)
   - [12. 附录](#12-附录)
     - [12.1. Prometheus 观测指标](#121-prometheus-观测指标)
@@ -257,7 +256,6 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 ## 6. 比赛过程中的重要进展
 
-
 ## 7. 系统测试情况
 
 ### 7.1. 快速上手
@@ -276,6 +274,11 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 ## 8. 遇到的主要问题和解决方法
 
 ### 8.1. 如何设计 ebpf 挂载点
+&ensp;&ensp;&ensp;&ensp;如何设计挂载点是ebpf程序在书写时首先需要考虑的问题。ebpf程序是事件驱动的，即只有系统中发生了我们预先规定的事件，我们的程序才会被调用。因此，ebpf挂载点的选择直接关系到程序能否在我们需要的场合下被启动。
+&ensp;&ensp;&ensp;&ensp;ebpf的挂载点有多种类型，分别是
+- tracepoint
+- k/uprobe
+
 
 ### 8.2. 如何进行内核态数据过滤和数据综合
 
@@ -290,86 +293,94 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 ## 10. 提交仓库目录和文件描述
 
 
-### 10.1. 项目仓库
+### 10.1. 项目仓库目录结构
 
+  &ensp;&ensp;&ensp;&ensp;本仓库的主要目录结构如下所示：   
 
-### 10.2. 文件描述
+  ```
+  ├─bpftools  
+  │  ├─container  
+  │  ├─files  
+  │  ├─ipc  
+  │  ├─process  
+  │  ├─seccomp  
+  │  ├─syscall  
+  │  └─tcp  
+  ├─cmake  
+  ├─doc  
+  │  ├─develop_doc   
+  │  ├─imgs  
+  │  └─tutorial  
+  ├─include  
+  │   └─eunomia  
+  │       └─model  
+  ├─libbpf  
+  ├─src  
+  ├─test  
+  │   └─src  
+  ├─third_party  
+  │       └─prometheus-cpp  
+  ├─tools  
+  └─vmlinux  
+  ```
+### 10.2. 各目录及其文件描述
+#### bpftools目录
 
-本仓库的主要目录结构如下所示：   
-
-```
-├─bpftools  
-│  ├─container  
-│  ├─files  
-│  ├─ipc  
-│  ├─process  
-│  ├─seccomp  
-│  ├─syscall  
-│  └─tcp  
-├─cmake  
-├─doc  
-│  ├─develop_doc   
-│  ├─imgs  
-│  └─tutorial  
-├─include  
-│   └─eunomia  
-│       └─model  
-├─libbpf  
-├─src  
-├─test  
-│   └─src  
-├─third_party  
-│       └─prometheus-cpp  
-├─tools  
-└─vmlinux  
-```
-
-接下来我们将就每个目录展开描述
-## bpftools目录
-&ensp;&ensp;&ensp;&ensp;本目录内的所有文件均为基于ebpf开发的内核态监视代码，
+  &ensp;&ensp;&ensp;&ensp;本目录内的所有文件均为基于ebpf开发的内核态监视代码，
 共有7个子目录，子目录名表示了子目录内文件所实现的模块。比如process子目录代表了其中的文件
 主要实现了进程追踪方面的ebpf内核态代码，其他子目录同理。
 
-## cmake目录
+####  cmake目录
+
 &ensp;&ensp;&ensp;&ensp;本项目使用cmake进行编译，本目录中的所有文件都是本项目cmake
 的相关配置文件。
 
-## doc目录
+#### doc目录
 
-本目录内的所有文件为与本项目相关的文档，其中develop_doc目录为开发
+&ensp;&ensp;&ensp;&ensp;本目录内的所有文件为与本项目相关的文档，其中develop_doc目录为开发
 文档，其中记录了本项目开发的各种详细信息。tutorial目录为本项目为所有想进行ebpf开发的同学所设计的
 教学文档，其中会提供一些入门教程，方便用户快速上手。imgs目录为开发文档和教学文档中所需要的一些
 图片。
 
-## include目录
+#### include目录
 
-本项目中用户态代码的头文件均会存放在本目录下。eunomia子目录中存放的
+&ensp;&ensp;&ensp;&ensp;本项目中用户态代码的头文件均会存放在本目录下。eunomia子目录中存放的
 是各个模块和所需要的头文件，eunomia下的model子目录存放的是各个头文件中的一些必要结构体经过抽象后
 的声明。
 
-## libbpf目录
+#### libbpf目录
 
-该目录为libbpf-bootstrap框架中自带的libbpf头文件。
+&ensp;&ensp;&ensp;&ensp;该目录为libbpf-bootstrap框架中自带的libbpf头文件。
 
-## src目录
+#### src目录
 
-该目录主要记录了各个模块的用户态代码cpp文件。
-## test目录
+&ensp;&ensp;&ensp;&ensp;该目录主要记录了各个模块的用户态代码cpp文件。
 
-本目录主要包括了对各个模块的测试代码。
-## third_party目录
+#### test目录
 
-本模块为Prometheus库所需的依赖。
+&ensp;&ensp;&ensp;&ensp;本目录主要包括了对各个模块的测试代码。
 
-## tools目录
+#### third_party目录
 
-本模块主要包含了一些项目所需要的脚本。
+&ensp;&ensp;&ensp;&ensp;本模块为Prometheus库所需的依赖。
 
-## vmlinux目录
+#### tools目录
 
-本目录主要是libbpf-bootstrap框架自带的vmlinux头文件。
+&ensp;&ensp;&ensp;&ensp;本模块主要包含了一些项目所需要的脚本。
+
+#### vmlinux目录
+
+&ensp;&ensp;&ensp;&ensp;本目录主要是libbpf-bootstrap框架自带的vmlinux头文件。
 
 ## 11. 比赛收获
+
+### 郑昱笙同学
+
+
+### 张典典同学
+
+### 濮雯旭同学
+
 
 ## 12. 附录
 
