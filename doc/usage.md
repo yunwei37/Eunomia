@@ -8,10 +8,10 @@
 You can simply use eunomia to run a single ebpf tracker, for example:
 
 ```
-sudo eunomia run files
+sudo ./eunomia run files
 ```
 
-will trace all files read or write in the system at a defaut interval of 3s, and print the result:
+This command will trace all files read or write in the system at a defaut interval of 3s, and print the result:
 
 ```sh
 [2022-05-28 11:23:10.699] [info] start eunomia...
@@ -28,7 +28,7 @@ will trace all files read or write in the system at a defaut interval of 3s, and
 For json format, you can use:
 
 ```
-sudo eunomia run files --fmt json
+sudo ./eunomia run files --fmt json
 ```
 
 and get:
@@ -39,10 +39,10 @@ and get:
 ...
 ```
 
-we also have csv format:
+We also have csv format:
 
 ```
-sudo eunomia run files --fmt csv
+sudo ./eunomia run files --fmt csv
 ```
 
 for results:
@@ -63,11 +63,11 @@ pid,read_bytes,read_count,write_bytes,write count,comm,type,tid,filename
 
 ### process
 
-Print plant process events.
+Print all process events.
 
 command:
 ```
-sudo eunomia run process
+sudo ./eunomia run process
 ```
 
 result:
@@ -82,6 +82,47 @@ result:
 [2022-06-02 03:21:34.707] [info] 173006 9428    2991            4026531837              4026531836              4026531840       git              /usr/bin/git
 [2022-06-02 03:21:34.749] [info] 173007 173006  2991            4026531837              4026531836              4026531840       git              /usr/lib/git-core/git
 ```
+You can attach process tracker to a certain process via process id or to a certain container via contaienr id.
+If you want to summary things in a certain time interval, you can input the length of time.
+
+command:
+```c
+sudo ./eunomia run process --process 322375 -T 5
+```
+result
+![](./imgs/cmd_show/cmd_run_process_p_T.png)
+The tracker will start and monitor the process which its id is 322375, after 5 seconds, the tracker 
+will exit automatically.
+
+command:
+```c
+sudo ./eunomia run process --container 7d4cc7108e89
+```
+![](./imgs/cmd_show/cmd_run_process_container.png)
+The tracker will start and monitor the container which its id is 7d4cc7108e89, 
+
+You can start process tracker as well as independent container tracker via `-m`
+command:
+```c
+sudo ./eunomia run process -m ./test_log.txt 
+```
+This command will start process tracker and container tracker simultaneously. The output of container
+tracker will be stored in the file path you have appointed. If you don't assign file path, the EUNOMIA
+will store them in `./logs/container_log.txt` automatically
+！[](imgs/cmd_show/run_process_m.png)
+The file storing the container log looks like this:
+![](imgs/cmd_show/run_process_m2.png)
+
+In addition to command line method, you can also assign configuration via toml file.
+command:
+```c
+sudo ./eunomia run process --config test.toml
+```
+You can substitute test.toml to your own toml file path.
+![](imgs/cmd_show/cmd_run_process_config.png)
+The following is the detail of test toml file. You own toml file should obey the toml foramt 
+like this.
+![](imgs/cmd_show/toml.png)
 
 ### tcp
 
