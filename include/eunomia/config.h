@@ -136,6 +136,7 @@ struct config
   // we can get container id and container name
   // using pid from the map of it
   bool enable_container_manager = false;
+  std::string container_log_path = "";
 
   // tracing config
   tracing_type tracing_selected = tracing_type::all;

@@ -28,3 +28,7 @@ error_message = "error: bpf exec"
 
 [seccomp]
 allow = ["read","write", "connect"]
+
+[container]
+Enable = false
+log_path = "./logs/container_log.txt"

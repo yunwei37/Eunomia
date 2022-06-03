@@ -30,7 +30,7 @@ extern "C"
 struct container_env
 {
   struct process_env penv;
-  // other fields: TODO
+  std::string log_path;
   bool print_result;
 };
 
@@ -38,8 +38,7 @@ struct container_tracker : public tracker_with_config<container_env, container_e
 {
   struct container_env current_env = { 0 };
   struct container_manager &this_manager;
-  std::shared_ptr<spdlog::logger> container_logger = 
-      spdlog::rotating_logger_mt("container_logger", "./logs/container_log.txt", 1024 * 1024 * 5, 3);
+  std::shared_ptr<spdlog::logger> container_logger;
 
   container_tracker(container_env env, container_manager &manager);
   void start_tracker();
@@ -64,9 +63,10 @@ struct container_manager
   friend struct container_tracker;
 
  public:
-  void start_container_tracing()
+  void start_container_tracing(std::string log_path)
   { 
     tracker.start_tracker(std::make_unique<container_tracker>(container_env{
+      .log_path = log_path,
       .print_result = true,
     }, *this));
   }

@@ -30,6 +30,8 @@ container_tracker::container_tracker(container_env env, container_manager &manag
 
 void container_tracker::start_tracker()
 {
+  std::string log_path = this->current_env.log_path != "" ? this->current_env.log_path: "./logs/container_log.txt";
+  container_logger = spdlog::rotating_logger_mt("container_logger", log_path, 1024 * 1024 * 5, 3);
   container_logger->set_level(spdlog::level::trace);
   container_logger->flush_on(spdlog::level::trace);
   struct process_bpf *skel = nullptr;

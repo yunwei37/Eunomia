@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
   pid_t target_pid = 0;
   int time_tracing = 0;
   std::string fmt = "", listening_address = "127.0.0.1:8528";
-  std::string config_file = "", output_file = "";
+  std::string config_file = "", output_file = "", container_log_path = "";
   eunomia_mode selected = eunomia_mode::help;
   avaliable_tracker run_selected = avaliable_tracker::help;
   unsigned long container_id = 0;
@@ -114,7 +114,8 @@ int main(int argc, char* argv[])
        process_id_cmd,
        run_time_cmd,
        config_cmd,
-       (clipp::option("-m").set(container_flag, true)) % "Start container manager to trace contaienr.",
+       (clipp::option("-m").set(container_flag, true) & clipp::opt_value("path to store dir", container_log_path)) % 
+            "Start container manager to trace contaienr.",
        (clipp::option("--fmt") & clipp::value("output format of the program", fmt)) %
            "The output format of EUNOMIA, it could be \"json\", \"csv\", \"plain_txt\", and \"plain_txt\" is the default "
            "choice.");
@@ -145,7 +146,10 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  config core_config = { .enable_container_manager = container_flag };
+  config core_config = { 
+    .enable_container_manager = container_flag,
+    .container_log_path = container_log_path
+    };
   if (config_file != "")
   {
     core_config.enabled_trackers.clear();

@@ -59,7 +59,7 @@ void analyze_toml(std::string file_path, config& config_toml)
     std::cerr << err << "\n";
     return;
   }
-  /* fill trackers */
+  /* fill trackers part */
   len = data["trackers"]["Enable"].as_array()->size();
   for (i = 0; i < len; i++)
   {
@@ -83,15 +83,21 @@ void analyze_toml(std::string file_path, config& config_toml)
     else if (tracker_name == "files")
     {
       config_toml.enabled_trackers.emplace_back(std::make_shared<files_tracker_data>(avaliable_tracker::files));
+    } else {
+      spdlog::error("Wrong format of trackers in toml!");
+      exit(0);
     }
   }
   config_toml.target_contaienr_id = data["trackers"]["container_id"].value_or(0);
   config_toml.target_pid = data["trackers"]["process_id"].value_or(0);
-
+  /* check whether the fmt is legal */
   int idx = trans_string2enum(str_export_format, data["trackers"]["fmt"].value_or(""sv));
   if (idx >= 0)
   {
     config_toml.fmt = export_format(idx);
+  } else {
+    spdlog::error("Wrong input of fmt!");
+    exit(0);
   }
 
   // /* fill rules */
@@ -105,13 +111,15 @@ void analyze_toml(std::string file_path, config& config_toml)
     rule.err_msg = data[rule_name]["error_message"].value_or(""sv);
     config_toml.rules.emplace_back(rule);
   }
+  
   /* fill seccomp */
   len = data["seccomp"]["allow"].as_array()->size();
   for (i = 0; i < len; i++)
   {
     config_toml.seccomp.emplace_back(std::string(data["seccomp"]["allow"][i].value_or(""sv)));
   }
-  // /* fill exporter */
+  
+  /* fill exporter */
   len = data["exporter"]["Enable"].as_array()->size();
   for (i = 0; i < len; i++)
   {
@@ -119,9 +127,18 @@ void analyze_toml(std::string file_path, config& config_toml)
     idx = trans_string2enum(str_export_type, exporter_name);
     if (idx < 0)
     {
-      spdlog::info("The format of toml is not right in exporter!");
+      spdlog::error("The format of toml is not right in exporter!");
       exit(0);
     }
     config_toml.enabled_export_types.insert(export_type(idx));
   }
+
+  /* fill container part */
+  config_toml.enable_container_manager = data["container"]["Enable"].value_or(false);
+  if (config_toml.enable_container_manager)
+  {
+    config_toml.container_log_path = data["container"]["log_path"].value_or(""sv);
+  }
+  
+
 }

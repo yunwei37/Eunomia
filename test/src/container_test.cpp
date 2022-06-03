@@ -14,7 +14,7 @@ int main(int argc, char **argv)
   container_manager manager;
   std::cout << "start ebpf...\n";
 
-  manager.start_container_tracing();
+  manager.start_container_tracing("./logs/container_log.txt");
 
   std::this_thread::sleep_for(100s);
   return 0;

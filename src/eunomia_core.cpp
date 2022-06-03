@@ -140,7 +140,7 @@ int eunomia_core::start_eunomia(void)
   if (core_config.enable_container_manager)
   {
     spdlog::info("start container manager...");
-    core_container_manager.start_container_tracing();
+    core_container_manager.start_container_tracing(core_config.container_log_path);
   }
   if (core_config.enabled_export_types.count(export_type::prometheus))
   {
