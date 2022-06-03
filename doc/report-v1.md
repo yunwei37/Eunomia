@@ -29,12 +29,15 @@
     - [4.6. 重要数据结构设计](#46-重要数据结构设计)
     - [4.7. 安全规则设计](#47-安全规则设计)
   - [5. 开发计划](#5-开发计划)
+    - [5.1. 日程表](#51-日程表)
+    - [5.2. 未来的工作方向](#52-未来的工作方向)
   - [6. 比赛过程中的重要进展](#6-比赛过程中的重要进展)
   - [7. 系统测试情况](#7-系统测试情况)
-    - [7.1. 命令行测试情况](#71-命令行测试情况)
-    - [7.2. 容器测试情况](#72-容器测试情况)
-    - [7.3. 信息可视化测试情况： prometheus and grafana](#73-信息可视化测试情况-prometheus-and-grafana)
-    - [7.4. CI/持续集成](#74-ci持续集成)
+    - [7.1. 快速上手](#71-快速上手)
+    - [7.2. 命令行测试情况](#72-命令行测试情况)
+    - [7.3. 容器测试情况](#73-容器测试情况)
+    - [7.4. 信息可视化测试情况： prometheus and grafana](#74-信息可视化测试情况-prometheus-and-grafana)
+    - [7.5. CI/持续集成](#75-ci持续集成)
   - [8. 遇到的主要问题和解决方法](#8-遇到的主要问题和解决方法)
     - [8.1. 如何设计 ebpf 挂载点](#81-如何设计-ebpf-挂载点)
     - [8.2. 如何进行内核态数据过滤和数据综合](#82-如何进行内核态数据过滤和数据综合)
@@ -44,9 +47,38 @@
   - [10. 提交仓库目录和文件描述](#10-提交仓库目录和文件描述)
     - [10.1. 项目仓库](#101-项目仓库)
     - [10.2. 文件描述](#102-文件描述)
+  - [bpftools目录](#bpftools目录)
+  - [cmake目录](#cmake目录)
+  - [doc目录](#doc目录)
+  - [include目录](#include目录)
+  - [libbpf目录](#libbpf目录)
+  - [src目录](#src目录)
+  - [test目录](#test目录)
+  - [third_party目录](#third_party目录)
+  - [tools目录](#tools目录)
+  - [vmlinux目录](#vmlinux目录)
   - [11. 比赛收获](#11-比赛收获)
   - [12. 附录](#12-附录)
     - [12.1. Prometheus 观测指标](#121-prometheus-观测指标)
+  - [Process Metrics](#process-metrics)
+    - [Metrics List](#metrics-list)
+    - [Labels List](#labels-list)
+  - [files Metrics](#files-metrics)
+    - [Metrics List](#metrics-list-1)
+    - [Labels List](#labels-list-1)
+  - [Tcp Connect Metrics](#tcp-connect-metrics)
+    - [Metrics List](#metrics-list-2)
+    - [Labels List](#labels-list-2)
+  - [Syscall Metrics](#syscall-metrics)
+    - [Metrics List](#metrics-list-3)
+    - [Labels List](#labels-list-3)
+  - [Security Event Metrics](#security-event-metrics)
+    - [Metrics List](#metrics-list-4)
+    - [Labels List](#labels-list-4)
+  - [Service Metrics](#service-metrics)
+    - [Metrics List](#metrics-list-5)
+    - [Labels List](#labels-list-5)
+  - [PromQL Example](#promql-example)
     - [12.2. 命令行工具帮助信息](#122-命令行工具帮助信息)
 
 <!-- /TOC -->
@@ -120,6 +152,21 @@ TODO
 
 #### 3.3.1. ebpf
 
+eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，而无需更改内核源代码或加载内核模块。通过使Linux内核可编程，基础架构软件可以利用现有的层，从而使它们更加智能和功能丰富，而无需继续为系统增加额外的复杂性层。
+
+* 优点：低开销
+
+  eBPF 是一个非常轻量级的工具，用于监控使用 Linux 内核运行的任何东西。虽然 eBPF 程序位于内核中，但它不会更改任何源代码，这使其成为泄露监控数据和调试的绝佳伴侣。eBPF 擅长的是跨复杂系统实现无客户端监控。 
+* 优点：安全
+
+  解决内核观测行的一种方法是使用内核模块，它带来了大量的安全问题。而eBPF 程序不会改变内核，所以您可以保留代码级更改的访问管理规则。此外，eBPF 程序有一个验证阶段，该阶段通过大量程序约束防止资源被过度使用，保障了运行的ebpf程序不会在内核产生安全问题。
+* 优点：精细监控、跟踪
+
+  eBPF 程序能提供比其他方式更精准、更细粒度的细节和内核上下文的监控和跟踪标准。并且eBPF监控、跟踪到的数据可以很容易地导出到用户空间，并由可观测平台进行可视化。 
+* 缺点：很新
+
+  eBPF 仅在较新版本的 Linux 内核上可用，这对于在版本更新方面稍有滞后的组织来说可能是令人望而却步的。如果您没有运行 Linux 内核，那么 eBPF 根本不适合您。
+
 #### 3.3.2. ebpf 开发工具技术选型
 
 #### 3.3.3. 容器可观测性
@@ -127,6 +174,14 @@ TODO
 #### 3.3.4. 信息可视化展示
 
 #### 3.3.5. 容器运行时安全
+
+确保容器运行时安全的关键点[1]：
+
+- 使用 `ebpf` 跟踪技术自动生成容器访问控制权限。包括：容器对文件的可疑访问，容器对系统的可疑调用，容器之间的可疑互访，检测容器的异常进程，对可疑行为进行取证。例如：
+- 检测容器运行时是否创建其他进程。
+- 检测容器运行时是否存在文件系统读取和写入的异常行为，例如在运行的容器中安装了新软件包或者更新配置。
+- 检测容器运行时是否打开了新的监听端口或者建立意外连接的异常网络活动。
+- 检测容器中用户操作及可疑的 shell 脚本的执行。
 
 ## 4. 系统框架设计
 
@@ -145,6 +200,8 @@ TODO
 ### 4.7. 安全规则设计
 
 ## 5. 开发计划
+
+### 5.1. 日程表
 
 阶段一：学习ebpf相关技术栈（3.10~4.2）
 
@@ -196,21 +253,25 @@ TODO
 * [ ] 完善教程文档
 * [ ] 完善labs
 
+### 5.2. 未来的工作方向
+
 ## 6. 比赛过程中的重要进展
 
 
 ## 7. 系统测试情况
 
-### 7.1. 命令行测试情况
+### 7.1. 快速上手
+
+### 7.2. 命令行测试情况
 
 
-### 7.2. 容器测试情况
+### 7.3. 容器测试情况
 
 
-### 7.3. 信息可视化测试情况： prometheus and grafana
+### 7.4. 信息可视化测试情况： prometheus and grafana
 
 
-### 7.4. CI/持续集成
+### 7.5. CI/持续集成
 
 ## 8. 遇到的主要问题和解决方法
 
@@ -234,12 +295,206 @@ TODO
 
 ### 10.2. 文件描述
 
+本仓库的主要目录结构如下所示：   
+
+```
+├─bpftools  
+│  ├─container  
+│  ├─files  
+│  ├─ipc  
+│  ├─process  
+│  ├─seccomp  
+│  ├─syscall  
+│  └─tcp  
+├─cmake  
+├─doc  
+│  ├─develop_doc   
+│  ├─imgs  
+│  └─tutorial  
+├─include  
+│   └─eunomia  
+│       └─model  
+├─libbpf  
+├─src  
+├─test  
+│   └─src  
+├─third_party  
+│       └─prometheus-cpp  
+├─tools  
+└─vmlinux  
+```
+
+接下来我们将就每个目录展开描述
+## bpftools目录
+&ensp;&ensp;&ensp;&ensp;本目录内的所有文件均为基于ebpf开发的内核态监视代码，
+共有7个子目录，子目录名表示了子目录内文件所实现的模块。比如process子目录代表了其中的文件
+主要实现了进程追踪方面的ebpf内核态代码，其他子目录同理。
+
+## cmake目录
+&ensp;&ensp;&ensp;&ensp;本项目使用cmake进行编译，本目录中的所有文件都是本项目cmake
+的相关配置文件。
+
+## doc目录
+
+本目录内的所有文件为与本项目相关的文档，其中develop_doc目录为开发
+文档，其中记录了本项目开发的各种详细信息。tutorial目录为本项目为所有想进行ebpf开发的同学所设计的
+教学文档，其中会提供一些入门教程，方便用户快速上手。imgs目录为开发文档和教学文档中所需要的一些
+图片。
+
+## include目录
+
+本项目中用户态代码的头文件均会存放在本目录下。eunomia子目录中存放的
+是各个模块和所需要的头文件，eunomia下的model子目录存放的是各个头文件中的一些必要结构体经过抽象后
+的声明。
+
+## libbpf目录
+
+该目录为libbpf-bootstrap框架中自带的libbpf头文件。
+
+## src目录
+
+该目录主要记录了各个模块的用户态代码cpp文件。
+## test目录
+
+本目录主要包括了对各个模块的测试代码。
+## third_party目录
+
+本模块为Prometheus库所需的依赖。
+
+## tools目录
+
+本模块主要包含了一些项目所需要的脚本。
+
+## vmlinux目录
+
+本目录主要是libbpf-bootstrap框架自带的vmlinux头文件。
 
 ## 11. 比赛收获
 
 ## 12. 附录
 
 ### 12.1. Prometheus 观测指标
+
+## Process Metrics
+
+### Metrics List
+| **Metric Name** | **Type** | **Description** |
+| --- | --- | --- |
+| `eunomia_observed_process_start` | Counter | Number of observed process start |
+| `eunomia_observed_process_end` | Counter | Number of observed process end |
+
+### Labels List
+| **Label Name** | **Example** | **Notes** |
+| --- | --- | --- |
+| `node` | worker-1 | Node name represented in Kubernetes cluster |
+| `pod` | default | Name of the pod |
+| `mount_namespace` | 46289463245 | Mount Namespace of the pod |
+| `container_name` | Ubuntu | The name of the container |
+| `container_id` | 1a2b3c4d5e6f | The shorten container id which contains 12 characters |
+| `pid` | 12344 | The pid of the running process |
+| `comm` | ps | The command of the running process |
+| `filename` | /usr/bin/ps | The exec file name |
+| `exit_code` | 0 | The exit code |
+| `duration_ms` | 375 | The running time |
+
+
+## files Metrics
+
+### Metrics List
+| **Metric Name** | **Type** | **Description** |
+| --- | --- | --- |
+| `eunomia_observed_files_read_count` | Counter | Number of observed files read count |
+| `eunomia_observed_files_write_count` | Counter | Number of observed files write count |
+| `eunomia_observed_files_write_bytes` | Counter | Number of observed files read bytes |
+| `eunomia_observed_files_read_bytes` | Counter | Number of observed files write bytes |
+
+### Labels List
+| **Label Name** | **Example** | **Notes** |
+| --- | --- | --- |
+| `comm` | eunomia | The command of the running process |
+| `filename` | online | The exec file name |
+| `pid` | 7686 | The pid of the running proces |
+| `type` | 82 | Type of comm |
+
+## Tcp Connect Metrics
+
+### Metrics List
+| **Metric Name** | **Type** | **Description** |
+| --- | --- | --- |
+| `eunomia_observed_tcp_v4_count` | Counter | Number of observed tcp v4 connect count |
+| `eunomia_observed_tcp_v6_count` | Counter | Number of observed tcp v6 connect count |
+
+### Labels List
+| **Label Name** | **Example** | **Notes** |
+| --- | --- | --- |
+| `dst` | 127.0.0.1 | Destination of TCP connection |
+| `pid` | 4036 | The pid of the running proces |
+| `port` | 20513 | TCP exposed ports |
+| `src` | 127.0.0.1 | Resources of TCP connection |
+| `container_id` | 1a2b3c4d5e6f | The shorten container id which contains 12 characters |
+| `task` | Socket Thread | The task of the running process |
+| `uid` | 1000 | The uid of the running proces |
+
+
+## Syscall Metrics
+
+### Metrics List
+| **Metric Name** | **Type** | **Description** |
+| --- | --- | --- |
+| `eunomia_observed_syscall_count` | Counter | Number of observed syscall count |
+
+### Labels List
+| **Label Name** | **Example** | **Notes** |
+| --- | --- | --- |
+| `comm` | firefox | The command of the running process |
+| `pid` | 4036 | The pid of the running proces |
+| `syscall` | writev | Name of the syscall called by running process |
+
+## Security Event Metrics
+
+### Metrics List
+| **Metric Name** | **Type** | **Description** |
+| --- | --- | --- |
+| `eunomia_seccurity_warn_count` | Counter | Number of observed security warnings |
+| `eunomia_seccurity_event_count` | Counter | Number of observed security event |
+| `eunomia_seccurity_alert_count` | Counter | Number of observed security alert |
+
+### Labels List
+| **Label Name** | **Example** | **Notes** |
+| --- | --- | --- |
+| `comm` | firefox | The command of the running process |
+| `pid` | 4036 | The pid of the running proces |
+| `syscall` | writev | Name of the syscall called by running process |
+
+
+## Service Metrics
+
+Service metrics are generated from the eunomia server-side events, which are used to show the quality of eunomia own service.
+
+### Metrics List
+| **Metric Name** | **Type** | **Description** |
+| --- | --- | --- |
+| `eunomia_run_tracker_total` | Counter | Total number of running trackers |
+
+### Labels List
+| **Label Name** | **Example** | **Notes** |
+| --- | --- | --- |
+| `node` | worker-1 | Node name represented in Kubernetes cluster |
+| `namespace` | default | Namespace of the pod |
+| `container` | api-container | The name of the container |
+| `container_id` | 1a2b3c4d5e6f | The shorten container id which contains 12 characters |
+| `ip` | 10.1.11.23 | The IP address of the entity |
+| `port` | 80 | The listening port of the entity |
+
+## PromQL Example
+
+Here are some examples of how to use these metrics in Prometheus, which can help you understand them faster.
+
+| **Describe** | **PromQL** |
+| --- | --- |
+| Request counts | `sum(increase(eunomia_observed_tcp_v4_count{}[1m])) by(task)` |
+| read rate | `sum(rate(eunomia_observed_files_read_bytes{}[1m])) by(comm)` |
+| write rate | `sum(rate(eunomia_observed_files_write_count{}[1m])) by(comm)` |
 
 
 ### 12.2. 命令行工具帮助信息
