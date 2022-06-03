@@ -90,6 +90,12 @@ void analyze_toml(std::string file_path, config& config_toml)
   }
   config_toml.target_contaienr_id = data["trackers"]["container_id"].value_or(0);
   config_toml.target_pid = data["trackers"]["process_id"].value_or(0);
+  config_toml.exit_after = data["trackers"]["run_time"].value_or(0);
+  if (config_toml.exit_after)
+  {
+    config_toml.is_auto_exit = true;
+  }
+  
   /* check whether the fmt is legal */
   int idx = trans_string2enum(str_export_format, data["trackers"]["fmt"].value_or(""sv));
   if (idx >= 0)

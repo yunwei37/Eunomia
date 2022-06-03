@@ -43,7 +43,7 @@ static const std::vector<std::string> str_export_type = {"prometheus", "stdout_t
 enum class eunomia_mode
 {
   run,
-  daemon,
+  safe,
   seccomp,
   server,
   help
@@ -122,6 +122,17 @@ struct config
         std::make_shared<tcp_tracker_data>(avaliable_tracker::tcp),
   };
 
+  // tracing config
+  tracing_type tracing_selected = tracing_type::all;
+  // tracing targets
+  std::string container_name = "";
+  unsigned long target_contaienr_id = 0;
+  pid_t target_pid = 0;
+  
+  // auto exit mode
+  bool is_auto_exit = false;
+  int exit_after = 0;
+
   // export config
   // may be we should have config similar to tracker_config
   // TODO
@@ -138,16 +149,6 @@ struct config
   bool enable_container_manager = false;
   std::string container_log_path = "";
 
-  // tracing config
-  tracing_type tracing_selected = tracing_type::all;
-  // tracing targets
-  std::string container_name = "";
-  unsigned long target_contaienr_id = 0;
-  pid_t target_pid = 0;
-
-  bool is_auto_exit = false;
-  int exit_after = 0;
-
   // TODO: this should be add to export config
   std::string prometheus_listening_address = "127.0.0.1:8528";
 
@@ -157,6 +158,8 @@ struct config
 
   // seccomp enabled syscalls
   std::vector<std::string> seccomp;
+
+  bool enable_safe_module = false;
 
 };
 

@@ -10,6 +10,7 @@
 
 #include "eunomia/container.h"
 #include "eunomia/tracker_manager.h"
+#include "eunomia/sec_analyzer.h"
 
 eunomia_core::eunomia_core(config& config) : core_config(config), core_prometheus_server(config.prometheus_listening_address)
 {
@@ -127,6 +128,11 @@ void eunomia_core::start_trackers(void)
 int eunomia_core::start_eunomia(void)
 {
   spdlog::info("start eunomia...");
+  if (core_config.enable_safe_module)
+  {
+    spdlog::info("start safe module...");
+    auto sec_analyzer = sec_analyzer::create_sec_analyzer_with_default_rules();
+  }
   try
   {
     start_trackers();
