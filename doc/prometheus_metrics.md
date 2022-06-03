@@ -33,6 +33,15 @@
 | `eunomia_observed_files_write_bytes` | Counter | Number of observed files read bytes |
 | `eunomia_observed_files_read_bytes` | Counter | Number of observed files write bytes |
 
+### Labels List
+| **Label Name** | **Example** | **Notes** |
+| --- | --- | --- |
+| `comm` | eunomia | The command of the running process |
+| `filename` | online | The exec file name |
+| `pid` | 7686 | The pid of the running proces |
+| `type` | 82 | Type of comm |
+
+
 ## Tcp Connect Metrics
 
 ### Metrics List
@@ -41,6 +50,16 @@
 | `eunomia_observed_tcp_v4_count` | Counter | Number of observed tcp v4 connect count |
 | `eunomia_observed_tcp_v6_count` | Counter | Number of observed tcp v6 connect count |
 
+### Labels List
+| **Label Name** | **Example** | **Notes** |
+| --- | --- | --- |
+| `dst` | 127.0.0.1 | Destination of TCP connection |
+| `pid` | 4036 | The pid of the running proces |
+| `port` | 20513 | TCP exposed ports |
+| `src` | 127.0.0.1 | Resources of TCP connection |
+| `task` | Socket Thread | The task of the running process |
+| `uid` | 1000 | The uid of the running proces |
+
 
 ## Syscall Metrics
 
@@ -48,6 +67,12 @@
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_observed_syscall_count` | Counter | Number of observed syscall count |
+
+### Labels List
+| **Label Name** | **Example** | **Notes** |
+| --- | --- | --- |
+| `comm` | firefox | The command of the running process |
+| `syscall` | writev | Name of the syscall called by running process |
 
 
 ## Service Metrics
