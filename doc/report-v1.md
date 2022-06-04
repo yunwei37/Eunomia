@@ -1268,7 +1268,6 @@ Prometheus信息可视化测试：
     <img src="./imgs/grafana2.png">
     <img src="./imgs/grafana.png">
 
-
 ### 7.5. CI/持续集成
 
 我们在 github 上面部署了 github actions，包含自动集成、自动构建、自动测试等功能：
