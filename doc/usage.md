@@ -109,9 +109,9 @@ sudo ./eunomia run process -m ./test_log.txt
 This command will start process tracker and container tracker simultaneously. The output of container
 tracker will be stored in the file path you have appointed. If you don't assign file path, the EUNOMIA
 will store them in `./logs/container_log.txt` automatically
-！[](imgs/cmd_show/run_process_m.png)
+！[](imgs/cmd_show/cmd_run_process_m.png)
 The file storing the container log looks like this:
-![](imgs/cmd_show/run_process_m2.png)
+![](imgs/cmd_show/cmd_run_process_m2.png)
 
 In addition to command line method, you can also assign configuration via toml file.
 command:

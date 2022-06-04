@@ -264,6 +264,66 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 ### 7.2. 命令行测试情况
         各项命令测试结果如下：
 #### tracker系列命令
+- process模块测试  
+  - 追踪所有process
+    ![所有追踪结果](./imgs/cmd_show/cmd_run_process_all.png)
+  - 追踪所有process并设置输出格式为csv
+    ![设置输出格式追踪结果](./imgs/cmd_show/cmd_run_process__fmt.png)
+  - 追踪所有和id为7d4cc7108e89的容器有关的进程
+    ![设置追踪容器的id](./imgs/cmd_show/cmd_run_process_container.png)
+  - 追踪pid为322375的进程，并设置10s后自动退出
+    ![设置追踪的进程和退出时间](./imgs/cmd_show/cmd_run_process_p_T.png)
+  - 使用toml文件配置追踪参数(toml配置附在结果图后)
+    ![使用toml配置参数](./imgs/cmd_show/cmd_run_process_config.png)
+    ![toml格式](./imgs/cmd_show/toml.png)
+  - 开启process追踪模块的同时开启单独的容器监视模块，并将记录写到指定文件夹
+    ![开启contaienr_manager](./imgs/cmd_show/cmd_run_process_m.png)
+    ![日志结果记录](./imgs/cmd_show/cmd_run_process_m2.png)
+- tcp模块测试
+  - 追踪所有tcp
+    ![所有追踪结果](./imgs/cmd_show/cmd_run_tcp_all.png)
+  - 追踪所有tcp并设置输出格式为csv
+    ![设置输出格式追踪结果](./imgs/cmd_show/cmd_run_tcp_fmt.png)
+  - 追踪所有和id为7d4cc7108e89的容器有关的进程
+    ![设置追踪容器的id](./imgs/cmd_show/cmd_run_tcp_container.png)
+  - 追踪pid为924913的进程，并设置15s后自动退出
+    ![设置追踪的进程和退出时间](./imgs/cmd_show/cmd_run_tcp_p_T.png)
+  - 使用toml文件配置追踪参数(toml配置与process相同)
+    ![使用toml配置参数](./imgs/cmd_show/cmd_run_tcp_config.png)
+  - 开启process追踪模块的同时开启单独的容器监视模块，并将记录写到指定文件夹
+    ![开启contaienr_manager](./imgs/cmd_show/cmd_run_tcp_m.png)
+    ![日志结果记录](./imgs/cmd_show/cmd_run_tcp_m2.png)
+- syscall模块测试
+  - 追踪所有syscall
+    ![所有追踪结果](./imgs/cmd_show/cmd_run_syscall_all.png)  
+  - 追踪所有syscall并设置输出格式为csv
+    ![设置输出格式追踪结果](./imgs/cmd_show/cmd_run_syscall_fmt.png)
+  - 使用toml文件配置追踪参数(toml配置与process相同)
+    ![使用toml配置参数](./imgs/cmd_show/cmd_run_syscall_config.png)
+  - 开启syscall追踪模块的同时开启单独的容器监视模块，并将记录写到指定文件夹
+    ![开启contaienr_manager](./imgs/cmd_show/cmd_run_syscall_m.png)
+    ![日志结果记录](./imgs/cmd_show/cmd_run_syscall_m2.png)
+- files模块测试
+  - 追踪所有文件读写
+    ![所有追踪结果](./imgs/cmd_show/cmd_run_files_all.png)  
+  - 追踪所有files读写并设置输出格式为json
+    ![设置输出格式追踪结果](./imgs/cmd_show/cmd_run_files__fmt.png)
+  - 使用toml文件配置追踪参数(toml配置与process相同)
+    ![使用toml配置参数](./imgs/cmd_show/cmd_run_files_config.png)
+  - 开启files追踪模块的同时开启单独的容器监视模块，并将记录写到指定文件夹
+    ![开启contaienr_manager](./imgs/cmd_show/cmd_run_files_m.png)
+    ![日志结果记录](./imgs/cmd_show/cmd_run_files_m2.png)
+- ipc模块测试
+  - 追踪所有ipc事件
+    ![所有追踪结果](./imgs/cmd_show/cmd_run_files_all.png)  
+  - 追踪所有ipc事件并设置输出格式为json
+    ![设置输出格式追踪结果](./imgs/cmd_show/cmd_run_files__fmt.png)
+  - 使用toml文件配置追踪参数(toml配置与process相同)
+    ![使用toml配置参数](./imgs/cmd_show/cmd_run_files_config.png)
+  - 开启files追踪模块的同时开启单独的容器监视模块，并将记录写到指定文件夹
+    ![开启contaienr_manager](./imgs/cmd_show/cmd_run_files_m.png)
+    ![日志结果记录](./imgs/cmd_show/cmd_run_files_m2.png)
+
 
 
 
