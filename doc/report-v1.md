@@ -212,9 +212,9 @@ eBPF程序每次执行时候都需要进行编译，编译则需要用户配置�
 - 使用灵活且强大的查询语言`PromQL`
 - 通过基于http的pull方式采集时许数据
 - 通过push gateway进行序列数据推送
-`Graphna` 是一款用Go语言开发的开源数据可视化工具，具有数据监控、数据统计和告警功能，是目前较为流行的一种时序数据展示工具，并且支持目前绝大部分常用的时序数据库。
+`Grafana` 是一款用Go语言开发的开源数据可视化工具，具有数据监控、数据统计和告警功能，是目前较为流行的一种时序数据展示工具，并且支持目前绝大部分常用的时序数据库。
 
-在本项目中，我们计划将程序捕获到的数据使用`Prometheus`进行存储，之后对于存储的数据我们使用`Graphna`进行可视化
+在本项目中，我们计划将程序捕获到的数据使用`Prometheus`进行存储，之后对于存储的数据我们使用`Grafana`进行可视化
 
 #### 3.3.5. 容器运行时安全
 
@@ -415,10 +415,10 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 
   - grafana配置从peometheus拉取数据的端口
   ![grafana1](./imgs/grafana1.png)
-  - grafana部分指标展示效果如下图，左上为系统调用热力图，方便定位到热点调用路径;左下为系统调用频次图;右上为文件读操作TOP10;右下为文件写操作TOP10。
-  ![grafana2](./imgs/grafana.png)
-  ![grafana3](./imgs/grafana2.png)
-
+  - grafana部分指标展示效果如下图，左上为文件读操作Bytes监控;左下为系统调用热力
+图，方便定位到热点调用路径;右上为文件读操作TOP10;右下为文件写操作TOP10。
+  ![grafana2](./imgs/grafana2.png)
+  ![grafana3](./imgs/grafana.png)
 
 ### 7.5. CI/持续集成
 
