@@ -396,6 +396,7 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 - prometheus
 
   - 配置prometheus添加eunomia数据源
+```
    job_name: "prometheus" 
      # metrics_path defaults to '/metrics'
      # scheme defaults to 'http'. 
@@ -404,6 +405,7 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
    job_name: "eunomia_node"
      static_configs:
        - targets: ["localhost:8528"] 
+```
   - 从prometheus查看数据源的状态
     ![prometheus4](./imgs/prometheus4.png)
   - 从promethesu查看eunomia暴露的指标列表
