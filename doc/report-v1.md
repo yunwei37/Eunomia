@@ -417,9 +417,9 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 
   - grafana配置从peometheus拉取数据的端口
   ![grafana1](./imgs/grafana1.png)
-  - grafana部分指标展示效果如下图，左上为系统调用热力图，方便定位到热点调用路径;左下为系统调用频次图;右上为文件读操作TOP10;右下为文件写操作TOP10。
-  ![grafana2](./imgs/grafana.png)
-  ![grafana3](./imgs/grafana2.png)
+  - grafana部分指标展示效果如下图，左上为文件读操作Bytes监控;左下为为系统调用热力图，方便定位到热点调用路径;右上为文件读操作TOP10;右下为文件写操作TOP10。
+  ![grafana2](./imgs/grafana2.png)
+  ![grafana3](./imgs/grafana.png)
 
 
 ### 7.5. CI/持续集成
