@@ -1,10 +1,10 @@
 ## 实际教学
-&ensp;&ensp;&ensp;&ensp;由于eBPF是由事件触发的函数，所以在使用`libbpf-bootstrap`进行编程时，
+        由于eBPF是由事件触发的函数，所以在使用`libbpf-bootstrap`进行编程时，
 首先需要找到内核代码运行时的执行点，然后在执行点书写处理函数。在完成内核态代码完成后，按照`*.skel.h`
 的命名规则，撰写用户态代码，完成所有工作。  
-&ensp;&ensp;&ensp;&ensp;本部分将就本项目书写的几个追踪模块进行讲解。
+        本部分将就本项目书写的几个追踪模块进行讲解。
 ### process追踪模块
-&ensp;&ensp;&ensp;&ensp;进程的追踪模块本项目主要设置了两个`tracepoint`挂载点。
+        进程的追踪模块本项目主要设置了两个`tracepoint`挂载点。
 第一个挂载点形式为
 ```c
         SEC("tp/sched/sched_process_exec")
@@ -25,7 +25,7 @@
 当有进程退出时，该函数会被调用，函数体同样会从传入的上下文内容提取内容，我们需要的信息记录在Map中。
 
 ### syscall追踪模块
-&ensp;&ensp;&ensp;&ensp;对于系统调用的追踪模块设置了一个`tracepoint`挂载点。
+        对于系统调用的追踪模块设置了一个`tracepoint`挂载点。
 挂载点形式为
 ```c
         SEC("tracepoint/raw_syscalls/sys_enter")
@@ -37,7 +37,7 @@
 当有syscall发生时，其经过`sys_enter`执行点时我们的函数将会被调用，将相关信息存入map后供用户态读取。
 
 ### file追踪模块
-&ensp;&ensp;&ensp;&ensp;对于文件系统，我们设置了两个`kprobe`挂载点
+        对于文件系统，我们设置了两个`kprobe`挂载点
 第一个挂载点形式为
 ```c
         SEC("kprobe/vfs_read")
@@ -57,7 +57,7 @@
 当系统中发生了文件读或写时，这两个执行点下的函数会被触发，记录相应信息。
 
 ### ipc追踪模块
-&ensp;&ensp;&ensp;&ensp;对于进程间通信的追踪，我们使用了Linux LSM模块的钩子，其形式为
+        对于进程间通信的追踪，我们使用了Linux LSM模块的钩子，其形式为
 ```c
         SEC("lsm/ipc_permission")
         int BPF_PROG(ipc_permission, struct kern_ipc_perm *ipcp, short flag)
@@ -68,5 +68,5 @@
 进程间发生了通信需要检查各自的权限时便会执行此函数
 
 ### container模块
-&ensp;&ensp;&ensp;&ensp;对于容器相关信息的监控理论上需要涉及到`uprobe`追踪模块的内容，但目前使用
+        对于容器相关信息的监控理论上需要涉及到`uprobe`追踪模块的内容，但目前使用
 现有的容器相关命令来实现类似功能。

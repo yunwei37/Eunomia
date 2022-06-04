@@ -262,7 +262,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 
 ### 7.2. 命令行测试情况
-&ensp;&ensp;&ensp;&ensp;各项命令测试结果如下：
+        各项命令测试结果如下：
 #### tracker系列命令
 
 
@@ -279,25 +279,25 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 ## 8. 遇到的主要问题和解决方法
 
 ### 8.1. 如何设计 ebpf 挂载点
-&ensp;&ensp;&ensp;&ensp;如何设计挂载点是ebpf程序在书写时首先需要考虑的问题。ebpf程序是事件驱动的，即只有系统中发生了我们预先规定的事件，我们的程序才会被调用。因此，ebpf挂载点的选择直接关系到程序能否在我们需要的场合下被启动。
-&ensp;&ensp;&ensp;&ensp;我们在选择挂载点时，首先需要明白的是我们需要在什么情况下触发处理函数，然后去寻找合适的挂载点。ebpf的挂载点有多种类型，较为常用的挂载点是`tracepoint`，`k/uprobe`，`lsm`等。
-&ensp;&ensp;&ensp;&ensp;`tracepoint`是一段静态的代码，以打桩的形式存在于程序源码中，并向外界提供钩子以挂载。一旦处理函数挂载到了钩子上，那么当钩子对应的事件发生时，处理函数就会被调用。由于`tracepoint`使用较为方便，且覆盖面广，ABI也较为稳定，他是我们设计挂载点的一个重要考虑对象。目前Linux已经有1000多个tracepoint可供选择，其支持的所有类型可以在`/sys/kernel/debug/tracing/events/`目录下看到，而至于涉及到的参数格式和返回形式，用户可以使用`cat`命令，查看对应`tracepoint`事件下的format文件得到。如下便是`sched_process_exec`事件的输出格式。
+        如何设计挂载点是ebpf程序在书写时首先需要考虑的问题。ebpf程序是事件驱动的，即只有系统中发生了我们预先规定的事件，我们的程序才会被调用。因此，ebpf挂载点的选择直接关系到程序能否在我们需要的场合下被启动。
+        我们在选择挂载点时，首先需要明白的是我们需要在什么情况下触发处理函数，然后去寻找合适的挂载点。ebpf的挂载点有多种类型，较为常用的挂载点是`tracepoint`，`k/uprobe`，`lsm`等。
+        `tracepoint`是一段静态的代码，以打桩的形式存在于程序源码中，并向外界提供钩子以挂载。一旦处理函数挂载到了钩子上，那么当钩子对应的事件发生时，处理函数就会被调用。由于`tracepoint`使用较为方便，且覆盖面广，ABI也较为稳定，他是我们设计挂载点的一个重要考虑对象。目前Linux已经有1000多个tracepoint可供选择，其支持的所有类型可以在`/sys/kernel/debug/tracing/events/`目录下看到，而至于涉及到的参数格式和返回形式，用户可以使用`cat`命令，查看对应`tracepoint`事件下的format文件得到。如下便是`sched_process_exec`事件的输出格式。
 ![](./imgs/report/tracepoint_example1.png)
-&ensp;&ensp;&ensp;&ensp;用户也可以直接访问`tracepoint`的源码获得更多信息。在Linux源码的`./include/trace/events`目录下，用户可以看到Linux中实现tracepoint的源码。  
-&ensp;&ensp;&ensp;&ensp;`k/uprobe`是Linux提供的，允许用户动态插桩的方式。由于`tracepoint`是静态的，如果用户临时需要对一些其不支持的函数进行追踪，就无法使用`tracepoint`，而`k/uprobe`允许用户事实对内核态/用户态中某条指令进行追踪。用户在指定了该指令的位置并启用`k/uprobe`后，当程序运行到该指令时，内核会自动跳转到我们处理代码，待处理完成后返回到原处。相较于`tracepoint`，`k/uprobe`更为灵活，如果你需要追踪的指令不被`tracepoint`所支持，可以考虑使用`k/uprobe`。  
-&ensp;&ensp;&ensp;&ensp; `lsm`是Linux内核安全模块的一套框架，其本质也是插桩。相较于`tracepoint`，`lsm`主要在内核安全的相关路径中插入了hook点。因此如果你希望你的代码检测一些和安全相关的内容，可以考虑使用`lsm`。其所有钩子的定义在Linux源码的`./include/linux/lsm_hook_defs.h`中，你可以从中选择初你所需要的hook点。
+        用户也可以直接访问`tracepoint`的源码获得更多信息。在Linux源码的`./include/trace/events`目录下，用户可以看到Linux中实现tracepoint的源码。  
+        `k/uprobe`是Linux提供的，允许用户动态插桩的方式。由于`tracepoint`是静态的，如果用户临时需要对一些其不支持的函数进行追踪，就无法使用`tracepoint`，而`k/uprobe`允许用户事实对内核态/用户态中某条指令进行追踪。用户在指定了该指令的位置并启用`k/uprobe`后，当程序运行到该指令时，内核会自动跳转到我们处理代码，待处理完成后返回到原处。相较于`tracepoint`，`k/uprobe`更为灵活，如果你需要追踪的指令不被`tracepoint`所支持，可以考虑使用`k/uprobe`。  
+         `lsm`是Linux内核安全模块的一套框架，其本质也是插桩。相较于`tracepoint`，`lsm`主要在内核安全的相关路径中插入了hook点。因此如果你希望你的代码检测一些和安全相关的内容，可以考虑使用`lsm`。其所有钩子的定义在Linux源码的`./include/linux/lsm_hook_defs.h`中，你可以从中选择初你所需要的hook点。
 
 
 ### 8.2. 如何进行内核态数据过滤和数据综合
-&ensp;&ensp;&ensp;&ensp;ebpf程序在内核态处理数据有诸多不便，有许多库我们都无法使用，如果遇上的复杂的数据过滤和数据综合，我们需要手动实现很多函数。因此我们认为更为合理的处理方案是将内核态的数据使用ebpf-map传输到用户态，在用户态进行过滤和综合，之后再输出。
+        ebpf程序在内核态处理数据有诸多不便，有许多库我们都无法使用，如果遇上的复杂的数据过滤和数据综合，我们需要手动实现很多函数。因此我们认为更为合理的处理方案是将内核态的数据使用ebpf-map传输到用户态，在用户态进行过滤和综合，之后再输出。
 
 ### 8.3. 如何定位容器元信息
 
-&ensp;&ensp;&ensp;&ensp;`docker`有大量命令可以让我们看到容器的信息。比如`docker ps`命令就可以容器的ID，容器的名称等等。`docker insepect`命令则可以让我们看到更多容器信息。我们可以使用在程序中执行这些shell指令，捕获输出并解析后即可得到容器的元信息。
+        `docker`有大量命令可以让我们看到容器的信息。比如`docker ps`命令就可以容器的ID，容器的名称等等。`docker insepect`命令则可以让我们看到更多容器信息。我们可以使用在程序中执行这些shell指令，捕获输出并解析后即可得到容器的元信息。
 
 ### 8.4. 如何设计支持可扩展性的数据结构
 
-&ensp;&ensp;&ensp;&ensp;首先尽可能降低各个模块的耦合性，这样在修改时可以较为方便地完成改动。其次，在最初设计时为未来可能的扩展预留位置。
+        首先尽可能降低各个模块的耦合性，这样在修改时可以较为方便地完成改动。其次，在最初设计时为未来可能的扩展预留位置。
 
 ## 9. 分工和协作
 
@@ -308,7 +308,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 ### 10.1. 项目仓库目录结构
 
-  &ensp;&ensp;&ensp;&ensp;本仓库的主要目录结构如下所示：   
+          本仓库的主要目录结构如下所示：   
 
   ```
   ├─bpftools  
@@ -339,51 +339,51 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 ### 10.2. 各目录及其文件描述
 #### bpftools目录
 
-  &ensp;&ensp;&ensp;&ensp;本目录内的所有文件均为基于ebpf开发的内核态监视代码，
+          本目录内的所有文件均为基于ebpf开发的内核态监视代码，
 共有7个子目录，子目录名表示了子目录内文件所实现的模块。比如process子目录代表了其中的文件
 主要实现了进程追踪方面的ebpf内核态代码，其他子目录同理。
 
 ####  cmake目录
 
-&ensp;&ensp;&ensp;&ensp;本项目使用cmake进行编译，本目录中的所有文件都是本项目cmake
+        本项目使用cmake进行编译，本目录中的所有文件都是本项目cmake
 的相关配置文件。
 
 #### doc目录
 
-&ensp;&ensp;&ensp;&ensp;本目录内的所有文件为与本项目相关的文档，其中develop_doc目录为开发
+        本目录内的所有文件为与本项目相关的文档，其中develop_doc目录为开发
 文档，其中记录了本项目开发的各种详细信息。tutorial目录为本项目为所有想进行ebpf开发的同学所设计的
 教学文档，其中会提供一些入门教程，方便用户快速上手。imgs目录为开发文档和教学文档中所需要的一些
 图片。
 
 #### include目录
 
-&ensp;&ensp;&ensp;&ensp;本项目中用户态代码的头文件均会存放在本目录下。eunomia子目录中存放的
+        本项目中用户态代码的头文件均会存放在本目录下。eunomia子目录中存放的
 是各个模块和所需要的头文件，eunomia下的model子目录存放的是各个头文件中的一些必要结构体经过抽象后
 的声明。
 
 #### libbpf目录
 
-&ensp;&ensp;&ensp;&ensp;该目录为libbpf-bootstrap框架中自带的libbpf头文件。
+        该目录为libbpf-bootstrap框架中自带的libbpf头文件。
 
 #### src目录
 
-&ensp;&ensp;&ensp;&ensp;该目录主要记录了各个模块的用户态代码cpp文件。
+        该目录主要记录了各个模块的用户态代码cpp文件。
 
 #### test目录
 
-&ensp;&ensp;&ensp;&ensp;本目录主要包括了对各个模块的测试代码。
+        本目录主要包括了对各个模块的测试代码。
 
 #### third_party目录
 
-&ensp;&ensp;&ensp;&ensp;本模块为Prometheus库所需的依赖。
+        本模块为Prometheus库所需的依赖。
 
 #### tools目录
 
-&ensp;&ensp;&ensp;&ensp;本模块主要包含了一些项目所需要的脚本。
+        本模块主要包含了一些项目所需要的脚本。
 
 #### vmlinux目录
 
-&ensp;&ensp;&ensp;&ensp;本目录主要是libbpf-bootstrap框架自带的vmlinux头文件。
+        本目录主要是libbpf-bootstrap框架自带的vmlinux头文件。
 
 ## 11. 比赛收获
 
