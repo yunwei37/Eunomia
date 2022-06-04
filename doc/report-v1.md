@@ -34,6 +34,7 @@
   - [7. 系统测试情况](#7-系统测试情况)
     - [7.1. 快速上手](#71-快速上手)
     - [7.2. 命令行测试情况](#72-命令行测试情况)
+      - [7.2.1. tracker系列命令](#721-tracker系列命令)
     - [7.3. 容器测试情况](#73-容器测试情况)
     - [7.4. 信息可视化测试情况： prometheus and grafana](#74-信息可视化测试情况-prometheus-and-grafana)
     - [7.5. CI/持续集成](#75-ci持续集成)
@@ -46,39 +47,42 @@
   - [10. 提交仓库目录和文件描述](#10-提交仓库目录和文件描述)
     - [10.1. 项目仓库目录结构](#101-项目仓库目录结构)
     - [10.2. 各目录及其文件描述](#102-各目录及其文件描述)
-      - [bpftools目录](#bpftools目录)
-      - [cmake目录](#cmake目录)
-      - [doc目录](#doc目录)
-      - [include目录](#include目录)
-      - [libbpf目录](#libbpf目录)
-      - [src目录](#src目录)
-      - [test目录](#test目录)
-      - [third_party目录](#third_party目录)
-      - [tools目录](#tools目录)
-      - [vmlinux目录](#vmlinux目录)
+      - [10.2.1. bpftools目录](#1021-bpftools目录)
+      - [10.2.2. cmake目录](#1022-cmake目录)
+      - [10.2.3. doc目录](#1023-doc目录)
+      - [10.2.4. include目录](#1024-include目录)
+      - [10.2.5. libbpf目录](#1025-libbpf目录)
+      - [10.2.6. src目录](#1026-src目录)
+      - [10.2.7. test目录](#1027-test目录)
+      - [10.2.8. third_party目录](#1028-third_party目录)
+      - [10.2.9. tools目录](#1029-tools目录)
+      - [10.2.10. vmlinux目录](#10210-vmlinux目录)
   - [11. 比赛收获](#11-比赛收获)
+    - [11.1. 郑昱笙同学](#111-郑昱笙同学)
+    - [11.2. 张典典同学](#112-张典典同学)
+    - [11.3. 濮雯旭同学](#113-濮雯旭同学)
   - [12. 附录](#12-附录)
     - [12.1. Prometheus 观测指标](#121-prometheus-观测指标)
-  - [Process Metrics](#process-metrics)
-    - [Metrics List](#metrics-list)
-    - [Labels List](#labels-list)
-  - [files Metrics](#files-metrics)
-    - [Metrics List](#metrics-list-1)
-    - [Labels List](#labels-list-1)
-  - [Tcp Connect Metrics](#tcp-connect-metrics)
-    - [Metrics List](#metrics-list-2)
-    - [Labels List](#labels-list-2)
-  - [Syscall Metrics](#syscall-metrics)
-    - [Metrics List](#metrics-list-3)
-    - [Labels List](#labels-list-3)
-  - [Security Event Metrics](#security-event-metrics)
-    - [Metrics List](#metrics-list-4)
-    - [Labels List](#labels-list-4)
-  - [Service Metrics](#service-metrics)
-    - [Metrics List](#metrics-list-5)
-    - [Labels List](#labels-list-5)
-  - [PromQL Example](#promql-example)
-    - [12.2. 命令行工具帮助信息](#122-命令行工具帮助信息)
+  - [13. Process Metrics](#13-process-metrics)
+    - [13.1. Metrics List](#131-metrics-list)
+    - [13.2. Labels List](#132-labels-list)
+  - [14. files Metrics](#14-files-metrics)
+    - [14.1. Metrics List](#141-metrics-list)
+    - [14.2. Labels List](#142-labels-list)
+  - [15. Tcp Connect Metrics](#15-tcp-connect-metrics)
+    - [15.1. Metrics List](#151-metrics-list)
+    - [15.2. Labels List](#152-labels-list)
+  - [16. Syscall Metrics](#16-syscall-metrics)
+    - [16.1. Metrics List](#161-metrics-list)
+    - [16.2. Labels List](#162-labels-list)
+  - [17. Security Event Metrics](#17-security-event-metrics)
+    - [17.1. Metrics List](#171-metrics-list)
+    - [17.2. Labels List](#172-labels-list)
+  - [18. Service Metrics](#18-service-metrics)
+    - [18.1. Metrics List](#181-metrics-list)
+    - [18.2. Labels List](#182-labels-list)
+  - [19. PromQL Example](#19-promql-example)
+    - [19.1. 命令行工具帮助信息](#191-命令行工具帮助信息)
 
 <!-- /TOC -->
 
@@ -263,7 +267,8 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 ### 7.2. 命令行测试情况
         各项命令测试结果如下：
-#### tracker系列命令
+#### 7.2.1. tracker系列命令
+
 - process模块测试  
   - 追踪所有process
     ![所有追踪结果](./imgs/cmd_show/cmd_run_process_all.png)
@@ -371,7 +376,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
           本仓库的主要目录结构如下所示：   
 
   ```
-  ├─bpftools  
+  ├─bpftools       - ebpf内核态代码
   │  ├─container  
   │  ├─files  
   │  ├─ipc  
@@ -380,16 +385,16 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
   │  ├─syscall  
   │  └─tcp  
   ├─cmake  
-  ├─doc  
+  ├─doc           - 项目开发文档
   │  ├─develop_doc   
   │  ├─imgs  
   │  └─tutorial  
-  ├─include  
-  │   └─eunomia  
+  ├─include       
+  │   └─eunomia   - 项目主要头文件
   │       └─model  
   ├─libbpf  
-  ├─src  
-  ├─test  
+  ├─src           - 项目主要代码
+  ├─test          - 项目单元测试和集成测试
   │   └─src  
   ├─third_party  
   │       └─prometheus-cpp  
@@ -397,77 +402,76 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
   └─vmlinux  
   ```
 ### 10.2. 各目录及其文件描述
-#### bpftools目录
+#### 10.2.1. bpftools目录
 
-          本目录内的所有文件均为基于ebpf开发的内核态监视代码，
+本目录内的所有文件均为基于ebpf开发的内核态监视代码，
 共有7个子目录，子目录名表示了子目录内文件所实现的模块。比如process子目录代表了其中的文件
 主要实现了进程追踪方面的ebpf内核态代码，其他子目录同理。
 
-####  cmake目录
+#### 10.2.2. cmake目录
 
-        本项目使用cmake进行编译，本目录中的所有文件都是本项目cmake
+本项目使用cmake进行编译，本目录中的所有文件都是本项目cmake
 的相关配置文件。
 
-#### doc目录
+#### 10.2.3. doc目录
 
-        本目录内的所有文件为与本项目相关的文档，其中develop_doc目录为开发
-文档，其中记录了本项目开发的各种详细信息。tutorial目录为本项目为所有想进行ebpf开发的同学所设计的
+本目录内的所有文件为与本项目相关的文档，其中develop_doc目录为开发文档，其中记录了本项目开发的各种详细信息。tutorial目录为本项目为所有想进行ebpf开发的同学所设计的
 教学文档，其中会提供一些入门教程，方便用户快速上手。imgs目录为开发文档和教学文档中所需要的一些
 图片。
 
-#### include目录
+#### 10.2.4. include目录
 
-        本项目中用户态代码的头文件均会存放在本目录下。eunomia子目录中存放的
+本项目中用户态代码的头文件均会存放在本目录下。eunomia子目录中存放的
 是各个模块和所需要的头文件，eunomia下的model子目录存放的是各个头文件中的一些必要结构体经过抽象后
 的声明。
 
-#### libbpf目录
+#### 10.2.5. libbpf目录
 
-        该目录为libbpf-bootstrap框架中自带的libbpf头文件。
+该目录为libbpf-bootstrap框架中自带的libbpf头文件。
 
-#### src目录
+#### 10.2.6. src目录
 
-        该目录主要记录了各个模块的用户态代码cpp文件。
+该目录主要记录了各个模块的用户态代码cpp文件。
 
-#### test目录
+#### 10.2.7. test目录
 
-        本目录主要包括了对各个模块的测试代码。
+本目录主要包括了对各个模块的测试代码。
 
-#### third_party目录
+#### 10.2.8. third_party目录
 
-        本模块为Prometheus库所需的依赖。
+本模块为Prometheus库所需的依赖。
 
-#### tools目录
+#### 10.2.9. tools目录
 
-        本模块主要包含了一些项目所需要的脚本。
+本模块主要包含了一些项目所需要的脚本。
 
-#### vmlinux目录
+#### 10.2.10. vmlinux目录
 
         本目录主要是libbpf-bootstrap框架自带的vmlinux头文件。
 
 ## 11. 比赛收获
 
-### 郑昱笙同学
+### 11.1. 郑昱笙同学
 
 
-### 张典典同学
+### 11.2. 张典典同学
 
-### 濮雯旭同学
+### 11.3. 濮雯旭同学
 
 
 ## 12. 附录
 
 ### 12.1. Prometheus 观测指标
 
-## Process Metrics
+## 13. Process Metrics
 
-### Metrics List
+### 13.1. Metrics List
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_observed_process_start` | Counter | Number of observed process start |
 | `eunomia_observed_process_end` | Counter | Number of observed process end |
 
-### Labels List
+### 13.2. Labels List
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `node` | worker-1 | Node name represented in Kubernetes cluster |
@@ -482,9 +486,9 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 | `duration_ms` | 375 | The running time |
 
 
-## files Metrics
+## 14. files Metrics
 
-### Metrics List
+### 14.1. Metrics List
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_observed_files_read_count` | Counter | Number of observed files read count |
@@ -492,7 +496,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 | `eunomia_observed_files_write_bytes` | Counter | Number of observed files read bytes |
 | `eunomia_observed_files_read_bytes` | Counter | Number of observed files write bytes |
 
-### Labels List
+### 14.2. Labels List
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `comm` | eunomia | The command of the running process |
@@ -500,15 +504,15 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 | `pid` | 7686 | The pid of the running proces |
 | `type` | 82 | Type of comm |
 
-## Tcp Connect Metrics
+## 15. Tcp Connect Metrics
 
-### Metrics List
+### 15.1. Metrics List
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_observed_tcp_v4_count` | Counter | Number of observed tcp v4 connect count |
 | `eunomia_observed_tcp_v6_count` | Counter | Number of observed tcp v6 connect count |
 
-### Labels List
+### 15.2. Labels List
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `dst` | 127.0.0.1 | Destination of TCP connection |
@@ -520,30 +524,30 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 | `uid` | 1000 | The uid of the running proces |
 
 
-## Syscall Metrics
+## 16. Syscall Metrics
 
-### Metrics List
+### 16.1. Metrics List
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_observed_syscall_count` | Counter | Number of observed syscall count |
 
-### Labels List
+### 16.2. Labels List
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `comm` | firefox | The command of the running process |
 | `pid` | 4036 | The pid of the running proces |
 | `syscall` | writev | Name of the syscall called by running process |
 
-## Security Event Metrics
+## 17. Security Event Metrics
 
-### Metrics List
+### 17.1. Metrics List
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_seccurity_warn_count` | Counter | Number of observed security warnings |
 | `eunomia_seccurity_event_count` | Counter | Number of observed security event |
 | `eunomia_seccurity_alert_count` | Counter | Number of observed security alert |
 
-### Labels List
+### 17.2. Labels List
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `comm` | firefox | The command of the running process |
@@ -551,16 +555,16 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 | `syscall` | writev | Name of the syscall called by running process |
 
 
-## Service Metrics
+## 18. Service Metrics
 
 Service metrics are generated from the eunomia server-side events, which are used to show the quality of eunomia own service.
 
-### Metrics List
+### 18.1. Metrics List
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_run_tracker_total` | Counter | Total number of running trackers |
 
-### Labels List
+### 18.2. Labels List
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `node` | worker-1 | Node name represented in Kubernetes cluster |
@@ -570,7 +574,7 @@ Service metrics are generated from the eunomia server-side events, which are use
 | `ip` | 10.1.11.23 | The IP address of the entity |
 | `port` | 80 | The listening port of the entity |
 
-## PromQL Example
+## 19. PromQL Example
 
 Here are some examples of how to use these metrics in Prometheus, which can help you understand them faster.
 
@@ -581,4 +585,4 @@ Here are some examples of how to use these metrics in Prometheus, which can help
 | write rate | `sum(rate(eunomia_observed_files_write_count{}[1m])) by(comm)` |
 
 
-### 12.2. 命令行工具帮助信息
+### 19.1. 命令行工具帮助信息

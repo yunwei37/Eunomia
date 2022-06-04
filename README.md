@@ -156,9 +156,11 @@ And you will get an alert in eunomia output:
 [2022-06-02 11:26:40.833] [info] container_name: Ubuntu
 ```
 
-This message means some program inserts a bpf program to the kernel, which may cause container escape. Note that alrough `eunomia` use ebpf as well, it will not trigger this warnning itself. This will also be exported to Prometheus, in metrix `eunomia_seccurity_event_count`.
+This message means some program inserts a bpf program to the kernel, which may cause container escape ([reference](https://security.tencent.com/index.php/blog/msg/206)). Note that alrough `eunomia` use ebpf as well, it will not trigger this warnning itself. This will also be exported to Prometheus, in metrix `eunomia_seccurity_event_count`.
 
-For more details, please refer to [rules_index](doc/rules.md)
+For more details, please refer to [rules_index](doc/rule_index.md)
+
+> Currenty we only have a framework for detecting security events, more rules will be added in the future.
 
 ### build On Linux
 
