@@ -1,11 +1,15 @@
 ## 实际教学
-        由于eBPF是由事件触发的函数，所以在使用`libbpf-bootstrap`进行编程时，
+
+由于eBPF是由事件触发的函数，所以在使用`libbpf-bootstrap`进行编程时，
 首先需要找到内核代码运行时的执行点，然后在执行点书写处理函数。在完成内核态代码完成后，按照`*.skel.h`
-的命名规则，撰写用户态代码，完成所有工作。  
-        本部分将就本项目书写的几个追踪模块进行讲解。
+的命名规则，撰写用户态代码，完成所有工作。 
+
+本部分将就本项目书写的几个追踪模块进行讲解。
 ### process追踪模块
-        进程的追踪模块本项目主要设置了两个`tracepoint`挂载点。
+
+进程的追踪模块本项目主要设置了两个`tracepoint`挂载点。
 第一个挂载点形式为
+
 ```c
         SEC("tp/sched/sched_process_exec")
         int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
@@ -13,8 +17,10 @@
     
         }
 ```
+
 当进程被执行时，该函数会被调用，函数体中会从传入的上下文内容提取内容，我们需要的信息记录在Map中。
 第二个挂载点形式为
+
 ```c
         SEC("tp/sched/sched_process_exit")
         int handle_exit(struct trace_event_raw_sched_process_template *ctx)
@@ -22,10 +28,12 @@
             
         }
 ```
+
 当有进程退出时，该函数会被调用，函数体同样会从传入的上下文内容提取内容，我们需要的信息记录在Map中。
 
 ### syscall追踪模块
-        对于系统调用的追踪模块设置了一个`tracepoint`挂载点。
+
+对于系统调用的追踪模块设置了一个`tracepoint`挂载点。
 挂载点形式为
 ```c
         SEC("tracepoint/raw_syscalls/sys_enter")
@@ -66,7 +74,3 @@
         }
 ```
 进程间发生了通信需要检查各自的权限时便会执行此函数
-
-### container模块
-        对于容器相关信息的监控理论上需要涉及到`uprobe`追踪模块的内容，但目前使用
-现有的容器相关命令来实现类似功能。

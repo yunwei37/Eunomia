@@ -75,11 +75,11 @@ Your Kconfig should contain the options below
   CONFIG_DEBUG_INFO_BTF=y
   CONFIG_DEBUG_INFO=y
   ```
-- The suggested kernel version is `5.13` or higher.
+- The suggested kernel version is `5.10` or higher.
 
 ### run as binary
 
-you can use our pre-compiled binary to start a prometheus exporter:
+You can use our pre-compiled binary(see [release](https://github.com/yunwei37/Eunomia/releases) here) to start a prometheus exporter:
 
 ```sh
 sudo ./eunomia server
