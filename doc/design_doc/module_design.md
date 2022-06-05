@@ -1,5 +1,21 @@
 # 模块设计
 
+<!-- TOC -->
+
+- [模块设计](#模块设计)
+  - [tracker_manager](#tracker_manager)
+  - [container_manager](#container_manager)
+  - [seccomp_manager](#seccomp_manager)
+  - [handler](#handler)
+  - [container detection](#container-detection)
+  - [security analyzer](#security-analyzer)
+  - [prometheus exporter](#prometheus-exporter)
+  - [config loader](#config-loader)
+  - [cmd](#cmd)
+  - [core](#core)
+  - [server](#server)
+
+<!-- /TOC -->
 
 ## tracker_manager
 
@@ -24,7 +40,7 @@ Currently we have 5 main trackers:
 
   负责对 process 进行 seccomp 限制
 
-## data_collector
+## handler
 
   收集数据，再决定怎么办；传给 database 还是聚合还是交给别的地方还是打印
 
@@ -46,16 +62,18 @@ Currently we have 5 main trackers:
 
 ## config loader
 
-   解析 toml
+解析 toml
 
 ## cmd
 
-   命令行解析模块，将命令行字符串解析成对应的参数选项，对Eunomia进行配置。
+命令行解析模块，将命令行字符串解析成对应的参数选项，对Eunomia进行配置。
 
 ## core
 
-    负责装配所需要的 tracker，配置对应的功能用例，并且启动系统。
+负责装配所需要的 tracker，配置对应的功能用例，并且启动系统。
 
 ## server
 
-   http 通信：通过 `graphql` 在远程发起 http 请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行在线数据分析；
+http 通信：通过 `graphql` 在远程发起 http 请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行在线数据分析；
+
+这一个部分还没有完成。

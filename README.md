@@ -34,6 +34,8 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 
 ## What is Eunomia
 
+完整的初赛报告文档，请点击这里：[report](doc/report-v1.md)
+
 ### Describe
 
 `Eunomia` 是一个使用 C/C++ 开发的基于eBPF的云原生监控工具，旨在帮助用户了解容器的各项行为、监控可疑的容器安全事件，力求为工业界提供覆盖容器全生命周期的轻量级开源监控解决方案。它使用 `Linux` `eBPF` 技术在运行时跟踪您的系统和应用程序，并分析收集的事件以检测可疑的行为模式。目前，它包含 `profile`、容器集群网络可视化分析*、容器安全感知告警、一键部署、持久化存储监控等功能。
