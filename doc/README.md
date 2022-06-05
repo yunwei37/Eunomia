@@ -24,6 +24,5 @@ This dir contains all our documentations.
 
 同时，我们还提供了简单的初赛视频介绍和演示：
 
->链接：https://pan.baidu.com/s/1z399dW-oT7S4YJlQyWHWuw?pwd=jvf4 
->
->提取码：jvf4
+链接： https://pan.baidu.com/s/1AnwPyL3wf9TY7H5RKIgJ6Q?pwd=r57d 
+提取码： r57d
