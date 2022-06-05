@@ -7,3 +7,4 @@
 - [系统设计](system_design.md)
 - [配置文件设计](toml_design.md)
 - [ebpf 探针设计](ebpf-tracker.md)
+- [安全风险分析模块设计](sec-analyzer.md)

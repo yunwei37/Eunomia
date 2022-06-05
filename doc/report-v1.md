@@ -24,7 +24,6 @@
     - [4.2. 模块设计](#42-模块设计)
     - [4.3. 功能设计](#43-功能设计)
     - [4.4. ebpf 主要观测点](#44-ebpf-主要观测点)
-    - [4.5. ebpf 可观测信息设计](#45-ebpf-可观测信息设计)
     - [4.6. ebpf 探针设计](#46-ebpf-探针设计)
       - [4.6.1. ebpf 探针相关 C 代码设计，以 process 为例：](#461-ebpf-探针相关-c-代码设计以-process-为例)
       - [4.6.2. C++ 部分探针代码设计](#462-c-部分探针代码设计)
@@ -250,7 +249,77 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 ### 4.4. ebpf 主要观测点
 
-### 4.5. ebpf 可观测信息设计
+- process追踪模块
+
+  进程的追踪模块本项目主要设置了两个`tracepoint`挂载点。
+  第一个挂载点形式为
+
+  ```c
+          SEC("tp/sched/sched_process_exec")
+          int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
+          {
+      
+          }
+  ```
+
+  当进程被执行时，该函数会被调用，函数体中会从传入的上下文内容提取内容，我们需要的信息记录在Map中。
+  第二个挂载点形式为
+
+  ```c
+          SEC("tp/sched/sched_process_exit")
+          int handle_exit(struct trace_event_raw_sched_process_template *ctx)
+          {
+              
+          }
+  ```
+
+  当有进程退出时，该函数会被调用，函数体同样会从传入的上下文内容提取内容，我们需要的信息记录在Map中。
+
+- syscall追踪模块
+
+  对于系统调用的追踪模块设置了一个`tracepoint`挂载点。挂载点形式为
+  ```c
+          SEC("tracepoint/raw_syscalls/sys_enter")
+          int sys_enter(struct trace_event_raw_sys_enter *args)
+          {
+      
+          }
+  ```
+  当有syscall发生时，其经过`sys_enter`执行点时我们的函数将会被调用，将相关信息存入map后供用户态读取。
+
+- file追踪模块
+
+  对于文件系统，我们设置了两个`kprobe`挂载点。第一个挂载点形式为
+  ```c
+          SEC("kprobe/vfs_read")
+          int BPF_KPROBE(vfs_read_entry, struct file *file, char *buf, size_t count, loff_t *pos)
+          {
+      
+          }
+  ```
+  第二个挂载点形式为
+  ```c
+          SEC("kprobe/vfs_write")
+          int BPF_KPROBE(vfs_write_entry, struct file *file, const char *buf, size_t count, loff_t *pos)
+          {
+      
+          }
+  ```
+  当系统中发生了文件读或写时，这两个执行点下的函数会被触发，记录相应信息。
+
+-  tcp追踪模块
+
+  ```c
+  SEC("kprobe/tcp_v6_connect")
+  int BPF_KPROBE(tcp_v6_connect, struct sock *sk) {
+    return enter_tcp_connect(ctx, sk);
+  }
+
+  SEC("kretprobe/tcp_v6_connect")
+  int BPF_KRETPROBE(tcp_v6_connect_ret, int ret) {
+    return exit_tcp_connect(ctx, ret, 6);
+  }
+  ```
 
 ### 4.6. ebpf 探针设计
 
@@ -636,6 +705,116 @@ public:
 
 目前安全告警部分还未完善，只有一个框架和 demo，我们需要对更多的安全相关规则，以及常见的容器安全风险情境进行调研和完善，然后再添加更多的安全分析。
 
+
+- 安全分析和告警
+
+  目前我们的安全风险等级主要分为三类（未来可能变化，我觉得这个名字不一定很直观）：
+
+  include\eunomia\sec_analyzer.h
+  ```cpp
+  enum class sec_rule_level
+  {
+    event,
+    warnning,
+    alert,
+    // TODO: add more levels?
+  };
+  ```
+
+  安全规则和上报主要由 sec_analyzer 模块负责：
+
+  ```cpp
+
+  struct sec_analyzer
+  {
+    // EVNETODO: use the mutex
+    std::mutex mutex;
+    const std::vector<sec_rule_describe> rules;
+
+    sec_analyzer(const std::vector<sec_rule_describe> &in_rules) : rules(in_rules)
+    {
+    }
+    virtual ~sec_analyzer() = default;
+    virtual void report_event(const rule_message &msg);
+    void print_event(const rule_message &msg);
+
+    static std::shared_ptr<sec_analyzer> create_sec_analyzer_with_default_rules(void);
+    static std::shared_ptr<sec_analyzer> create_sec_analyzer_with_additional_rules(const std::vector<sec_rule_describe> &rules);
+  };
+
+  struct sec_analyzer_prometheus : sec_analyzer
+  {
+    prometheus::Family<prometheus::Counter> &eunomia_sec_warn_counter;
+    prometheus::Family<prometheus::Counter> &eunomia_sec_event_counter;
+    prometheus::Family<prometheus::Counter> &eunomia_sec_alert_counter;
+
+    void report_prometheus_event(const struct rule_message &msg);
+    void report_event(const rule_message &msg);
+    sec_analyzer_prometheus(prometheus_server &server, const std::vector<sec_rule_describe> &rules);
+
+    static std::shared_ptr<sec_analyzer> create_sec_analyzer_with_default_rules(prometheus_server &server);
+    static std::shared_ptr<sec_analyzer> create_sec_analyzer_with_additional_rules(const std::vector<sec_rule_describe> &rules, prometheus_server &server);
+  };
+  ```
+
+  我们通过 sec_analyzer 类来保存所有安全规则以供查询，同时以它的子类 sec_analyzer_prometheus 完成安全事件的上报和告警。具体的告警信息发送，可以由 prometheus 的相关插件完成，我们只需要提供一个接口。由于 rules 是不可变的，因此它在多线程读条件下是线程安全的。
+
+- 安全规则实现
+
+  我们的安全风险分析和安全告警规则基于对应的handler 实现，例如：
+
+  include\eunomia\sec_analyzer.h
+  ```cpp
+
+  // base class for securiy rules
+  template<typename EVNET>
+  struct rule_base : event_handler<EVNET>
+  {
+    std::shared_ptr<sec_analyzer> analyzer;
+    rule_base(std::shared_ptr<sec_analyzer> analyzer_ptr) : analyzer(analyzer_ptr) {}
+    virtual ~rule_base() = default;
+
+    // return rule id if matched
+    // return -1 if not matched
+    virtual int check_rule(const tracker_event<EVNET> &e, rule_message &msg) = 0;
+    void handle(tracker_event<EVNET> &e)
+    {
+      if (!analyzer)
+      {
+        std::cout << "analyzer is null" << std::endl;
+      }
+      struct rule_message msg;
+      int res = check_rule(e, msg);
+      if (res != -1)
+      {
+        analyzer->report_event(msg);
+      }
+    }
+  };
+  ```
+
+  这个部分定义了一个简单的规则基类，它对应于某一个 ebpf 探针上报的事件进行过滤分析，以系统调用上报的事件为例：
+
+  ```cpp
+  // syscall rule:
+  //
+  // for example, a process is using a dangerous syscall
+  struct syscall_rule_checker : rule_base<syscall_event>
+  {
+    syscall_rule_checker(std::shared_ptr<sec_analyzer> analyzer_ptr) : rule_base(analyzer_ptr)
+    {}
+    int check_rule(const tracker_event<syscall_event> &e, rule_message &msg);
+  };
+  ```
+
+  其中的 check_rule 函数实现了对事件进行过滤分析，如果事件匹配了规则，则返回规则的 id，否则返回 -1：关于 check_rule 的具体实现，请参考：src\sec_analyzer.cpp
+
+  除了通过单一的 ebpf 探针上报的事件进行分析之外，通过我们的 handler 机制，我们还可以综合多种探针的事件进行分析，或者通过时序数据库中的查询进行分析，来发现潜在的安全风险事件。
+
+-  其他
+  
+  除了通过规则来实现安全风险感知，我们还打算通过机器学习等方式进行进一步的安全风险分析和发现。
+
 ## 5. 开发计划
 
 ### 5.1. 日程表
@@ -698,12 +877,13 @@ public:
 - 2022.5.1 首段代码push，实现了对系统调用的成功追踪
 - 2022.5.15 完成了五大追踪模块的ebpf代码和简易用户态代码
 - 2022.5.17 重构用户态代码，引入简易命令行控制
-- 2020.5.20 正式定名Eunomia，该名字的原意是古希腊神话中的一位司管明智，法律与良好秩序女神。我们希望本工具也能在容器安全检测中发挥到这样的作用。
+- 2020.5.20 正式定名Eunomia，该名字的原意是古希腊神话中的一位司管明智，法律与良好秩序女神。我们希望本工具也能在容器安全检测和可观测性中发挥到这样的作用。
 - 2022.5.22 将CMake引入本工程，提高了项目编译的速度
-- 2022.5.23 开始集成Prometheus模块进入工程
+- 2022.5.23 开始集成 Prometheus 模块进入工程
 - 2022.5.24 重构用户态代码，基本确定命令行控制形式
 - 2022.5.28 将日志记录工具spdlog引入本工程
-- 2022.6.3 引入了sec_analyzer工具
+- 2022.6.1 prometheus 和 Grafana 模块集成完成，设计相关 dashboard
+- 2022.6.3 完成了 sec_analyzer 模块，对安全风险事件进行分析
 
 
 
@@ -1127,3 +1307,64 @@ Here are some examples of how to use these metrics in Prometheus, which can help
 
 ### 19.1. 命令行工具帮助信息
 
+```sh
+./eunomia 
+SYNOPSIS
+        bin/Debug/eunomia run [tcpconnect|syscall|ipc|process|files] [-c <container id>] [-p
+                          <process id>] [-T <trace time in seconds>] [--config <config file>] [-m
+                          [<path to store dir>]] [--fmt <output format of the program>]
+
+        bin/Debug/eunomia safe [--config <config file>]
+        bin/Debug/eunomia seccomp [-p <process id>] [-T <trace time in seconds>] [--config <config
+                          file>] [-o [<output file name>]]
+
+        bin/Debug/eunomia server [--config <config file>] [--no_safe] [--no_prometheus] [--listen
+                          <listening address>]
+
+        bin/Debug/eunomia help
+
+OPTIONS
+        -c, --container <container id>
+                    The conatienr id of the contaienr the EUNOMIA will monitor
+
+        -p, --process <process id>
+                    The process id of the process the EUNOMIA will monitor
+
+        -T <trace time in seconds>
+                    The time the ENUNOMIA will monitor for
+
+        --config <config file>
+                    The toml file stores the config data
+
+        -m <path to store dir>
+                    Start container manager to trace contaienr.
+
+        --fmt <output format of the program>
+                    The output format of EUNOMIA, it could be "json", "csv", "plain_txt", and
+                    "plain_txt" is the default choice.
+
+        --config <config file>
+                    The toml file stores the config data
+
+        -p, --process <process id>
+                    The process id of the process the EUNOMIA will monitor
+
+        -T <trace time in seconds>
+                    The time the ENUNOMIA will monitor for
+
+        --config <config file>
+                    The toml file stores the config data
+
+        -o <output file name>
+                    The output file name of seccomp
+
+        --config <config file>
+                    The toml file stores the config data
+
+        --no_safe   Stop safe module
+        --no_prometheus
+                    Stop prometheus server
+
+        --listen <listening address>
+                    Listen http requests on this address, the format is like "127.0.0.1:8528"
+```

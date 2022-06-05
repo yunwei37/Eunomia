@@ -18,7 +18,7 @@ enum class sec_rule_level
   event,
   warnning,
   alert,
-  // EVNETODO: add more levels?
+  // TODO: add more levels?
 };
 
 enum class sec_rule_type
@@ -28,7 +28,7 @@ enum class sec_rule_type
   process,
   files,
   mix,
-  // EVNETODO: add more types?
+  // TODO: add more types?
 };
 
 // message for sec_rule

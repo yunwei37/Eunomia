@@ -4,5 +4,12 @@
 
 ## 设计思路
 
-目前我们实现了一个简单的安全告警模块，它可以通过 ebpf 探针上报的事件进行安全告警，例如：
+请参考：[design_doc\sec-analyzer.md](design_doc\sec-analyzer.md)
 
+## 规则
+
+> 目前我们还没来得及整理更多有价值的规则，因此这里只有一点 demo 例子。
+
+| Name | Description | Tags
+| --- | --- | --- |
+BPF program loaded | load bpf program in the container | "linux", "container"
