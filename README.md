@@ -266,6 +266,7 @@ Eunomia的完整文档如下
 - [develop documents](doc/develop_doc)
 - [design documents](doc/design_doc)
 - [tutorial](doc/tutorial)
+- [文档主目录](doc)
 
 ## Reference
 

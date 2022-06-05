@@ -22,13 +22,16 @@
   - [4. 系统框架设计](#4-系统框架设计)
     - [4.1. 系统设计](#41-系统设计)
     - [4.2. 模块设计](#42-模块设计)
-    - [4.3. 功能设计](#43-功能设计)
-    - [4.4. ebpf 主要观测点](#44-ebpf-主要观测点)
-    - [4.6. ebpf 探针设计](#46-ebpf-探针设计)
-      - [4.6.1. ebpf 探针相关 C 代码设计，以 process 为例：](#461-ebpf-探针相关-c-代码设计以-process-为例)
-      - [4.6.2. C++ 部分探针代码设计](#462-c-部分探针代码设计)
-      - [4.6.3. handler 相关事件处理代码](#463-handler-相关事件处理代码)
-    - [4.7. 安全规则设计](#47-安全规则设计)
+    - [4.3. ebpf 主要观测点](#43-ebpf-主要观测点)
+    - [4.4. ebpf 探针设计](#44-ebpf-探针设计)
+      - [4.4.1. ebpf 探针相关 C 代码设计，以 process 为例：](#441-ebpf-探针相关-c-代码设计以-process-为例)
+      - [4.4.2. C++ 部分探针代码设计](#442-c-部分探针代码设计)
+      - [4.4.3. handler 相关事件处理代码](#443-handler-相关事件处理代码)
+    - [4.5. 容器追踪模块设计](#45-容器追踪模块设计)
+      - [4.5.1. 容器信息数据结构](#451-容器信息数据结构)
+      - [4.5.2. 容器追踪实现](#452-容器追踪实现)
+    - [4.6. 安全规则设计](#46-安全规则设计)
+    - [4.7. seccomp：syscall准入机制](#47-seccompsyscall准入机制)
   - [5. 开发计划](#5-开发计划)
     - [5.1. 日程表](#51-日程表)
     - [5.2. 未来的工作方向](#52-未来的工作方向)
@@ -184,7 +187,8 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 - `BCC`
 - `BPFtrace`
 - `libbpf`
-- etc.
+- `go-libbpf`
+- etc
 
 目前使用较多的是 `BCC` 工具，但本项目放弃了 `BCC` ，选择了 `libbpf` 作为我们的开发工具。  
 
@@ -198,6 +202,8 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 基于 `libbpf` 的BPF程序在编译时会先将 `*.bpf.c` 文件编译为对应的`.o`文件，然后根据此文件生成 `skeleton` 文件，即 `*.skel.h` ，这个文件会包含内核态中定义的一些数据结构，以及用于装载内核态代码的关键函数。在用户态代码 `include` 此文件之后调用对应的装载函数即可将字节码装载到内核中。
 
+我们选择现代 C++ 语言（cpp20）开发 Eunomia 的时候也主要是看中和 libbpf 库以及 bpf 代码的良好兼容性，libbpf 库目前还在迅速更新迭代过程中，我可以直接基于 libbpf 库进行开发，不需要被其他语言（go/rust）的运行时 bpf 库所限制。现代 C++ 的开发速度和安全性应该并不会比其他语言差太多（要是编译提示能像 rust 那样好点就更好了，用了 concept 还是不够好）
+
 #### 3.3.3. 容器可观测性
 
 `Docker`类容器本身提供了较多命令用于观测容器，比如：
@@ -210,6 +216,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 通过这些命令，我们可以较为快速的得到容器内的一些情况。
 
 容器中的进程和宿主机上的进程最大的区别就在于namespaces。为了隔离资源，容器中的进程和宿主机上的进程具有不同的namespaces。为此，我们可以在复用现有process模块的基础上添加container追踪模块。  
+
 容器追踪模块的内核态ebpf代码和process模块一样，都是利用了`sched_process_exec`和`sched_process_exit`两个挂载点，区别在于用户态代码中对于内核态返回的数据的处理方式。在容器追踪模块中，每次有内核态数据写入时我们会调用`judge_container()`函数，该函数会检查此进程的namespace和其父进程是否相同。如果相同那么我们就会认为他和父进程是归为一类的，通过检查存有所有容器进程信息的哈希map即可确定此新进程的归属。如果不同，那么我们便会认为可能有新的容器产生。对于`Docker`类容器，我们会直接调用`Docker`给出的命令的进行观测。首先调用`docker ps -q`命令获得现有在运行的所有容器id，之后调用`docker top id`命令获取容器中的进程在宿主机上的进程信息，如果这些信息没有被记录到哈希map中，那么就将他们添加到其中并输出。在有进程退出时，我们只需要检查其是否存在于哈希map，如果存在删去即可。
 
 #### 3.3.4. 信息可视化展示
@@ -243,11 +250,68 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 ### 4.1. 系统设计
 
+<div  align="center">  
+ <img src="doc/imgs/architecture.jpg" width = "600" height = "400" alt="eunomia_architecture" align=center />
+ <p>系统架构</p>
+</div>
+
+关于详细的系统架构设计和模块划分，请参考 [系统设计文档](doc/design_doc)
+
 ### 4.2. 模块设计
 
-### 4.3. 功能设计
 
-### 4.4. ebpf 主要观测点
+- tracker_manager
+
+  负责启动和停止 ebpf 探针，并且和 ebpf 探针通信（每个 tracer 是一个线程）；
+
+  - start tracker
+  - stop tracker(remove tracker)
+
+  我们主要有五个ebpf探针:
+
+  - process
+  - syscall
+  - tcp
+  - files
+  - ipc
+
+- container_manager
+
+  负责观察 container 的启动和停止，保存每个 container 的相关信息：（cgroup，namespace），同时负责 container id, container name 等 container mata 信息到 pid 的转换（提供查询接口）
+
+- seccomp_manager
+
+  负责对 process 进行 seccomp 限制
+
+- handler/data collector
+
+  负责处理 ebpf 探针上报的事件
+
+- security analyzer
+
+  容器安全检测规则引擎和安全分析模块，通过ebpf采集到的底层相关数据，运用包括AI在内的多种方法进行安全性分析，可以帮助您检测事件流中的可疑行为模式。
+  
+- prometheus exporter
+
+  将数据导出成Prometheus需要的格式，在Prometheus中保存时序数据，方便后续持久化和可视化功能。
+
+- config loader
+
+  解析 toml
+
+- cmd
+
+  命令行解析模块，将命令行字符串解析成对应的参数选项，对Eunomia进行配置。
+
+- core
+
+  负责装配所需要的 tracker，配置对应的功能用例，并且启动系统。
+
+- server
+
+  http 通信：通过 `graphql` 在远程发起 http 请求并执行监控工具，将产生的数据进行聚合后返回，用户可自定义运行时扩展插件进行在线数据分析。这一个部分还没有完成。
+
+### 4.3. ebpf 主要观测点
 
 - process追踪模块
 
@@ -321,13 +385,13 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
   }
   ```
 
-### 4.6. ebpf 探针设计
+### 4.4. ebpf 探针设计
 
 采用 ebpf 探针的方式，可以获取到安全事件的相关信息，并且可以通过 prometheus 监控指标进行监控和分析。
 
 我们的探针代码分为两个部分，其一是在 `bpftools` 中，是针对相关 ebpf 程序的 libbpf 具体探针接口实现，负责1ebpf 程序的加载、配置、以及相关用户态和内核态通信的代码；另外一部分是在 src 中，针对 ebpf 探针上报的信息进行具体处理的 C++ 类实现，负责根据配置决定ebpf上报的信息将会被如何处理。
 
-#### 4.6.1. ebpf 探针相关 C 代码设计，以 process 为例：
+#### 4.4.1. ebpf 探针相关 C 代码设计，以 process 为例：
 
 process 部分的代码主要负责获取进程的执行和退出时和进程相关的以下的信息：
 
@@ -459,7 +523,7 @@ struct process_env
 
 C++ 部分的代码会在调用 start_process_tracker 之前设置好对应的 env 信息，来控制 ebpf 代码的相关行为。
 
-#### 4.6.2. C++ 部分探针代码设计
+#### 4.4.2. C++ 部分探针代码设计
 
 我们采用类似责任链的设计模式，通过一系列的回调函数和事件处理类来处理 ebpf 上报的内核事件：
 
@@ -601,7 +665,7 @@ concept tracker_concept = requires
 
 这个 concept 规定了 tracker 需要实现的的最少 handler ，以及需要有的子类型。
 
-#### 4.6.3. handler 相关事件处理代码
+#### 4.4.3. handler 相关事件处理代码
 
 每个探针类都可以有数量不限的事件处理 handler 类（例如转换成 json 类型，上报给 prometheus，打印输出，保存文件，进行聚合等），它们通过类似链表的方式组织起来，并且可以在运行被动态组装；
 
@@ -701,7 +765,191 @@ public:
 其他类型的 handler 可以参考 include\eunomia\model\event_handler.h 文件。
 
 
-### 4.7. 安全规则设计
+### 4.5. 容器追踪模块设计
+
+#### 4.5.1. 容器信息数据结构
+目前我们的容器追踪模块是基于进程追踪模块实现的，其数据结构为：
+```c
+struct container_event {
+	struct process_event process;
+	unsigned long container_id;
+	char container_name[50];
+};
+```
+容器追踪模块由`container_tracker`实现
+```cpp
+struct container_tracker : public tracker_with_config<container_env, container_event>
+{
+  struct container_env current_env = { 0 };
+  struct container_manager &this_manager;
+  std::shared_ptr<spdlog::logger> container_logger;
+
+  container_tracker(container_env env, container_manager &manager);
+  void start_tracker();
+
+  void fill_event(struct process_event &event);
+
+  void init_container_table();
+
+  void print_container(const struct container_event &e);
+
+  void judge_container(const struct process_event &e);
+
+  static int handle_event(void *ctx, void *data, size_t data_sz);
+};
+```
+同时我们添加了一个manager类来控制tracker。
+```cpp
+struct container_manager
+{
+ private:
+  struct tracker_manager tracker;
+  std::mutex mp_lock;
+  std::unordered_map<int, struct container_event> container_processes;
+  friend struct container_tracker;
+
+ public:
+  void start_container_tracing(std::string log_path)
+  { 
+    tracker.start_tracker(std::make_unique<container_tracker>(container_env{
+      .log_path = log_path,
+      .print_result = true,
+    }, *this));
+  }
+  unsigned long get_container_id_via_pid(pid_t pid);
+};
+```
+
+#### 4.5.2. 容器追踪实现
+
+容器追踪模块的ebpf代码服用了process追踪模块的ebpf代码，因此这里我们只介绍用户态下对数据处理的设计。   
+当内核态捕捉到进程的数据返回到用户态时，我们调用`judge_container()`函数，判断该进程是否归属于一个container，其具体实现为：
+```cpp
+void container_tracker::judge_container(const struct process_event &e)
+{
+  if (e.exit_event)
+  {
+    this_manager.mp_lock.lock();
+    auto event = this_manager.container_processes.find(e.common.pid);
+    // remove from map
+    if (event != this_manager.container_processes.end())
+    {
+      event->second.process.exit_event = true;
+      print_container(event->second);
+      this_manager.container_processes.erase(event);
+    }
+    this_manager.mp_lock.unlock();
+  }
+  else
+  {
+    /* parent process exists in map */
+    this_manager.mp_lock.lock();
+    auto event = this_manager.container_processes.find(e.common.ppid);
+    this_manager.mp_lock.unlock();
+    if (event != this_manager.container_processes.end())
+    {
+      struct container_event con = { .process = e, .container_id = (*event).second.container_id };
+      strcpy(con.container_name, (*event).second.container_name);
+      this_manager.mp_lock.lock();
+      this_manager.container_processes[e.common.pid] = con;
+      print_container(this_manager.container_processes[e.common.pid]);
+      this_manager.mp_lock.unlock();
+    }
+    else
+    {
+      /* parent process doesn't exist in map */
+      struct process_event p_event = { 0 };
+      p_event.common.pid = e.common.ppid;
+      fill_event(p_event);
+      if ((p_event.common.user_namespace_id != e.common.user_namespace_id) ||
+          (p_event.common.pid_namespace_id != e.common.pid_namespace_id) ||
+          (p_event.common.mount_namespace_id != e.common.mount_namespace_id))
+      {
+        std::unique_ptr<FILE, int (*)(FILE *)> fp(popen("docker ps -q", "r"), pclose);
+        unsigned long cid;
+        /* show all alive container */
+        pid_t pid, ppid;
+        while (fscanf(fp.get(), "%lx\n", &cid) == 1)
+        {
+          std::string top_cmd = "docker top ", name_cmd = "docker inspect -f '{{.Name}}' ";
+          char hex_cid[20], container_name[50];
+          sprintf(hex_cid, "%lx", cid);
+          top_cmd += hex_cid;
+          name_cmd += hex_cid;
+          std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose),
+              name(popen(name_cmd.c_str(), "r"), pclose);
+          fscanf(name.get(), "/%s", container_name);
+          char useless[150];
+          /* delet the first row */
+          fgets(useless, 150, top.get());
+          while (fscanf(top.get(), "%*s %d %d %*[^\n]\n", &pid, &ppid) == 2)
+          {
+            this_manager.mp_lock.lock();
+            /* this is the first show time for this process */
+            if (this_manager.container_processes.find(pid) == this_manager.container_processes.end())
+            {
+              struct container_event con = {
+                .process = e,
+                .container_id = cid,
+              };
+              strcpy(con.container_name, container_name);
+              this_manager.container_processes[pid] = con;
+              print_container(this_manager.container_processes[pid]);
+            }
+            this_manager.mp_lock.unlock();
+          }
+        }
+      }
+    }
+  }
+}
+
+```
+
+首先，如果进程处于退出状态，那么该函数会直接判断其数据是否已经存在于`container_processes`这一哈希map中。该哈希map专门用于存储归属于容器的进程的信息。如果已经存在这直接输出并删除，否则跳过。如果进程处于执行状态，我们首先会检查该进程的父进程是否存在于`container_processes`中，如果存在则认为此进程也是容器中的进程，将此进程直接加入并输出即可。如果不存在则检查其namespace信息和其父进程是否一致，如果不一致我们会认为此时可能会有一个新的容器产生。对于`Docker`类容器，我们会直接调用`Docker`给出的命令的进行观测。首先调用`docker ps -q`命令获得现有在运行的所有容器id，之后调用`docker top id`命令获取容器中的进程在宿主机上的进程信息，如果这些信息没有被记录到哈希map中，那么就将他们添加到其中并输出。    
+由于这一方式无法捕捉到在本追踪器启动前就已经在运行的容器进程，因此我们会在程序启动伊始，调用一次`init_container_table()`函数，其实现为：
+```cpp
+void container_tracker::init_container_table()
+{
+  unsigned long cid;
+  pid_t pid, ppid;
+  std::string ps_cmd("docker ps -q");
+  std::unique_ptr<FILE, int (*)(FILE *)> ps(popen(ps_cmd.c_str(), "r"), pclose);
+  while (fscanf(ps.get(), "%lx\n", &cid) == 1)
+  {
+    std::string top_cmd("docker top "), name_cmd("docker inspect -f '{{.Name}}' ");
+    char hex_cid[20], container_name[50];
+    sprintf(hex_cid, "%lx", cid);
+    top_cmd += hex_cid;
+    name_cmd += hex_cid;
+    std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose),
+        name(popen(name_cmd.c_str(), "r"), pclose);
+    fscanf(name.get(), "/%s", container_name);
+    /* delet the first row */
+    char useless[150];
+    fgets(useless, 150, top.get());
+    while (fscanf(top.get(), "%*s %d %d %*[^\n]\n", &pid, &ppid) == 2)
+    {
+      struct process_event event;
+      event.common.pid = pid;
+      event.common.ppid = ppid;
+      fill_event(event);
+      struct container_event con = {
+        .process = event,
+        .container_id = cid,
+      };
+      strcpy(con.container_name, container_name);
+      print_container(con);
+      this_manager.mp_lock.lock();
+      this_manager.container_processes[pid] = con;
+      this_manager.mp_lock.unlock();
+    }
+  }
+}
+```
+该函数的实现逻辑与`judge_contaienr()`函数类似，但是它会将已经在运行的容器进程存入哈希map中，以方便后续追踪。
+
+### 4.6. 安全规则设计
 
 目前安全告警部分还未完善，只有一个框架和 demo，我们需要对更多的安全相关规则，以及常见的容器安全风险情境进行调研和完善，然后再添加更多的安全分析。
 
@@ -815,7 +1063,7 @@ public:
   
   除了通过规则来实现安全风险感知，我们还打算通过机器学习等方式进行进一步的安全风险分析和发现。
 
-## 4.8 seccomp：syscall准入机制
+### 4.7. seccomp：syscall准入机制
 
 Seccomp(全称：secure computing mode)在2.6.12版本(2005年3月8日)中引入linux内核，将进程可用的系统调用限制为四种：read，write，_exit，sigreturn。最初的这种模式是白名单方式，在这种安全模式下，除了已打开的文件描述符和允许的四种系统调用，如果尝试其他系统调用，内核就会使用SIGKILL或SIGSYS终止该进程。Seccomp来源于Cpushare项目，Cpushare提出了一种出租空闲linux系统空闲CPU算力的想法，为了确保主机系统安全出租，引入seccomp补丁，但是由于限制太过于严格，当时被人们难以接受。
 
@@ -900,6 +1148,7 @@ seccomp在过滤系统调用(调用号和参数)的时候，借助了BPF定义�
 ## 7. 系统测试情况
 
 ### 7.1. 快速上手
+
 从gitlab上clone本项目，注意，需要添加`--recursive`以clone子模块
 ```
 git clone --recursive https://gitlab.eduxiji.net/zhangdiandian/project788067-89436.git
@@ -920,7 +1169,9 @@ sudo ./eunomia --help
 进行查看
 
 ### 7.2. 命令行测试情况
-        各项命令测试结果如下：
+
+各项命令测试结果如下：
+
 #### 7.2.1. tracker系列命令
 
 - process模块测试  
@@ -980,8 +1231,6 @@ sudo ./eunomia --help
   <img src="imgs/container_test_1.png" width=100% weigth=100%>
 
 - 基于容器信息的可视化展示
-
-
 
 ### 7.4. 信息可视化测试情况： prometheus and grafana
     
