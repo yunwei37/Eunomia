@@ -199,15 +199,17 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 #### 3.3.3. 容器可观测性
 
-`Docker` 容器提供了大量接口和命令以方便用户观测容器。
-
+`Docker`类容器本身提供了较多命令用于观测容器，比如：
 - `docker ps` 命令可以显示出目前正在运行的所有容器的ID，名称，运行时间等等数据，
 
 - `docker top` 命令可以显示容器中所有正在运行的进程，并且显示其在宿主机上的进程号，通过这种方式我们可以在宿主机中找到和容器有关的进程号并进行重点追踪。
 
 - `docker inspect` 命令则可以根据需要具体查看容器的各种信息。
 
-通过在程序中执行这些命令并且读取其输出我们可以较为快速的观测到容器的实际运行情况。
+通过这些命令，我们可以较为快速的得到容器内的一些情况。
+
+容器中的进程和宿主机上的进程最大的区别就在于namespaces。为了隔离资源，容器中的进程和宿主机上的进程具有不同的namespaces。为此，我们可以在复用现有process模块的基础上添加container追踪模块。  
+容器追踪模块的内核态ebpf代码和process模块一样，都是利用了`sched_process_exec`和`sched_process_exit`两个挂载点，区别在于用户态代码中对于内核态返回的数据的处理方式。在容器追踪模块中，每次有内核态数据写入时我们会调用`judge_container()`函数，该函数会检查此进程的namespace和其父进程是否相同。如果相同那么我们就会认为他和父进程是归为一类的，通过检查存有所有容器进程信息的哈希map即可确定此新进程的归属。如果不同，那么我们便会认为可能有新的容器产生。对于`Docker`类容器，我们会直接调用`Docker`给出的命令的进行观测。首先调用`docker ps -q`命令获得现有在运行的所有容器id，之后调用`docker top id`命令获取容器中的进程在宿主机上的进程信息，如果这些信息没有被记录到哈希map中，那么就将他们添加到其中并输出。在有进程退出时，我们只需要检查其是否存在于哈希map，如果存在删去即可。
 
 #### 3.3.4. 信息可视化展示
 
@@ -326,13 +328,9 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 ## 7. 系统测试情况
 
 ### 7.1. 快速上手
-从gitlab上clone本项目
+从gitlab上clone本项目，注意，需要添加`--recursive`以clone子模块
 ```
-git clone https://gitlab.eduxiji.net/zhangdiandian/project788067-89436.git
-```
-之后将子模块也clone到本地
-```
-git submodule update --init --recursive
+git clone --recursive https://gitlab.eduxiji.net/zhangdiandian/project788067-89436.git
 ```
 运行编译命令
 ```

@@ -64,24 +64,6 @@
 
     toml example：
 
-    ```
-    [tcpconnect]
-    pid = 12345
-    time = 30
-    container_id = 0
-
-    [process]
-    interval = 10 # 10ms
-
-    [danger syscalls]
-    syscall_is = [1, 2]
-
-    [database]
-    db_url = "https://xxxxxx.xxxx"
-    db_name = "xxxx"
-    username = "xxxx"
-    pwd = "xxxx"
-    ```
 
 
 3. seccomp
