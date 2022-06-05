@@ -243,7 +243,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 * [X] 输出开发v0.3日志文档
 * [ ] 后续更新迭代
 
-阶段四：开发测试（6.2~6.16）
+阶段四：开发测试（6.2~7.1）
 
 * [ ] graphql for extentions
 * [ ] lsm support
@@ -253,7 +253,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 * [ ] 测试-开发
 * [ ] 输出测试文档
 
-阶段五：项目文档完善（6.17~7.1）
+阶段五：项目完善（7.1~）
 
 * [ ] 完善开发文档
 * [ ] 完善教程文档
@@ -285,7 +285,7 @@ Linux ubuntu 5.13.0-44-generic #49~20.04.1-Ubuntu SMP x86_64 GNU/Linux
 
 ![no](doc/imgs/openresty_no_eunomia.png)
 
-这是启动 eunomia server 后的情况，使用除syscall探针之外的默认配置，在同样环境下进行测试：
+这是启动 eunomia server 后的情况，使用默认配置并启用 process/container、tcp、files、ipc 等探针，在同样环境下进行测试：
 
 ![no](doc/imgs/openresty_with_eunomia.png)
 

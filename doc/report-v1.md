@@ -1292,7 +1292,7 @@ Linux ubuntu 5.13.0-44-generic #49~20.04.1-Ubuntu SMP x86_64 GNU/Linux
 
 ![no](imgs/openresty_no_eunomia.png)
 
-这是启动 eunomia server 后的情况，使用除syscall探针之外的默认配置，在同样环境下进行测试：
+这是启动 eunomia server 后的情况，使用默认配置并启用 process/container、tcp、files、ipc 等探针，在同样环境下进行测试：
 
 ![no](imgs/openresty_with_eunomia.png)
 
