@@ -12,23 +12,23 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 
 <!-- TOC -->
 
-- [Eunomia](#eunomia)
-  - [What is Eunomia](#what-is-eunomia)
-    - [Describe](#describe)
-    - [Tutorial](#tutorial)
-  - [Quickstart](#quickstart)
-    - [Prequest](#prequest)
-    - [run as binary](#run-as-binary)
-    - [Docker, Prometheus and Grafana](#docker-prometheus-and-grafana)
-    - [Prometheus and grafana result](#prometheus-and-grafana-result)
-    - [security rules](#security-rules)
-    - [build On Linux](#build-on-linux)
-  - [Why is eBPF](#why-is-ebpf)
-  - [Architecture](#architecture)
-  - [Roadmap](#roadmap)
-  - [Documents](#documents)
-  - [Reference](#reference)
-  - [Contact](#contact)
+- [What is Eunomia](#what-is-eunomia)
+  - [Describe](#describe)
+  - [Tutorial](#tutorial)
+- [Quickstart](#quickstart)
+  - [Prequest](#prequest)
+  - [run as binary](#run-as-binary)
+  - [Docker, Prometheus and Grafana](#docker-prometheus-and-grafana)
+  - [Prometheus and grafana result](#prometheus-and-grafana-result)
+  - [security rules](#security-rules)
+  - [build On Linux](#build-on-linux)
+- [Why is eBPF](#why-is-ebpf)
+- [Architecture](#architecture)
+- [Roadmap](#roadmap)
+- [Documents](#documents)
+- [benchmark](#benchmark)
+- [Reference](#reference)
+- [Contact](#contact)
 
 <!-- /TOC -->
 
@@ -267,6 +267,33 @@ Eunomia的完整文档如下
 - [design documents](doc/design_doc)
 - [tutorial](doc/tutorial)
 - [文档主目录](doc)
+
+## benchmark
+
+使用 top 查看 eunomia 的内存和cpu占用情况
+
+![top](./doc/imgs/top.png)
+
+目前有一些简单的性能对比，使用 openresty 在本机上启动一个网络简单的服务，并且使用 wrk 进行压力测试。测试环境：
+
+```
+Linux ubuntu 5.13.0-44-generic #49~20.04.1-Ubuntu SMP x86_64 GNU/Linux
+4 核，12 GB 内存：
+```
+
+这是未开启 eunomia server 的情况：
+
+![no](doc/imgs/openresty_no_eunomia.png)
+
+这是启动 eunomia server 后的情况，使用除syscall探针之外的默认配置，在同样环境下进行测试：
+
+![no](doc/imgs/openresty_with_eunomia.png)
+
+可以观测到启动 eunomia 之后对于服务仅有大约 2% 的性能损耗。
+
+> OpenResty® 是一个基于 Nginx 与 Lua 的高性能 Web 平台，其内部集成了大量精良的 Lua 库、第三方模块以及大多数的依赖项。用于方便地搭建能够处理超高并发、扩展性极高的动态 Web 应用、Web 服务和动态网关。web开发人员可以使用lua编程语言，对核心以及各种c模块进行编程，可以利用openresty快速搭建超1万并发高性能web应用系统。这里的 benchmark 参考了：https://openresty.org/en/benchmark.html
+
+目前还没有比较完善的 benchmark 测试和性能分析，这是我们接下来要完善的内容。
 
 ## Reference
 
