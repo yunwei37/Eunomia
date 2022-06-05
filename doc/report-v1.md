@@ -1228,7 +1228,7 @@ sudo ./eunomia --help
 ### 7.3. 容器测试情况
 
 - 测试进程与容器id互相映射
-  <img src="./imgs/container_test_1.png" width=100% weigth=100%>
+  <img src="./imgs/container_test_1.jpg" width=100% weigth=100%>
 
 - 基于容器信息的可视化展示
   <img src="./imgs/counts-tcp.png" width=100% weigth=100%>
