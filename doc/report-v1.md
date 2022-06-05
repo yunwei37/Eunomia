@@ -153,7 +153,7 @@ eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事
 
   Seccomp是Linux内核的特性，开发者可以通过seccomp限制容器的行为。capabilities则将进程作为root的权限分成了各项更小的权限，方便			调控。这两个特性都有助于保障容器安全，但是因为业务执行的逻辑差异，准确配置权限最小集非常困难。请利用上面开发的监控工具，分析业务容器的行为记录报表，然后基于报表自动推荐精准的权限配置最小集。
 ### 3.2. 赛题分析
-  本赛题分为三个部分，第一部分为编写ebpf程序，感知容器行为，这一部分的关键点在于找到合适的ebpf程序挂载点。挂载点确定后我们可以使用现有的各种ebpf开发框架编写开发代码，完成此部分任务。第二部分信息存储则需要我们将内核态捕捉到的信息传递到用户态，然后在用户态进行输出。这一部分具有较大的的可操作空间。我们可以使用最简单的打印方式，将所有数据打印出来，也可以将所有数据存储到日志文件中，还可以通过可视化的手段，将数据进行可视化展示。第三部分则涉及到了一个新的模块Seccomp，seccomp是linux内核中的一个安全模块，可以限制某一进程可以调用的syscall的数量。该技术可以进一步增强本工具的监督保护能力，因此本次也应当将其融合进入本项目
+  本赛题分为三个部分，第一部分为编写ebpf程序，感知容器行为，这一部分的关键点在于找到合适的ebpf程序挂载点。挂载点确定后我们可以使用现有的各种ebpf开发框架编写开发代码，完成此部分任务。第二部分信息存储则需要我们将内核态捕捉到的信息传递到用户态，然后在用户态进行输出。这一部分具有较大的可操作空间。我们可以使用最简单的打印方式，将所有数据打印出来，也可以将所有数据存储到日志文件中，还可以通过可视化的手段，将数据进行可视化展示。第三部分则涉及到了一个新的模块Seccomp，seccomp是linux内核中的一个安全模块，可以限制某一进程可以调用的syscall的数量。该技术可以进一步增强本工具的监督保护能力，因此本次也应当将其融合进入本项目
 
 ### 3.3. 相关资料调研
 
@@ -172,7 +172,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
   eBPF 程序能提供比其他方式更精准、更细粒度的细节和内核上下文的监控和跟踪标准。并且eBPF监控、跟踪到的数据可以很容易地导出到用户空间，并由可观测平台进行可视化。 
 * 缺点：很新
 
-  eBPF 仅在较新版本的 Linux 内核上可用，这对于在版本更新方面稍有滞后的组织来说可能是令人望而却步的。如果您没有运行 Linux 内核，那么 eBPF 根本不适合您。
+  eBPF 仅在较新版本的 Linux 内核上可用，这对于在版本更新方面稍有滞后的组织来说可能是令人望而却步的。如果您没有使用较新版本的 Linux 内核，那么 eBPF 根本不适合您。
 
 #### 3.3.2. ebpf 开发工具技术选型
 
@@ -213,22 +213,24 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 - `docker inspect` 命令则可以根据需要具体查看容器的各种信息。
 
-通过这些命令，我们可以较为快速的得到容器内的一些情况。
+通过这些命令，我们可以较为快速地得到容器内的一些情况。
 
-容器中的进程和宿主机上的进程最大的区别就在于namespaces。为了隔离资源，容器中的进程和宿主机上的进程具有不同的namespaces。为此，我们可以在复用现有process模块的基础上添加container追踪模块。  
+容器中的进程会映射到宿主机中，他们和宿主机上的其他进程最直接的区别就在于namespace。为了隔离资源，容器中的进程和宿主机上的进程具有不同的namespace。因此，监测容器行为可以转变为监测特定进程，通过复用现有process模块的基础上添加container追踪模块。  
 
-容器追踪模块的内核态ebpf代码和process模块一样，都是利用了`sched_process_exec`和`sched_process_exit`两个挂载点，区别在于用户态代码中对于内核态返回的数据的处理方式。在容器追踪模块中，每次有内核态数据写入时我们会调用`judge_container()`函数，该函数会检查此进程的namespace和其父进程是否相同。如果相同那么我们就会认为他和父进程是归为一类的，通过检查存有所有容器进程信息的哈希map即可确定此新进程的归属。如果不同，那么我们便会认为可能有新的容器产生。对于`Docker`类容器，我们会直接调用`Docker`给出的命令的进行观测。首先调用`docker ps -q`命令获得现有在运行的所有容器id，之后调用`docker top id`命令获取容器中的进程在宿主机上的进程信息，如果这些信息没有被记录到哈希map中，那么就将他们添加到其中并输出。在有进程退出时，我们只需要检查其是否存在于哈希map，如果存在删去即可。
+容器追踪模块的内核态ebpf代码和process模块一样，都是利用了 `sched_process_exec` 和 `sched_process_exit` 两个挂载点，区别在于用户态代码中对于内核态返回的数据的处理方式。在容器追踪模块中，每次有内核态数据写入时我们会调用 `judge_container()` 函数，该函数会检查此进程的namespace和其父进程是否相同。如果相同那么我们就会认为他和父进程是归为一类的，通过检查存有所有容器进程信息的哈希map即可确定此新进程的归属。如果不同，那么我们便会认为可能有新的容器产生。对于 `Docker` 类容器，我们会直接调用 `Docker` 给出的命令的进行观测。首先调用 `docker ps -q` 命令获得现有在运行的所有容器id，之后调用 `docker top id` 命令获取容器中的进程在宿主机上的进程信息，如果这些信息没有被记录到哈希map中，那么就将他们添加到其中并输出。在有进程退出时，我们只需要检查其是否存在于哈希map，如果存在删去即可。
 
 #### 3.3.4. 信息可视化展示
 
 `Prometheus` 是一套开源的监控、报警、时间序列数据库的组合，受启发于Google的Brogmon监控系统，2012年开始由前Google工程师在Soundcloud以开源软件的形式进行研发，并且于2015年早期对外发布早期版本。2016年，`Prometheus` 加入了云计算基金会，成为 `kubernetes` 之后的第二个托管项目。其架构如下所示:
+<div  align="center">  
+ <img src="./imgs//promethesu_arch.png" width = "600" height = "400" alt="prometheus_architecture" align=center />
+ <p>Prometheus架构</p>
+</div>
 
-![](./imgs//promethesu_arch.png)   
-
-`Prometheus`具有以下特点：
+`Prometheus` 具有以下特点：
 - 可以自定义多维数据模型并且使用metric和
 - 存储高效，不依赖分布式存储，支持单节点工作
-- 使用灵活且强大的查询语言`PromQL`
+- 使用灵活且强大的查询语言 `PromQL`
 - 通过基于http的pull方式采集时许数据
 - 通过push gateway进行序列数据推送
 
@@ -238,7 +240,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 #### 3.3.5. 容器运行时安全
 
-确保容器运行时安全的关键点[1]：
+确保容器运行时安全的关键点：
 
 - 使用 `ebpf` 跟踪技术自动生成容器访问控制权限。包括：容器对文件的可疑访问，容器对系统的可疑调用，容器之间的可疑互访，检测容器的异常进程，对可疑行为进行取证。例如：
 - 检测容器运行时是否创建其他进程。
@@ -251,7 +253,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 ### 4.1. 系统设计
 
 <div  align="center">  
- <img src="doc/imgs/architecture.jpg" width = "600" height = "400" alt="eunomia_architecture" align=center />
+ <img src="./imgs/architecture.jpg" width = "600" height = "400" alt="eunomia_architecture" align=center />
  <p>系统架构</p>
 </div>
 
@@ -315,7 +317,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 - process追踪模块
 
-  进程的追踪模块本项目主要设置了两个`tracepoint`挂载点。
+  进程的追踪模块本项目主要设置了两个 `tracepoint` 挂载点。
   第一个挂载点形式为
 
   ```c
@@ -341,7 +343,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 - syscall追踪模块
 
-  对于系统调用的追踪模块设置了一个`tracepoint`挂载点。挂载点形式为
+  对于系统调用的追踪模块设置了一个 `tracepoint` 挂载点。挂载点形式为
   ```c
           SEC("tracepoint/raw_syscalls/sys_enter")
           int sys_enter(struct trace_event_raw_sys_enter *args)
@@ -353,7 +355,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 - file追踪模块
 
-  对于文件系统，我们设置了两个`kprobe`挂载点。第一个挂载点形式为
+  对于文件系统，我们设置了两个 `kprobe` 挂载点。第一个挂载点形式为
   ```c
           SEC("kprobe/vfs_read")
           int BPF_KPROBE(vfs_read_entry, struct file *file, char *buf, size_t count, loff_t *pos)
@@ -371,19 +373,19 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
   ```
   当系统中发生了文件读或写时，这两个执行点下的函数会被触发，记录相应信息。
 
--  tcp追踪模块
+-  tcp追踪模块   
 
-  ```c
-  SEC("kprobe/tcp_v6_connect")
-  int BPF_KPROBE(tcp_v6_connect, struct sock *sk) {
-    return enter_tcp_connect(ctx, sk);
-  }
+    ```c
+            SEC("kprobe/tcp_v6_connect")
+            int BPF_KPROBE(tcp_v6_connect, struct sock *sk) {
+              return enter_tcp_connect(ctx, sk);
+            }
 
-  SEC("kretprobe/tcp_v6_connect")
-  int BPF_KRETPROBE(tcp_v6_connect_ret, int ret) {
-    return exit_tcp_connect(ctx, ret, 6);
-  }
-  ```
+            SEC("kretprobe/tcp_v6_connect")
+            int BPF_KRETPROBE(tcp_v6_connect_ret, int ret) {
+              return exit_tcp_connect(ctx, ret, 6);
+            }
+    ```
 
 ### 4.4. ebpf 探针设计
 
@@ -663,7 +665,7 @@ concept tracker_concept = requires
 
 ```
 
-这个 concept 规定了 tracker 需要实现的的最少 handler ，以及需要有的子类型。
+这个 concept 规定了 tracker 必须要实现的 handler ，以及需要有的子类型。
 
 #### 4.4.3. handler 相关事件处理代码
 
@@ -1063,7 +1065,7 @@ void container_tracker::init_container_table()
   
   除了通过规则来实现安全风险感知，我们还打算通过机器学习等方式进行进一步的安全风险分析和发现。
 
-### 4.7. seccomp：syscall准入机制
+### 4.7. seccomp: syscall准入机制
 
 Seccomp(全称：secure computing mode)在2.6.12版本(2005年3月8日)中引入linux内核，将进程可用的系统调用限制为四种：read，write，_exit，sigreturn。最初的这种模式是白名单方式，在这种安全模式下，除了已打开的文件描述符和允许的四种系统调用，如果尝试其他系统调用，内核就会使用SIGKILL或SIGSYS终止该进程。Seccomp来源于Cpushare项目，Cpushare提出了一种出租空闲linux系统空闲CPU算力的想法，为了确保主机系统安全出租，引入seccomp补丁，但是由于限制太过于严格，当时被人们难以接受。
 
@@ -1267,7 +1269,7 @@ Prometheus信息可视化测试：
   - 从Prometheus查看部分指标的数值分布
     <img src="./imgs/prometheus1.png">
     <img src="./imgs/prometheus2.png">
-    <img src="./imgs/prometheus3.png>
+    <img src="./imgs/prometheus3.png">
 - grafana
 
   - grafana配置从peometheus拉取数据的端口
@@ -1417,7 +1419,7 @@ Prometheus信息可视化测试：
 
 #### 10.2.10. vmlinux目录
 
-        本目录主要是libbpf-bootstrap框架自带的vmlinux头文件。
+本目录主要是libbpf-bootstrap框架自带的vmlinux头文件。
 
 ## 11. 比赛收获
 
