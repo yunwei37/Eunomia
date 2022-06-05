@@ -88,7 +88,7 @@
 - 对 APISIX 的基本架构和使用场景有相关理解和动手实践；
 - 参考 APISIX 的 ci，使用 systemtap 在本地复现了相关火焰图生成：
 
-    ```
+    ```sh
     git clone https://github.com/apache/apisix
     cd apisix
     sudo apt-get install -y libpcre3 libpcre3-dev
@@ -178,8 +178,11 @@ libbpf 是一个比BCC更新的 BPF 开发库，也是最新的 BPF 开发推荐
 BCC 依靠运行时间汇编，将整个大型 LLVM/Clang 库带入并嵌入其中。这有许多后果，所有这些都不太理想：
 
 编译过程中资源利用量大（内存和 CPU），可能会中断繁忙服务器上的主要工作流;
+
 依赖于内核头包，该包必须安装在每个目标主机上。即便如此，如果您需要从内核中获取不通过public headers暴露的东西，您也需要手工将类型定义复制/粘贴到 BPF 代码中，以完成您的工作;
+
 即使是微不足道的编译时间错误也只在运行时间（在您完全重建并重新启动用户空间应用程序后）检测到：这显著缩短了开发迭代时间（并增加了挫折感水平。。。）
+
 文章BPF Portability and CO-RE 指出，为了提高BPF程序的便携性，即在不同内核版本上正常工作，而无需为每个特定内核重新编译的能力，社区提出了一个称为BPF CO-RE(Compile Once – Run Everywhere)的解决方案。
 
 Libbpf+BPF CO-RE的理念是，BPF程序与任何"正常"用户空间程序没有太大区别：它们应该汇编成小型二进制文件，然后以紧凑的形式进行部署，以瞄准主机。Libbpf 扮演 BPF 程序装载机的角色，执行平凡的设置工作（重定位、加载和验证 BPF 程序、创建 BPF map、连接到 BPF 挂钩等），让开发人员只担心 BPF 程序的正确性和性能。这种方法将开销保持在最低水平，消除沉重的依赖关系，使整体开发人员体验更加愉快。
@@ -196,7 +199,9 @@ Libbpf+BPF CO-RE的理念是，BPF程序与任何"正常"用户空间程序没�
 参考：
 
 - https://github.com/iovisor/bcc
+
 - https://www.brendangregg.com/ebpf.html
+
 - https://www.brendangregg.com/blog/2021-07-03/how-to-add-bpf-observability.html
 
 #### ebpf 性能分析
@@ -214,6 +219,7 @@ Bcc(BPF Compiler Collection): 一个用于创建高效的内核跟踪和操作�
 - 基于 libbpf 的性能工具：https://www.brendangregg.com/blog/2020-11-04/bpf-co-re-btf-libbpf.html
 
     - https://github.com/iovisor/bcc/blob/master/libbpf-tools/offcputime.c
+
     - 还有一个基于 libbpf 的性能工具已经基本开发完成，但还未合并进入主线：https://github.com/iovisor/bcc/pull/3782
 
 
@@ -221,7 +227,7 @@ Bcc(BPF Compiler Collection): 一个用于创建高效的内核跟踪和操作�
 
 在 libbpf 中，我们同样可以通过 ebpf 去获取 perf event 的相关数据，例如：
 
-```
+```c
 struct {
 	__uint(type, BPF_MAP_TYPE_STACK_TRACE);
 	__type(key, u32);
@@ -304,7 +310,7 @@ nginx-systemtap-toolkit - 基于 SystemTap 为 NGINX 打造的实时分析和诊
 
 systemtap的脚本，它的原理是在运行时 hook nginx 中某些特定的函数，然后拿到全局的 lua_state 指针，然后在 profile 的时候再通过 map 拿到之前保存下来的 lua_state 指针，通过这个 state 去遍历 frame 找到对应的函数信息；
 
-```
+```lua
 function lua_getstack(L, level) {
     ci = \@cast(L, "lua_State", "$lua_path")->ci
     base_ci = \@cast(L, "lua_State", "$lua_path")->base_ci
@@ -353,16 +359,19 @@ function lua_getstack(L, level) {
 1. ebpf 性能分析工具整理和完善：
 
     - 需要仔细调研并且确认目前已有的 ebpf 工具对于 openresty 的性能分析帮助，以及逐个试用，并且产出分析报告；
+
     - 在调研的基础上由于 libbpf 的性能分析工具尚未完成，相关工具链也不成熟，因此需要进行一定的整理和基于所提供的工具集的修改开发；
 
 2. 尝试将 lua 的堆栈追踪整合到 ebpf 的性能分析工具中，并且基于 Openresty 场景进行深度定制：
 
     - 虽然 libbpf-tools 工具集已经有了不少性能分析相关工具，但并没有很适合 openresty 这个场景的性能工具。目前的 ebpf 工具大部分是通用的性能分析模块功能，需要有基于 openresty 和 APISIX 的场景进行深度定制的解决方案，并且对 Apache APISIX Openresty luajit 32/luajit 64 提供良好的支持；
+
     - 这部分将主要基于 C/C++ 语言。我选择使用现代 C++ 语言（cpp20）开发 Eunomia 的时候也主要是看中和 libbpf 库以及 bpf 代码的良好兼容性，libbpf 库目前还在迅速更新迭代过程中，我可以直接基于 libbpf 库进行开发，不需要被其他语言（go/rust）的运行时 bpf 库所限制。现代 C++ 的开发速度和安全性应该并不会比其他语言差太多（要是编译提示能像 rust 那样好点就更好了...用了 concept 还是不够好）。
 
 3. 将上述工具进行整合和完善：
 
     - 整理并发布工具集：之前实现和整理的工具集会被开源发布为类似 [openresty-systemtap-toolkit](https://github.com/openresty/openresty-systemtap-toolkit) 的一个个二进制工具版本，并且提供完整的文档和示例；该项目会被合并进入入 APISIX 的相关仓库。
+    
     - 目前我自己正在开发一套基于 ebpf 的开源轻量级监控工具：https://github.com/yunwei37/Eunomia ，其中已经整合了数个基于 libbpf-tools 的内核观测工具，例如文件访问，系统调用，进程执行，网络连接，进程间通信等等，并且已经实现了一些性能分析指标分析。该工具基于现代 C++ 构建，可以非常方便的整合 libbpf-tools 工具的功能，并且可以集成现代的 prometheus 和 Grafana，作为指标监控可视化和预警平台；可以通过外接时序数据库进行性能指标存储和分析；我也希望能把上述工具整合进入我所实现的工具，提供开箱即用的 APISIX 性能监控解决方案。
 
 ### 项目要点和难点：

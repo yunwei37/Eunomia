@@ -69,7 +69,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 Your Kconfig should contain the options below
 
 - Compile options
-  ```
+  ```conf
   CONFIG_DEBUG_INFO_BTF=y
   CONFIG_DEBUG_INFO=y
   ```
@@ -79,21 +79,21 @@ Your Kconfig should contain the options below
 
 you can use our pre-compiled binary to start a prometheus exporter:
 
-```
-./eunomia server
+```sh
+sudo ./eunomia server
 ```
 
 This will enable our core ebpf trackers including `process`, `tcp`, `syscall` and `files`, it will also start our security engine to detect potential security issues. For more details, you can refer to our doc.
 
 Alternatively, you can simply use eunomia to run a single ebpf tracker, for example:
 
-```
-./eunomia run files
+```sh
+sudo ./eunomia run files
 ```
 
 will trace all files read or write in the system at a defaut interval of 3s, and print the result:
 
-```sh
+```log
 [2022-05-28 11:23:10.699] [info] start eunomia...
 [2022-05-28 11:23:10.699] [info] start ebpf tracker...
 [2022-05-28 11:23:10.699] [info] start prometheus server...
@@ -140,13 +140,13 @@ see [quickstart/deploy.md](doc/quickstart/deploy.md)
 
 Use eunomia to detect security related events, for example, after started eunomia server, run:
 
-```
+```sh
 sudo bpftools/tcp/tcp
 ```
 
 And you will get an alert in eunomia output:
 
-```
+```log
 [2022-06-02 11:26:40.830] [info] Security Rule Detection:
 [2022-06-02 11:26:40.831] [info] level: event
 [2022-06-02 11:26:40.831] [info] name: Insert-BPF
@@ -166,7 +166,7 @@ For more details, please refer to [rules_index](doc/rule_index.md)
 
 You may need to install `libcurl`, `libelf-dev` `clang` and `gtest` as deps. On `Debian/Ubuntu`, just run
 
-```
+```sh
 make install-deps
 ```
 
@@ -174,7 +174,7 @@ We used `C++20` as standard， so you need a compiler that supports C++20, for e
 
 Makefile build:
 
-```shell
+```sh
 git submodule update --init --recursive       # check out deps
 make install
 ```

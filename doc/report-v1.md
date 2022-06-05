@@ -170,51 +170,63 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
   eBPF 仅在较新版本的 Linux 内核上可用，这对于在版本更新方面稍有滞后的组织来说可能是令人望而却步的。如果您没有运行 Linux 内核，那么 eBPF 根本不适合您。
 
 #### 3.3.2. ebpf 开发工具技术选型
-原始的eBPF程序编写是非常繁琐和困难的。为了改变这一现状，
-llvm于2015年推出了可以将由高级语言编写的代码编译为eBPF字节码的功能，同时，其将`bpf()`
-等原始的系统调用进行了初步地封装，给出了`libbpf`库。这些库会包含将字节码加载到内核中
-的函数以及一些其他的关键函数。在Linux的源码包的`samples/bpf/`目录下，有大量Linux
-提供的基于`libbpf`的eBPF样例代码。
-一个典型的基于`libbpf`的eBPF程序具有`*_kern.c`和`*_user.c`两个文件，
-`*_kern.c`中书写在内核中的挂载点以及处理函数，`*_user.c`中书写用户态代码，
-完成内核态代码注入以及与用户交互的各种任务。 更为详细的教程可以参
-考[该视频](https://www.bilibili.com/video/BV1f54y1h74r?spm_id_from=333.999.0.0)。
-然而由于该方法仍然较难理解且入门存在一定的难度，因此现阶段的eBPF程序开发大多基于一些工具，比如：
-- BCC
-- BPFtrace
-- libbpf-bootstrap
 
-等等，目前使用较多的是BCC工具，但本项目放弃了BCC，选择了libbpf-bootstrap作为我们的开发工具。  
-BCC全称为BPF Compiler Collection，是一个python库，包含了完整的编写、编译、和加载BPF程序的工具链，以及用于调试和诊断性能问题的工具。自2015年发布以来，BCC经过上百位贡献者地不断完善后，目前已经包含了大量随时可用的跟踪工具。并且[其官方项目库](https://github.com/iovisor/bcc/blob/master/docs/tutorial.md)提供了一个方便上手的教程，用户可以快速地根据教程完成BCC入门工作。用户可以在BCC上使用Python、Lua等高级语言进行编程。
-相较于使用C语言直接编程，这些高级语言具有极大的便捷性，用户只需要使用C来设计内核中的BPF程序，其余包括编译、解析、加载等工作在内，均可由BCC完成。  然而使用BCC存在一个缺点便是在于其兼容性并不好。基于BCC的
-eBPF程序每次执行时候都需要进行编译，编译则需要用户配置相关的头文件和对应实现。在实际应用中，相信大家也会有体会，编译依赖问题是一个很棘手的问题。也正是因此，在本项目的开发中我们放弃了BCC，选择了可以做到一次编译-多次运行的libbpf-bootstrap工具。
-        `libbpf-bootstrap`是一个基于`libbpf`库的BPF开发脚手架，从其
-[github](https://github.com/libbpf/libbpf-bootstrap) 上可以得到其源码。`libbpf-bootstrap`综合了BPF社区过去多年的实践，为开发者提了一个现代化的、便捷的工作流，实现了一次编译，重复使用的目的。
-        基于`libbpf-bootstrap`的BPF程序对于源文件有一定的命名规则，
-用于生成内核态字节码的bpf文件以`.bpf.c`结尾，用户态加载字节码的文件以`.c`结尾，且这两个文件的
-前缀必须相同。  
-        基于`libbpf-bootstrap`的BPF程序在编译时会先将`*.bpf.c`文件编译为对应的`.o`文件，然后根据此文件生成`skeleton`文件，即`*.skel.h`，这个文件会包含内核态中定义的一些数据结构，以及用于装载内核态代码的关键函数。在用户态代码`include`此文件之后调用对应的装载函数即可将字节码装载到内核中。
+原始的eBPF程序编写是非常繁琐和困难的。为了改变这一现状，llvm于2015年推出了可以将由高级语言编写的代码编译为eBPF字节码的功能，同时，其将 `bpf()` 
+等原始的系统调用进行了初步地封装，给出了 `libbpf` 库。这些库会包含将字节码加载到内核中的函数以及一些其他的关键函数。在Linux的源码包的 `samples/bpf/` 目录下，有大量Linux提供的基于 `libbpf` 的eBPF样例代码。一个典型的基于 `libbpf` 的eBPF程序具有 `*_kern.c` 和 `*_user.c` 两个文件，
+ `*_kern.c` 中书写在内核中的挂载点以及处理函数， `*_user.c` 中书写用户态代码，完成内核态代码注入以及与用户交互的各种任务。
+
+更为详细的教程可以参考[该视频](https://www.bilibili.com/video/BV1f54y1h74r?spm_id_from=333.999.0.0)。
+
+然而由于该方法仍然较难理解且入门存在一定的难度，因此现阶段的eBPF程序开发大多基于一些工具，比如：
+
+- `BCC`
+- `BPFtrace`
+- `libbpf-bootstrap`
+- etc.
+
+目前使用较多的是 `BCC` 工具，但本项目放弃了 `BCC` ，选择了 `libbpf-bootstrap` 作为我们的开发工具。  
+
+`BCC` 全称为 `BPF Compiler Collection` ，是一个python库，包含了完整的编写、编译、和加载 `BPF` 程序的工具链，以及用于调试和诊断性能问题的工具。自2015年发布以来，`BCC` 经过上百位贡献者地不断完善后，目前已经包含了大量随时可用的跟踪工具。并且 [其官方项目库](https://github.com/iovisor/bcc/blob/master/docs/tutorial.md) 提供了一个方便上手的教程，用户可以快速地根据教程完成 `BCC` 入门工作。用户可以在 `BCC` 上使用Python、Lua等高级语言进行编程。
+
+相较于使用C语言直接编程，这些高级语言具有极大的便捷性，用户只需要使用C来设计内核中的 `BPF` 程序，其余包括编译、解析、加载等工作在内，均可由 `BCC` 完成。
+
+然而使用 `BCC` 存在一个缺点便是在于其兼容性并不好。基于 `BCC` 的 `eBPF` 程序每次执行时候都需要进行编译，编译则需要用户配置相关的头文件和对应实现。在实际应用中，相信大家也会有体会，编译依赖问题是一个很棘手的问题。也正是因此，在本项目的开发中我们放弃了BCC，选择了可以做到一次编译-多次运行的 `libbpf-bootstrap` 工具。
+
+`libbpf-bootstrap` 是一个基于 `libbpf` 库的BPF开发脚手架，从其 [github](https://github.com/libbpf/libbpf-bootstrap) 上可以得到其源码。 `libbpf-bootstrap` 综合了BPF社区过去多年的实践，为开发者提了一个现代化的、便捷的工作流，实现了一次编译，重复使用的目的。
+
+基于 `libbpf-bootstrap` 的BPF程序对于源文件有一定的命名规则，用于生成内核态字节码的bpf文件以 `.bpf.c` 结尾，用户态加载字节码的文件以 `.c` 结尾，且这两个文件的前缀必须相同。  
+
+基于 `libbpf-bootstrap` 的BPF程序在编译时会先将 `*.bpf.c` 文件编译为对应的`.o`文件，然后根据此文件生成 `skeleton` 文件，即 `*.skel.h` ，这个文件会包含内核态中定义的一些数据结构，以及用于装载内核态代码的关键函数。在用户态代码 `include` 此文件之后调用对应的装载函数即可将字节码装载到内核中。
 
 
 #### 3.3.3. 容器可观测性
 
-`Docker`容器提供了大量接口和命令以方便用户观测容器。
-`docker ps `命令可以显示出目前正在运行的所有容器的ID，名称，运行时间等等数据，`docker top `命令可以显示容器中所有正在运行的进程，并且显示其在宿主机上的进程号，通过这种方式我们可以在宿主机中找到和容器有关的进程号并进行重点追踪。`docker inspect`命令则可以根据需要具体查看容器的各种信息。
+`Docker` 容器提供了大量接口和命令以方便用户观测容器。
+
+- `docker ps` 命令可以显示出目前正在运行的所有容器的ID，名称，运行时间等等数据，
+
+- `docker top` 命令可以显示容器中所有正在运行的进程，并且显示其在宿主机上的进程号，通过这种方式我们可以在宿主机中找到和容器有关的进程号并进行重点追踪。
+
+- `docker inspect` 命令则可以根据需要具体查看容器的各种信息。
+
 通过在程序中执行这些命令并且读取其输出我们可以较为快速的观测到容器的实际运行情况。
 
 #### 3.3.4. 信息可视化展示
 
-`Prometheus`是一套开源的监控、报警、时间序列数据库的组合，受启发于Google的Brogmon监控系统，2012年开始由前Google工程师在Soundcloud以开源软件的形式进行研发，并且于2015年早期对外发布早期版本。2016年，Prometheus加入了云计算基金会，成为kubernetes之后的第二个托管项目。其架构如下所示:
+`Prometheus` 是一套开源的监控、报警、时间序列数据库的组合，受启发于Google的Brogmon监控系统，2012年开始由前Google工程师在Soundcloud以开源软件的形式进行研发，并且于2015年早期对外发布早期版本。2016年，`Prometheus` 加入了云计算基金会，成为 `kubernetes` 之后的第二个托管项目。其架构如下所示:
+
 ![](./imgs//promethesu_arch.png)   
+
 `Prometheus`具有以下特点：
 - 可以自定义多维数据模型并且使用metric和
 - 存储高效，不依赖分布式存储，支持单节点工作
 - 使用灵活且强大的查询语言`PromQL`
 - 通过基于http的pull方式采集时许数据
 - 通过push gateway进行序列数据推送
+
 `Graphna` 是一款用Go语言开发的开源数据可视化工具，具有数据监控、数据统计和告警功能，是目前较为流行的一种时序数据展示工具，并且支持目前绝大部分常用的时序数据库。
 
-在本项目中，我们计划将程序捕获到的数据使用`Prometheus`进行存储，之后对于存储的数据我们使用`Graphna`进行可视化
+在本项目中，我们计划将程序捕获到的数据使用 `Prometheus` 进行存储，之后对于存储的数据我们使用 `Graphna` 进行可视化
 
 #### 3.3.5. 容器运行时安全
 
@@ -394,9 +406,6 @@ sudo ./eunomia --help
     ![日志结果记录](./imgs/cmd_show/cmd_run_files_m2.png)
 
 
-
-
-
 ### 7.3. 容器测试情况
 
 
@@ -406,32 +415,45 @@ Grafana是一个开源的可视化和分析平台。允许查询、可视化、�
 
 Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Prometheus-CPP这个SDK实现了prometheus获取数据的API，prometheus可以通过这些API主动拉取到自定义的BPF跟踪数据。具体来说，我们只需要在对应的tracker中嵌入BPF代码，运行Eunomia就可以实现导出BPF跟踪数据，而这些数据是可以被prometheus主动拉取到的，进而实现BPF跟踪数据的存储、处理和可视化展示。
 
-- prometheus
+Prometheus信息可视化测试：
 
-  - 配置prometheus添加eunomia数据源
-```
-   job_name: "prometheus" 
-     # metrics_path defaults to '/metrics'
-     # scheme defaults to 'http'. 
-     static_configs:
-       - targets: ["localhost:9090"]
-   job_name: "eunomia_node"
-     static_configs:
-       - targets: ["localhost:8528"] 
-```
-  - 从prometheus查看数据源的状态
-    ![prometheus4](./imgs/prometheus4.png)
-  - 从promethesu查看eunomia暴露的指标列表
-  - 从Prometheus查看部分指标的数值分布
-    ![prometheus4](./imgs/prometheus1.png)
-    ![prometheus5](./imgs/prometheus2.png)
-    ![prometheus6](./imgs/prometheus3.png)
-- grafana
+- 配置prometheus添加eunomia数据源
 
-  - grafana配置从peometheus拉取数据的端口
+  ```
+  job_name: "prometheus" 
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'. 
+    static_configs:
+      - targets: ["localhost:9090"]
+  job_name: "eunomia_node"
+    static_configs:
+      - targets: ["localhost:8528"] 
+  ```
+
+- 从prometheus查看数据源的状态
+
+  ![prometheus4](./imgs/prometheus4.png)
+
+- 从promethesu查看eunomia暴露的指标列表
+
+- 从Prometheus查看部分指标的数值分布
+
+  ![prometheus4](./imgs/prometheus1.png)
+
+  ![prometheus5](./imgs/prometheus2.png)
+
+  ![prometheus6](./imgs/prometheus3.png)
+
+Grafana信息可视化测试：
+
+- grafana配置从peometheus拉取数据的端口
+
   ![grafana1](./imgs/grafana1.png)
-  - grafana部分指标展示效果如下图，左上为文件读操作Bytes监控;左下为为系统调用热力图，方便定位到热点调用路径;右上为文件读操作TOP10;右下为文件写操作TOP10。
+
+- grafana部分指标展示效果如下图，左上为文件读操作Bytes监控，左下为为系统调用热力图，方便定位到热点调用路径，右上为文件读操作TOP10，右下为文件写操作TOP10。
+
   ![grafana2](./imgs/grafana2.png)
+
   ![grafana3](./imgs/grafana.png)
 
 
@@ -440,31 +462,55 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 ## 8. 遇到的主要问题和解决方法
 
 ### 8.1. 如何设计 ebpf 挂载点
-        如何设计挂载点是ebpf程序在书写时首先需要考虑的问题。ebpf程序是事件驱动的，即只有系统中发生了我们预先规定的事件，我们的程序才会被调用。因此，ebpf挂载点的选择直接关系到程序能否在我们需要的场合下被启动。
-        我们在选择挂载点时，首先需要明白的是我们需要在什么情况下触发处理函数，然后去寻找合适的挂载点。ebpf的挂载点有多种类型，较为常用的挂载点是`tracepoint`，`k/uprobe`，`lsm`等。
-        `tracepoint`是一段静态的代码，以打桩的形式存在于程序源码中，并向外界提供钩子以挂载。一旦处理函数挂载到了钩子上，那么当钩子对应的事件发生时，处理函数就会被调用。由于`tracepoint`使用较为方便，且覆盖面广，ABI也较为稳定，他是我们设计挂载点的一个重要考虑对象。目前Linux已经有1000多个tracepoint可供选择，其支持的所有类型可以在`/sys/kernel/debug/tracing/events/`目录下看到，而至于涉及到的参数格式和返回形式，用户可以使用`cat`命令，查看对应`tracepoint`事件下的format文件得到。如下便是`sched_process_exec`事件的输出格式。
+
+如何设计挂载点是ebpf程序在书写时首先需要考虑的问题。ebpf程序是事件驱动的，即只有系统中发生了我们预先规定的事件，我们的程序才会被调用。因此，ebpf挂载点的选择直接关系到程序能否在我们需要的场合下被启动。
+
+我们在选择挂载点时，首先需要明白的是我们需要在什么情况下触发处理函数，然后去寻找合适的挂载点。ebpf的挂载点有多种类型，较为常用的挂载点是 `tracepoint` ， `k/uprobe` ， `lsm` 等。
+
+`tracepoint` 是一段静态的代码，以打桩的形式存在于程序源码中，并向外界提供钩子以挂载。一旦处理函数挂载到了钩子上，那么当钩子对应的事件发生时，处理函数就会被调用。由于 `tracepoint` 使用较为方便，且覆盖面广，ABI也较为稳定，他是我们设计挂载点的一个重要考虑对象。目前Linux已经有1000多个tracepoint可供选择，其支持的所有类型可以在 `/sys/kernel/debug/tracing/events/` 目录下看到，而至于涉及到的参数格式和返回形式，用户可以使用 `cat` 命令，查看对应 `tracepoint` 事件下的format文件得到。
+
+如下便是`sched_process_exec`事件的输出格式。
+
 ![](./imgs/report/tracepoint_example1.png)
-        用户也可以直接访问`tracepoint`的源码获得更多信息。在Linux源码的`./include/trace/events`目录下，用户可以看到Linux中实现tracepoint的源码。  
-        `k/uprobe`是Linux提供的，允许用户动态插桩的方式。由于`tracepoint`是静态的，如果用户临时需要对一些其不支持的函数进行追踪，就无法使用`tracepoint`，而`k/uprobe`允许用户事实对内核态/用户态中某条指令进行追踪。用户在指定了该指令的位置并启用`k/uprobe`后，当程序运行到该指令时，内核会自动跳转到我们处理代码，待处理完成后返回到原处。相较于`tracepoint`，`k/uprobe`更为灵活，如果你需要追踪的指令不被`tracepoint`所支持，可以考虑使用`k/uprobe`。  
-         `lsm`是Linux内核安全模块的一套框架，其本质也是插桩。相较于`tracepoint`，`lsm`主要在内核安全的相关路径中插入了hook点。因此如果你希望你的代码检测一些和安全相关的内容，可以考虑使用`lsm`。其所有钩子的定义在Linux源码的`./include/linux/lsm_hook_defs.h`中，你可以从中选择初你所需要的hook点。
+
+用户也可以直接访问 `tracepoint` 的源码获得更多信息。在Linux源码的 `./include/trace/events` 目录下，用户可以看到Linux中实现tracepoint的源码。  
+
+`k/uprobe` 是Linux提供的，允许用户动态插桩的方式。由于 `tracepoint` 是静态的，如果用户临时需要对一些其不支持的函数进行追踪，就无法使用 `tracepoint` ，而 `k/uprobe` 允许用户事实对内核态/用户态中某条指令进行追踪。用户在指定了该指令的位置并启用 `k/uprobe` 后，当程序运行到该指令时，内核会自动跳转到我们处理代码，待处理完成后返回到原处。相较于 `tracepoint` ， `k/uprobe` 更为灵活，如果你需要追踪的指令不被 `tracepoint` 所支持，可以考虑使用 `k/uprobe`。
+
+`lsm` 是Linux内核安全模块的一套框架，其本质也是插桩。相较于`tracepoint` ，`lsm` 主要在内核安全的相关路径中插入了hook点。因此如果你希望你的代码检测一些和安全相关的内容，可以考虑使用 `lsm` 。其所有钩子的定义在Linux源码的 `./include/linux/lsm_hook_defs.h` 中，你可以从中选择初你所需要的hook点。
 
 
 ### 8.2. 如何进行内核态数据过滤和数据综合
-        ebpf程序在内核态处理数据有诸多不便，有许多库我们都无法使用，如果遇上的复杂的数据过滤和数据综合，我们需要手动实现很多函数。因此我们认为更为合理的处理方案是将内核态的数据使用ebpf-map传输到用户态，在用户态进行过滤和综合，之后再输出。
+
+ebpf程序在内核态处理数据有诸多不便，有许多库我们都无法使用，如果遇上的复杂的数据过滤和数据综合，我们需要手动实现很多函数。
+
+因此我们认为更为合理的处理方案是将内核态的数据使用 `ebpf-map` 传输到用户态，在用户态进行过滤和综合，之后再输出。
 
 ### 8.3. 如何定位容器元信息
 
-        在程序开始伊始，我们调用`docker ps -q`命令获得当前所有正在运行的容器ID。之后我们开始遍历这些ID，并对每一个ID调用`docker top id`命令,获得容器中的所有所有进程信息，并且将这些信息以键值对的形式存储到哈希map上。之后我们会在`sched_process_exec`和`sched_process_exit`的两个点挂载基于ebpf的处理函数，捕获进程信息。如果捕获的进程与其父进程存在namespace变化的情况，那么我们就会重复一次开始的工作，判断是否有新的容器产生。如果有，则将其添加到哈希map中。如果其父进程已经存在于哈希map中，那么我们就认为此进程也是一个容器相关进程，也将其存储到哈希map中。在进程退出时，我们则需要检查其是否存在于哈希map中，如果存在则需要将其删除。处理函数的逻辑如下图所示。
-        ![容器元信息处理处理](./imgs/container.jpg)
+在程序开始，我们调用 `docker ps -q` 命令获得当前所有正在运行的容器ID。
+
+之后我们开始遍历这些ID，并对每一个ID调用 `docker top id` 命令,获得容器中的所有所有进程信息，并且将这些信息以键值对的形式存储到哈希map上。之后我们会在 `sched_process_exec` 和 `sched_process_exit` 的两个点挂载基于ebpf的处理函数，捕获进程信息。
+
+如果捕获的进程与其父进程存在namespace变化的情况，那么我们就会重复一次开始的工作，判断是否有新的容器产生。
+
+如果有，则将其添加到哈希map中。如果其父进程已经存在于哈希map中，那么我们就认为此进程也是一个容器相关进程，也将其存储到哈希map中。在进程退出时，我们则需要检查其是否存在于哈希map中，如果存在则需要将其删除。
+
+处理函数的逻辑如下图所示：
+
+![容器元信息处理处理](./imgs/container.jpg)
 
 
 ### 8.4. 如何设计支持可扩展性的数据结构
 
-        首先尽可能降低各个模块的耦合性，这样在修改时可以较为方便地完成改动。其次，在最初设计时为未来可能的扩展预留位置。
+首先尽可能降低各个模块的耦合性，这样在修改时可以较为方便地完成改动。其次，在最初设计时为未来可能的扩展预留位置。
 
 ## 9. 分工和协作
+
 郑昱笙同学：
+
 张典典同学：
+
 濮雯旭同学：主要负责了container和ipc追踪模块的撰写以及后期用户态代码中与命令行控制相关的重构工作
 
 
@@ -473,7 +519,7 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 
 ### 10.1. 项目仓库目录结构
 
-          本仓库的主要目录结构如下所示：   
+本仓库的主要目录结构如下所示：   
 
   ```
   ├─bpftools       - ebpf内核态代码
@@ -502,11 +548,11 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
   └─vmlinux  
   ```
 ### 10.2. 各目录及其文件描述
+
 #### 10.2.1. bpftools目录
 
 本目录内的所有文件均为基于ebpf开发的内核态监视代码，
-共有7个子目录，子目录名表示了子目录内文件所实现的模块。比如process子目录代表了其中的文件
-主要实现了进程追踪方面的ebpf内核态代码，其他子目录同理。
+共有7个子目录，子目录名表示了子目录内文件所实现的模块。比如process子目录代表了其中的文件，主要实现了进程追踪方面的ebpf内核态代码，其他子目录同理。
 
 #### 10.2.2. cmake目录
 
@@ -515,15 +561,12 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 
 #### 10.2.3. doc目录
 
-本目录内的所有文件为与本项目相关的文档，其中develop_doc目录为开发文档，其中记录了本项目开发的各种详细信息。tutorial目录为本项目为所有想进行ebpf开发的同学所设计的
-教学文档，其中会提供一些入门教程，方便用户快速上手。imgs目录为开发文档和教学文档中所需要的一些
+本目录内的所有文件为与本项目相关的文档，其中develop_doc目录为开发文档，其中记录了本项目开发的各种详细信息。tutorial目录为本项目为所有想进行ebpf开发的同学所设计的教学文档，其中会提供一些入门教程，方便用户快速上手。imgs目录为开发文档和教学文档中所需要的一些
 图片。
 
 #### 10.2.4. include目录
 
-本项目中用户态代码的头文件均会存放在本目录下。eunomia子目录中存放的
-是各个模块和所需要的头文件，eunomia下的model子目录存放的是各个头文件中的一些必要结构体经过抽象后
-的声明。
+本项目中用户态代码的头文件均会存放在本目录下。eunomia子目录中存放的是各个模块和所需要的头文件，eunomia下的model子目录存放的是各个头文件中的一些必要结构体经过抽象后的声明。
 
 #### 10.2.5. libbpf目录
 
@@ -559,7 +602,7 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 
 ### 11.3. 濮雯旭同学
 
-        此次比赛让我了解到了什么是ebpf技术，也亲手体验了一下如何使用ebpf技术开发内核监控程序，增强了我的工程能力。这对于立志从事操作系统相关工作的我来说具有重要的意义。与此同时，我还了解到了Prometheus，graphna等众多新技术，也增长了我的视野。
+此次比赛让我了解到了什么是ebpf技术，也亲手体验了一下如何使用ebpf技术开发内核监控程序，增强了我的工程能力。这对于立志从事操作系统相关工作的我来说具有重要的意义。与此同时，我还了解到了Prometheus，Graphna等众多新技术，也增长了我的视野。
 
 ## 12. 附录
 
@@ -568,12 +611,14 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 ## 13. Process Metrics
 
 ### 13.1. Metrics List
+
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_observed_process_start` | Counter | Number of observed process start |
 | `eunomia_observed_process_end` | Counter | Number of observed process end |
 
 ### 13.2. Labels List
+
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `node` | worker-1 | Node name represented in Kubernetes cluster |
@@ -591,6 +636,7 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 ## 14. files Metrics
 
 ### 14.1. Metrics List
+
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_observed_files_read_count` | Counter | Number of observed files read count |
@@ -599,6 +645,7 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 | `eunomia_observed_files_read_bytes` | Counter | Number of observed files write bytes |
 
 ### 14.2. Labels List
+
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `comm` | eunomia | The command of the running process |
@@ -609,12 +656,14 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 ## 15. Tcp Connect Metrics
 
 ### 15.1. Metrics List
+
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_observed_tcp_v4_count` | Counter | Number of observed tcp v4 connect count |
 | `eunomia_observed_tcp_v6_count` | Counter | Number of observed tcp v6 connect count |
 
 ### 15.2. Labels List
+
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `dst` | 127.0.0.1 | Destination of TCP connection |
@@ -629,11 +678,13 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 ## 16. Syscall Metrics
 
 ### 16.1. Metrics List
+
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_observed_syscall_count` | Counter | Number of observed syscall count |
 
 ### 16.2. Labels List
+
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `comm` | firefox | The command of the running process |
@@ -643,6 +694,7 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 ## 17. Security Event Metrics
 
 ### 17.1. Metrics List
+
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_seccurity_warn_count` | Counter | Number of observed security warnings |
@@ -650,6 +702,7 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 | `eunomia_seccurity_alert_count` | Counter | Number of observed security alert |
 
 ### 17.2. Labels List
+
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `comm` | firefox | The command of the running process |
@@ -662,11 +715,13 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 Service metrics are generated from the eunomia server-side events, which are used to show the quality of eunomia own service.
 
 ### 18.1. Metrics List
+
 | **Metric Name** | **Type** | **Description** |
 | --- | --- | --- |
 | `eunomia_run_tracker_total` | Counter | Total number of running trackers |
 
 ### 18.2. Labels List
+
 | **Label Name** | **Example** | **Notes** |
 | --- | --- | --- |
 | `node` | worker-1 | Node name represented in Kubernetes cluster |

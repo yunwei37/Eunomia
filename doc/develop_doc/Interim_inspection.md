@@ -211,14 +211,14 @@ eBPF 是一个通用执行引擎，能够高效地安全地执行基于系统事
 
 Makefile build:
 
-```shell
+```sh
 git submodule update --init --recursive       # check out libbpf
 make install
 ```
 
 For example, run process:
 
-```shell
+```sh
 cd src/process
 sudo ./process
 ```
