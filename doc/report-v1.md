@@ -409,6 +409,8 @@ sudo ./eunomia --help
 ### 7.3. 容器测试情况
 
 
+
+
 ### 7.4. 信息可视化测试情况： prometheus and grafana
     
 Grafana是一个开源的可视化和分析平台。允许查询、可视化、告警和监控的不同数据，无论数据存储在哪里。简单地说支持多种数据源，提供多种面板、插件来快速将复杂的数据转换为漂亮的图形和可视化的工具，另监控可自定义告警监控规则。Prometheus是高扩展性的监控和报警系统。它采用拉取策略获取指标数据，并规定了获取数据的API，用户可以通过exporter收集系统数据。
@@ -417,44 +419,32 @@ Eunomia能够将自定义的BPF跟踪数据导出到prometheus，它基于Promet
 
 Prometheus信息可视化测试：
 
-- 配置prometheus添加eunomia数据源
+  - 配置prometheus添加eunomia数据源
+```
+   job_name: "prometheus" 
+     # metrics_path defaults to '/metrics'
+     # scheme defaults to 'http'. 
+     static_configs:
+       - targets: ["localhost:9090"]
+   job_name: "eunomia_node"
+     static_configs:
+       - targets: ["localhost:8528"] 
+```
+  - 从prometheus查看数据源的状态
+    <img src="./imgs/prometheus4.png">
+  - 从promethesu查看eunomia暴露的指标列表
+    <img src="./imgs/prometheus5.png">
+  - 从Prometheus查看部分指标的数值分布
+    <img src="./imgs/prometheus1.png">
+    <img src="./imgs/prometheus2.png">
+    <img src="./imgs/prometheus3.png>
+- grafana
 
-  ```
-  job_name: "prometheus" 
-    # metrics_path defaults to '/metrics'
-    # scheme defaults to 'http'. 
-    static_configs:
-      - targets: ["localhost:9090"]
-  job_name: "eunomia_node"
-    static_configs:
-      - targets: ["localhost:8528"] 
-  ```
-
-- 从prometheus查看数据源的状态
-
-  ![prometheus4](./imgs/prometheus4.png)
-
-- 从promethesu查看eunomia暴露的指标列表
-
-- 从Prometheus查看部分指标的数值分布
-
-  ![prometheus4](./imgs/prometheus1.png)
-
-  ![prometheus5](./imgs/prometheus2.png)
-
-  ![prometheus6](./imgs/prometheus3.png)
-
-Grafana信息可视化测试：
-
-- grafana配置从peometheus拉取数据的端口
-
-  ![grafana1](./imgs/grafana1.png)
-
-- grafana部分指标展示效果如下图，左上为文件读操作Bytes监控，左下为为系统调用热力图，方便定位到热点调用路径，右上为文件读操作TOP10，右下为文件写操作TOP10。
-
-  ![grafana2](./imgs/grafana2.png)
-
-  ![grafana3](./imgs/grafana.png)
+  - grafana配置从peometheus拉取数据的端口
+    <img src="./imgs/grafana1.png">
+  - grafana部分指标展示效果如下图，左上为文件读操作Bytes监控;左下为为系统调用热力图，方便定位到热点调用路径;右上为文件读操作TOP10;右下为文件写操作TOP10。
+    <img src="./imgs/grafana2.png">
+    <img src="./imgs/grafana.png">
 
 
 ### 7.5. CI/持续集成
