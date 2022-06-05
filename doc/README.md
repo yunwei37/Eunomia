@@ -21,3 +21,9 @@ This dir contains all our documentations.
 - [rule_index.md](rule_index.md) 安全规则文档
 - [usage.md](usage.md) 使用帮助文档
 - [report-v1.md](report-v1.md) 初赛成果报告文档
+
+同时，我们还提供了简单的初赛视频介绍和演示：
+
+>链接：https://pan.baidu.com/s/1z399dW-oT7S4YJlQyWHWuw?pwd=jvf4 
+>
+>提取码：jvf4

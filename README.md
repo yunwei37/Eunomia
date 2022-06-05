@@ -34,7 +34,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 
 ## What is Eunomia
 
-完整的初赛报告文档，请点击这里：[report](doc/report-v1.md)。您可以先阅读完本 README 文档，再通过 report 了解详细信息。
+完整的初赛报告文档，请点击这里：[report](doc/report-v1.md)。您可以先阅读完本 README 文档，再通过 report 了解详细信息。同时，我们还提供了简单的初赛视频介绍和演示，请点击百度网盘链接： https://pan.baidu.com/s/1z399dW-oT7S4YJlQyWHWuw?pwd=jvf4  提取码：jvf4
 
 ### Describe
 
