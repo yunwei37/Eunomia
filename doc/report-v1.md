@@ -408,6 +408,10 @@ sudo ./eunomia --help
 
 ### 7.3. 容器测试情况
 
+- 测试进程与容器id互相映射
+  <img src="imgs/container_test_1.png" width=100% weigth=100%>
+
+- 基于容器信息的可视化展示
 
 
 
@@ -431,9 +435,9 @@ Prometheus信息可视化测试：
        - targets: ["localhost:8528"] 
 ```
   - 从prometheus查看数据源的状态
-    <img src="./imgs/prometheus4.png">
+    <img src="./imgs/prometheus4.png" width=100%>
   - 从promethesu查看eunomia暴露的指标列表
-    <img src="./imgs/prometheus5.png">
+    <img src="./imgs/prometheus5.png" width=100%>
   - 从Prometheus查看部分指标的数值分布
     <img src="./imgs/prometheus1.png">
     <img src="./imgs/prometheus2.png">
@@ -499,7 +503,7 @@ ebpf程序在内核态处理数据有诸多不便，有许多库我们都无法�
 
 郑昱笙同学：
 
-张典典同学：
+张典典同学：主要负责了seccomp模块、可视化以及部分quickstart的工作
 
 濮雯旭同学：主要负责了container和ipc追踪模块的撰写以及后期用户态代码中与命令行控制相关的重构工作
 
@@ -588,7 +592,7 @@ ebpf程序在内核态处理数据有诸多不便，有许多库我们都无法�
 
 
 ### 11.2. 张典典同学
-
+此次比赛让我了解到了ebpf技术，借此机会对操作系统内核中进程相关的数据结构例如struct task、thread_info、regs等有了深入的了解，对于Linux的seccomp安全机制、cgroup机制有了充分的认识，亲手体验了使用内核监控的开发，通过应用Grafana等可视化组件，提升了我对时序数据的存储、操作、展示的理解。
 
 ### 11.3. 濮雯旭同学
 
