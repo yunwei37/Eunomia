@@ -25,9 +25,6 @@ extern "C" {
 using json = nlohmann::json;
 
 struct syscall_tracker : public tracker_with_config<syscall_env, syscall_event> {
-  using config_data = tracker_config<syscall_env, syscall_event>;
-  using tracker_event_handler = std::shared_ptr<event_handler<syscall_event>>;
-  
   syscall_tracker(config_data config);
 
   // create a tracker with deafult config

@@ -24,9 +24,6 @@ extern "C" {
 // trace process start and exit
 struct process_tracker : public tracker_with_config<process_env, process_event>
 {
-  using config_data = tracker_config<process_env, process_event>;
-  using tracker_event_handler = std::shared_ptr<event_handler<process_event>>;
-
   process_tracker(config_data config);
 
   // create a tracker with deafult config

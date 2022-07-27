@@ -39,10 +39,53 @@ struct tracker_base
   }
 };
 
+class prometheus_server;
+
 // all tracker should inherit from this class
 template<typename ENV, typename EVENT>
 struct tracker_with_config : public tracker_base
 {
+  // type alias
+  using config_data = tracker_config<ENV, EVENT>;
+  using tracker_event_handler = std::shared_ptr<event_handler<EVENT>>;
+
+  // default event handlers
+  struct prometheus_event_handler : public event_handler<EVENT>
+  {
+    prometheus_event_handler(prometheus_server &server)
+    {
+    }
+    void handle(tracker_event<EVENT> &e)
+    {
+    }
+  };
+  // print to plain text
+  struct plain_text_event_printer : public event_handler<EVENT>
+  {
+    void handle(tracker_event<EVENT> &e)
+    {
+    }
+  };
+  // used for json exporter, inherits from json_event_handler
+  struct json_event_printer
+  {
+    std::string to_json(const EVENT &e)
+    {
+      return std::string("{}");
+    }
+    void handle(tracker_event<EVENT> &e)
+    {
+      std::cout << to_json(e.event) << std::endl;
+    }
+  };
+  // print to csv
+  struct csv_event_printer : public event_handler<EVENT>
+  {
+    void handle(tracker_event<EVENT> &e)
+    {
+    }
+  };
+
   tracker_config<ENV, EVENT> current_config;
   tracker_with_config(tracker_config<ENV, EVENT> config) : current_config(config)
   {
@@ -73,7 +116,7 @@ static int handle_tracker_event(void *ctx, void *data, size_t data_sz)
 {
   if (!data || !ctx)
   {
-    std::cout<< "warn: no data or no ctx" << std::endl;
+    std::cout << "warn: no data or no ctx" << std::endl;
     return 0;
   }
   const EVENT &e = *(const EVENT *)data;
@@ -82,8 +125,10 @@ static int handle_tracker_event(void *ctx, void *data, size_t data_sz)
   if (pt.current_config.handler)
   {
     pt.current_config.handler->do_handle_event(event);
-  } else {
-    std::cout<< "warn: no handler for tracker event" << std::endl;
+  }
+  else
+  {
+    std::cout << "warn: no handler for tracker event" << std::endl;
   }
   return 0;
 }

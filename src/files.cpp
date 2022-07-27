@@ -5,16 +5,14 @@
  */
 
 #include "eunomia/files.h"
-
 #include <spdlog/spdlog.h>
-
 #include <json.hpp>
 
 using json = nlohmann::json;
 
 void files_tracker::prometheus_event_handler::report_prometheus_event(const struct files_event &e)
 {
-  for (int i = 0; i < e.rows; i++)
+  for (auto i = 0; i < e.rows; i++)
   {
     eunomia_files_write_counter
         .Add({ { "type", std::to_string(e.values[i].type) },

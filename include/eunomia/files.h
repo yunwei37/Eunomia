@@ -27,9 +27,6 @@ extern "C"
 // trace files read and write
 struct files_tracker : public tracker_with_config<files_env, files_event>
 {
-  using config_data = tracker_config<files_env, files_event>;
-  using tracker_event_handler = std::shared_ptr<event_handler<files_event>>;
-
   files_tracker(config_data config);
 
   // create a tracker with deafult config
@@ -40,8 +37,8 @@ struct files_tracker : public tracker_with_config<files_env, files_event>
   void start_tracker();
 
   // used for prometheus exporter
-  struct prometheus_event_handler : public event_handler<files_event>
-  { 
+  struct  prometheus_event_handler : public event_handler<files_event>
+  {
     // read times counter for field reads
     prometheus::Family<prometheus::Counter> &eunomia_files_read_counter;
     // write times counter for field writes

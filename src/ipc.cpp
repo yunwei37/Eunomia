@@ -5,11 +5,8 @@
  */
 
 #include "eunomia/ipc.h"
-
 #include <spdlog/spdlog.h>
-
 #include <json.hpp>
-
 #include "prometheus/counter.h"
 
 using json = nlohmann::json;
@@ -86,61 +83,4 @@ void ipc_tracker::csv_event_printer::handle(tracker_event<ipc_event> &e)
   }
 
   spdlog::info("{},{},{},{},{}", e.data.pid, e.data.uid, e.data.gid, e.data.cuid, e.data.cgid);
-}
-
-void ipc_tracker::prometheus_event_handler::report_prometheus_event(const struct ipc_event &e)
-{
-  // eunomia_ipc_write_counter
-  //     .Add({ { "type", std::to_string(e.values[i].type) },
-  //            { "filename", std::string(e.values[i].filename) },
-  //            { "comm", std::string(e.values[i].comm) },
-  //            { "pid", std::to_string(e.values[i].pid) } })
-  //     .Increment((double)e.values[i].writes);
-  // eunomia_ipc_read_counter
-  //     .Add({
-  //         { "comm", std::string(e.values[i].comm) },
-  //         { "filename", std::string(e.values[i].filename) },
-  //         { "pid", std::to_string(e.values[i].pid) },
-  //         { "type", std::to_string(e.values[i].type) },
-  //     })
-  //     .Increment((double)e.values[i].reads);
-  // eunomia_ipc_write_bytes
-  //     .Add({ { "type", std::to_string(e.values[i].type) },
-  //            { "filename", std::string(e.values[i].filename) },
-  //            { "comm", std::string(e.values[i].comm) },
-  //            { "pid", std::to_string(e.values[i].pid) } })
-  //     .Increment((double)e.values[i].write_bytes);
-  // eunomia_ipc_read_bytes
-  //     .Add({
-  //         { "comm", std::string(e.values[i].comm) },
-  //         { "filename", std::string(e.values[i].filename) },
-  //         { "pid", std::to_string(e.values[i].pid) },
-  //         { "type", std::to_string(e.values[i].type) },
-  //     })
-  //     .Increment((double)e.values[i].read_bytes);
-}
-
-ipc_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_server &server)
-// : eunomia_ipc_read_counter(prometheus::BuildCounter()
-//                                  .Name("eunomia_observed_ipc_read_count")
-//                                  .Help("Number of observed ipc read count")
-//                                  .Register(*server.registry)),
-//   eunomia_ipc_write_counter(prometheus::BuildCounter()
-//                                   .Name("eunomia_observed_ipc_write_count")
-//                                   .Help("Number of observed ipc write count")
-//                                   .Register(*server.registry)),
-//   eunomia_ipc_write_bytes(prometheus::BuildCounter()
-//                                 .Name("eunomia_observed_ipc_write_bytes")
-//                                 .Help("Number of observed ipc write bytes")
-//                                 .Register(*server.registry)),
-//   eunomia_ipc_read_bytes(prometheus::BuildCounter()
-//                                .Name("eunomia_observed_ipc_read_bytes")
-//                                .Help("Number of observed ipc read bytes")
-//                                .Register(*server.registry))
-{
-}
-
-void ipc_tracker::prometheus_event_handler::handle(tracker_event<ipc_event> &e)
-{
-  report_prometheus_event(e.data);
 }

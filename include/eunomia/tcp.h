@@ -32,9 +32,6 @@ union sender
 // trace tcp start and exit
 struct tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
 {
-  using config_data = tracker_config<tcp_env, tcp_event>;
-  using tracker_event_handler = std::shared_ptr<event_handler<tcp_event>>;
-
   tcp_tracker(config_data config);
 
   // create a tracker with deafult config
