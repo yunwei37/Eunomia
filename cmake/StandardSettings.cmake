@@ -69,7 +69,7 @@ if(BUILD_SHARED_LIBS)
   set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 endif()
 
-option(${PROJECT_NAME}_ENABLE_LTO "Enable Interprocedural Optimization, aka Link Time Optimization (LTO)." ON)
+option(${PROJECT_NAME}_ENABLE_LTO "Enable Interprocedural Optimization, aka Link Time Optimization (LTO)." OFF)
 if(${PROJECT_NAME}_ENABLE_LTO)
   include(CheckIPOSupported)
   check_ipo_supported(RESULT result OUTPUT output)
@@ -81,7 +81,7 @@ if(${PROJECT_NAME}_ENABLE_LTO)
 endif()
 
 
-option(${PROJECT_NAME}_ENABLE_CCACHE "Enable the usage of Ccache, in order to speed up rebuild times." ON)
+option(${PROJECT_NAME}_ENABLE_CCACHE "Enable the usage of Ccache, in order to speed up rebuild times." OFF)
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
