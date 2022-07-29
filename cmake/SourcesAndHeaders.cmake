@@ -11,6 +11,7 @@ set(sources
     src/sec_analyzer.cpp
     src/config.cpp
     src/myseccomp.cpp
+    src/tracker_alone.cpp
 )
 
 set(exe_sources
@@ -35,7 +36,6 @@ set(skel_includes
     bpftools/container/.output
     bpftools/files/.output
 )
-
 
 set(test_sources
     src/process_test.cpp
