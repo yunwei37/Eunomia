@@ -28,7 +28,7 @@ struct tracker_alone_event
 };
 
 // Run tracker as a standalone process, and communicate with pipe
-class tracker_alone_base : public tracker_with_config<tracker_alone_env, tracker_alone_event>
+struct tracker_alone_base : public tracker_with_config<tracker_alone_env, tracker_alone_event>
 {
 private:
   constexpr static int MAX_PROCESS_MESSAGE_LENGTH = 1024 * 1024 * 4;
@@ -47,12 +47,9 @@ public:
   static std::unique_ptr<tracker_alone_base> create_tracker_with_default_env(tracker_event_handler handler);
 
   // print to stdout
-  struct plain_text_event_printer : public event_handler<tracker_alone_event>
+  struct plain_text_event_printer final: public event_handler<tracker_alone_event>
   {
-    void handle(tracker_event<tracker_alone_event> &e)
-    {
-      std::cout << e.data.process_messages << std::endl;
-    }
+    void handle(tracker_event<tracker_alone_event> &e);
   };
 };
 

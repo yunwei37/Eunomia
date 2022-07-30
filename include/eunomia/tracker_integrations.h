@@ -4,14 +4,14 @@
  * All rights reserved.
  */
 
-#ifndef OOM_CMD_H
-#define OOM_CMD_H
+#ifndef TRACKER_INTEGRATIONS_CMD_H
+#define TRACKER_INTEGRATIONS_CMD_H
 
 #include "eunomia/model/tracker_alone.h"
 
-class oomkill_tracker: public tracker_alone_base {
-  oomkill_tracker(config_data config);
-  oomkill_tracker(tracker_alone_env env);
+struct oomkill_tracker final: public tracker_alone_base {
+  oomkill_tracker(config_data config) : tracker_alone_base(config) {}
+  oomkill_tracker(tracker_alone_env env) : tracker_alone_base(env) {}
 
   static std::unique_ptr<oomkill_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 };

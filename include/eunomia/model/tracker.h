@@ -50,7 +50,7 @@ struct tracker_with_config : public tracker_base
   using tracker_event_handler = std::shared_ptr<event_handler<EVENT>>;
 
   // default event handlers
-  struct prometheus_event_handler : public event_handler<EVENT>
+  struct prometheus_event_handler final : public event_handler<EVENT>
   {
     prometheus_event_handler(prometheus_server &server)
     {
@@ -60,14 +60,14 @@ struct tracker_with_config : public tracker_base
     }
   };
   // print to plain text
-  struct plain_text_event_printer : public event_handler<EVENT>
+  struct plain_text_event_printer final : public event_handler<EVENT>
   {
     void handle(tracker_event<EVENT> &e)
     {
     }
   };
   // used for json exporter, inherits from json_event_handler
-  struct json_event_printer
+  struct json_event_printer final
   {
     std::string to_json(const EVENT &e)
     {
@@ -79,7 +79,7 @@ struct tracker_with_config : public tracker_base
     }
   };
   // print to csv
-  struct csv_event_printer : public event_handler<EVENT>
+  struct csv_event_printer final : public event_handler<EVENT>
   {
     void handle(tracker_event<EVENT> &e)
     {

@@ -26,11 +26,13 @@ void tracker_alone_base::start_child_process()
   const auto& env = current_config.env;
 
   std::vector<char*> argv;
+  argv.push_back(const_cast<char*>(current_config.name.c_str()));
   for (auto& arg : env.process_args)
   {
     argv.push_back(const_cast<char*>(arg.c_str()));
   }
   argv.push_back(nullptr);
+  spdlog::info("starting {} tracker...", current_config.name);
   // start child process ebpf program
   res = env.main_func(env.process_args.size(), argv.data());
   // exit child process
@@ -48,7 +50,7 @@ void tracker_alone_base::start_parent_process()
     return;
   }
   // read from pipe
-  while ((!exiting) && (res = read(pipe_fd[0], pipe_buf, MAX_PROCESS_MESSAGE_LENGTH)) > 0)
+  while ((!exiting) && (res = read(pipe_fd[0], pipe_buf, MAX_PROCESS_MESSAGE_LENGTH)) >= 0)
   {
     // send to event handler
     auto event = tracker_event<tracker_alone_event>{ std::string(pipe_buf, res) };
@@ -107,6 +109,7 @@ void tracker_alone_base::start_tracker()
     close(pipe_fd[0]);
     close(pipe_fd[1]);
   }
+  spdlog::info("{} tracker exited.", current_config.name);
 }
 
 tracker_alone_base::tracker_alone_base(config_data config) : tracker_with_config(config)
@@ -129,4 +132,9 @@ tracker_alone_base::tracker_alone_base(tracker_alone_env env)
           .env = env,
       })
 {
+}
+
+void tracker_alone_base::plain_text_event_printer::handle(tracker_event<tracker_alone_event> &e)
+{
+  spdlog::info(e.data.process_messages);
 }
