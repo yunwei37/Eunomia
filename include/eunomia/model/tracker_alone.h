@@ -33,8 +33,8 @@ struct tracker_alone_base : public tracker_with_config<tracker_alone_env, tracke
 private:
   constexpr static int MAX_PROCESS_MESSAGE_LENGTH = 1024 * 1024 * 4;
   pid_t child_pid;
-  int pipe_fd[2];
-  char pipe_buf[MAX_PROCESS_MESSAGE_LENGTH];
+  int stdout_pipe_fd[2];
+  char stdout_pipe_buf[MAX_PROCESS_MESSAGE_LENGTH];
   void start_child_process();
   void start_parent_process();
 

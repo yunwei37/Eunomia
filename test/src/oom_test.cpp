@@ -27,9 +27,8 @@ int main(int argc, char **argv)
   //prometheus_event_handler->add_handler(json_event_printer);
   // prometheus_event_handler->add_handler(json_event_printer)->add_handler(json_event_printer2);
 
-  auto tracker_ptr = tcpconnlat_tracker::create_tracker_with_default_env(json_event_printer);
+  auto tracker_ptr = tcpconnlat_tracker::create_tracker_with_default_env(std::move(json_event_printer));
   manager.start_tracker(std::move(tracker_ptr));
-
-  std::this_thread::sleep_for(100s);
+  std::this_thread::sleep_for(3s);
   return 0;
 }

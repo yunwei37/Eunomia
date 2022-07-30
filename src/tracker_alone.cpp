@@ -9,7 +9,7 @@ void tracker_alone_base::start_child_process()
 {
   int res = 0;
   // close unused pipe end
-  res = close(pipe_fd[0]);
+  res = close(stdout_pipe_fd[0]);
   if (res == -1)
   {
     spdlog::error("parent process close pipe failed");
@@ -17,7 +17,7 @@ void tracker_alone_base::start_child_process()
   }
 
   // redirect stdout to pipe
-  res = dup2(pipe_fd[1], STDOUT_FILENO);
+  res = dup2(stdout_pipe_fd[1], STDOUT_FILENO);
   if (res == -1)
   {
     spdlog::error("child process dup2 failed");
@@ -43,17 +43,18 @@ void tracker_alone_base::start_parent_process()
 {
   int res = 0;
   // close unused pipe end
-  res = close(pipe_fd[1]);
+  res = close(stdout_pipe_fd[1]);
   if (res == -1)
   {
     spdlog::error("parent process close pipe failed");
     return;
   }
   // read from pipe
-  while ((!exiting) && (res = read(pipe_fd[0], pipe_buf, MAX_PROCESS_MESSAGE_LENGTH)) >= 0)
+  ssize_t read_bytes;
+  while ((!exiting) && (read_bytes = read(stdout_pipe_fd[0], stdout_pipe_buf, MAX_PROCESS_MESSAGE_LENGTH)) > 0)
   {
     // send to event handler
-    auto event = tracker_event<tracker_alone_event>{ std::string(pipe_buf, res) };
+    auto event = tracker_event<tracker_alone_event>{ std::string(stdout_pipe_buf, read_bytes) };
     if (current_config.handler)
     {
       current_config.handler->do_handle_event(event);
@@ -65,11 +66,15 @@ void tracker_alone_base::start_parent_process()
     }
   }
   // close pipe
-  res = close(pipe_fd[0]);
+  res = close(stdout_pipe_fd[0]);
   if (res == -1)
   {
     spdlog::error("parent process close pipe failed");
-    return;
+  }
+  res = kill(child_pid, SIGINT);
+  if(res == -1)
+  {
+    spdlog::warn("parent process kill child process failed");
   }
   res = waitpid(child_pid, nullptr, 0);
   if (res == -1)
@@ -82,7 +87,7 @@ void tracker_alone_base::start_parent_process()
 void tracker_alone_base::start_tracker()
 {
   int res = 0;
-  res = pipe(pipe_fd);
+  res = pipe(stdout_pipe_fd);
   if (res < 0)
   {
     spdlog::error("create pipe error");
@@ -106,8 +111,8 @@ void tracker_alone_base::start_tracker()
   {
     // error
     spdlog::error("fork error");
-    close(pipe_fd[0]);
-    close(pipe_fd[1]);
+    close(stdout_pipe_fd[0]);
+    close(stdout_pipe_fd[1]);
   }
   spdlog::info("{} tracker exited.", current_config.name);
 }
