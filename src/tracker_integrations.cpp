@@ -1,7 +1,8 @@
 #include "eunomia/tracker_integrations.h"
 
-extern "C" {
-  #include "oomkill/oom_tracker.h"
+extern "C"
+{
+#include "oomkill/oom_tracker.h"
 }
 
 std::unique_ptr<oomkill_tracker> oomkill_tracker::create_tracker_with_default_env(tracker_event_handler handler)

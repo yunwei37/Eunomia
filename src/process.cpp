@@ -93,7 +93,8 @@ process_tracker::process_tracker(process_env env)
 void process_tracker::start_tracker()
 {
   struct process_bpf *skel = nullptr;
-  // start_process_tracker(handle_event, libbpf_print_fn, current_config.env, skel, (void *)this);
+  // start_process_tracker(handle_event, libbpf_print_fn, current_config.env,
+  // skel, (void *)this);
   start_process_tracker(
       handle_tracker_event<process_tracker, process_event>, libbpf_print_fn, current_config.env, skel, (void *)this);
 }

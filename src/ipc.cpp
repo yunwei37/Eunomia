@@ -5,8 +5,11 @@
  */
 
 #include "eunomia/ipc.h"
+
 #include <spdlog/spdlog.h>
+
 #include <json.hpp>
+
 #include "prometheus/counter.h"
 
 using json = nlohmann::json;

@@ -49,7 +49,8 @@ void safe_mode_opertiaon(config core_config)
 
 void server_mode_operation(bool load_from_config_file, config core_config)
 {
-  // std::cout << prometheus_flag << " " << listening_address << " " << std::endl;
+  // std::cout << prometheus_flag << " " << listening_address << " " <<
+  // std::endl;
   if (!load_from_config_file)
   {
     core_config.fmt = export_format::none;
@@ -72,8 +73,8 @@ void seccomp_mode_operation(config core_config)
   // enable seccomp with config white list
   // if (core_config.seccomp.len >= 439)
   // {
-  //   spdlog::error("seccomp config file error : allow syscall cannot bigger than 439");
-  //   exit(0);
+  //   spdlog::error("seccomp config file error : allow syscall cannot bigger
+  //   than 439"); exit(0);
   // } else {
   //   enable_seccomp_white_list(core_config.seccomp);
   // }
@@ -121,7 +122,8 @@ int main(int argc, char* argv[])
        (clipp::option("-m").set(container_flag, true) & clipp::opt_value("path to store dir", container_log_path)) %
            "Start container manager to trace contaienr.",
        (clipp::option("--fmt") & clipp::value("output format of the program", fmt)) %
-           "The output format of EUNOMIA, it could be \"json\", \"csv\", \"plain_txt\", and \"plain_txt\" is the default "
+           "The output format of EUNOMIA, it could be \"json\", \"csv\", "
+           "\"plain_txt\", and \"plain_txt\" is the default "
            "choice.");
 
   auto safe_mode = (clipp::command("safe").set(selected, eunomia_mode::safe), config_cmd);
@@ -139,7 +141,8 @@ int main(int argc, char* argv[])
        (clipp::option("--no_safe").set(safe_flag, false)) % "Stop safe module",
        (clipp::option("--no_prometheus").set(prometheus_flag, false)) % "Stop prometheus server",
        (clipp::option("--listen") & clipp::value("listening address", listening_address)) %
-           "Listen http requests on this address, the format is like \"127.0.0.1:8528\"");
+           "Listen http requests on this address, the format is like "
+           "\"127.0.0.1:8528\"");
 
   auto cli = ((run_mode | safe_mode | seccomp_mode | server_cmd | clipp::command("help").set(selected, eunomia_mode::help)));
 

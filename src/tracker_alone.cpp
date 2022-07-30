@@ -134,7 +134,7 @@ tracker_alone_base::tracker_alone_base(tracker_alone_env env)
 {
 }
 
-void tracker_alone_base::plain_text_event_printer::handle(tracker_event<tracker_alone_event> &e)
+void tracker_alone_base::plain_text_event_printer::handle(tracker_event<tracker_alone_event>& e)
 {
   spdlog::info(e.data.process_messages);
 }

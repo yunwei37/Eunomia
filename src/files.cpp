@@ -5,14 +5,16 @@
  */
 
 #include "eunomia/files.h"
+
 #include <spdlog/spdlog.h>
+
 #include <json.hpp>
 
 using json = nlohmann::json;
 
 void files_tracker::prometheus_event_handler::report_prometheus_event(const struct files_event &e)
 {
-  for (auto i = 0; i < e.rows; i++)
+  for (size_t i = 0; i < e.rows; i++)
   {
     eunomia_files_write_counter
         .Add({ { "type", std::to_string(e.values[i].type) },
@@ -104,7 +106,8 @@ files_tracker::files_tracker(files_env env)
 void files_tracker::start_tracker()
 {
   struct files_bpf *skel = nullptr;
-  // start_files_tracker(handle_event, libbpf_print_fn, current_config.env, skel, (void *)this);
+  // start_files_tracker(handle_event, libbpf_print_fn, current_config.env,
+  // skel, (void *)this);
   current_config.env.ctx = (void *)this;
   start_file_tracker(handle_tracker_event<files_tracker, files_event>, libbpf_print_fn, current_config.env);
 }
@@ -114,7 +117,7 @@ std::string files_tracker::json_event_handler::to_json(const struct files_event 
   std::string res;
   json files = { { "type", "process" }, { "time", get_current_time() } };
   json files_event_json = json::array();
-  for (int i = 0; i < e.rows; i++)
+  for (size_t i = 0; i < e.rows; i++)
   {
     files_event_json.push_back({ { "pid", e.values[i].pid },
                                  { "read_bytes", e.values[i].read_bytes },
@@ -148,7 +151,7 @@ static int sort_column(const void *obj1, const void *obj2)
 void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> &e)
 {
   static const int default_size = 20;
-  std::system("clear");
+  (void)std::system("clear");
   qsort(e.data.values, e.data.rows, sizeof(struct file_stat), sort_column);
   spdlog::info(
       "{:6} {:10} {:6} {:6} {:10} {:10} {:6} {:12} {:12}",
@@ -161,7 +164,8 @@ void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> 
       "type",
       "comm",
       "filename");
-  // spdlog::info("pid\tread_bytes\tread count\twrite_bytes\twrite count\tcomm\ttype\ttid\tfilename");
+  // spdlog::info("pid\tread_bytes\tread count\twrite_bytes\twrite
+  // count\tcomm\ttype\ttid\tfilename");
   for (int i = 0; i < default_size; i++)
   {
     spdlog::info(
@@ -185,7 +189,9 @@ void files_tracker::csv_event_printer::handle(tracker_event<files_event> &e)
   if (is_start)
   {
     is_start = false;
-    std::cout << "pid,read_bytes,read_count,write_bytes,write count,comm,type,tid,filename" << std::endl;
+    std::cout << "pid,read_bytes,read_count,write_bytes,write "
+                 "count,comm,type,tid,filename"
+              << std::endl;
   }
   for (size_t i = 0; i < e.data.rows; i++)
   {

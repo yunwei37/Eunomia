@@ -4,7 +4,7 @@
  * All rights reserved.
  */
 
-#include "eunomia/oomkill.h"
+#include "eunomia/tracker_integrations.h"
 #include "eunomia/prometheus_server.h"
 
 //#include <gtest/gtest.h>

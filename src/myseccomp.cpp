@@ -93,7 +93,10 @@ int enable_seccomp_white_list(seccomp_config config)
     int id = get_syscall_id(config.allow_syscall[i]);
     if (id == -1)
     {
-      spdlog::error("syscall_id error {0} has no corresponding syscall in x86 system arch", config.allow_syscall[i]);
+      spdlog::error(
+          "syscall_id error {0} has no corresponding syscall in x86 system "
+          "arch",
+          config.allow_syscall[i]);
       continue;
     }
     syscall_vec.push_back(id);

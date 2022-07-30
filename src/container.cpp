@@ -47,16 +47,16 @@ void container_tracker::fill_event(struct process_event &event)
   unsigned int ns;
   cmd += std::to_string(event.common.pid);
   std::unique_ptr<FILE, int (*)(FILE *)> fp_cgroup(popen((cmd + cgroup).c_str(), "r"), pclose);
-  fscanf(fp_cgroup.get(), "%u %*[^\n]\n", &ns);
+  (void)fscanf(fp_cgroup.get(), "%u %*[^\n]\n", &ns);
   event.common.cgroup_id = ns;
   std::unique_ptr<FILE, int (*)(FILE *)> fp_user(popen((cmd + user).c_str(), "r"), pclose);
-  fscanf(fp_user.get(), "%u %*[^\n]\n", &ns);
+  (void)fscanf(fp_user.get(), "%u %*[^\n]\n", &ns);
   event.common.user_namespace_id = ns;
   std::unique_ptr<FILE, int (*)(FILE *)> fp_mnt(popen((cmd + mnt).c_str(), "r"), pclose);
-  fscanf(fp_mnt.get(), "%u %*[^\n]\n", &ns);
+  (void)fscanf(fp_mnt.get(), "%u %*[^\n]\n", &ns);
   event.common.mount_namespace_id = ns;
   std::unique_ptr<FILE, int (*)(FILE *)> fp_pid(popen((cmd + pid).c_str(), "r"), pclose);
-  fscanf(fp_pid.get(), "%u %*[^\n]\n", &ns);
+  (void)fscanf(fp_pid.get(), "%u %*[^\n]\n", &ns);
   event.common.pid_namespace_id = ns;
 }
 
@@ -75,10 +75,10 @@ void container_tracker::init_container_table()
     name_cmd += hex_cid;
     std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose),
         name(popen(name_cmd.c_str(), "r"), pclose);
-    fscanf(name.get(), "/%s", container_name);
+    (void)fscanf(name.get(), "/%s", container_name);
     /* delet the first row */
     char useless[150];
-    fgets(useless, 150, top.get());
+    (void)fgets(useless, 150, top.get());
     while (fscanf(top.get(), "%*s %d %d %*[^\n]\n", &pid, &ppid) == 2)
     {
       struct process_event event;
@@ -164,7 +164,7 @@ void container_tracker::judge_container(const struct process_event &e)
           fscanf(name.get(), "/%s", container_name);
           char useless[150];
           /* delet the first row */
-          fgets(useless, 150, top.get());
+          (void)fgets(useless, 150, top.get());
           while (fscanf(top.get(), "%*s %d %d %*[^\n]\n", &pid, &ppid) == 2)
           {
             this_manager.mp_lock.lock();

@@ -34,7 +34,9 @@ static void print_table_header(const char *custom_headers[], bool is_csv)
 {
   if (is_csv)
   {
-    printf("time,pid,ppi,cgroup_id,user_namespace_id,pid_namespace_id,mount_namespace_id");
+    printf(
+        "time,pid,ppi,cgroup_id,user_namespace_id,pid_namespace_id,mount_"
+        "namespace_id");
   }
   else
   {
@@ -76,7 +78,8 @@ static void print_basic_info(const struct common_event *e, bool is_csv)
   time(&t);
   tm = localtime(&t);
   strftime(ts, sizeof(ts), "%H:%M:%S", tm);
-  /* format: [time] [pid] [ppid] [cgroup_id] [user_namespace_id] [pid_namespace_id] [mount_namespace_id] */
+  /* format: [time] [pid] [ppid] [cgroup_id] [user_namespace_id]
+   * [pid_namespace_id] [mount_namespace_id] */
   if (is_csv)
   {
     printf(

@@ -140,7 +140,8 @@ start_container_tracker(ring_buffer_sample_fn handle_event, libbpf_print_fn_t li
   while (!bpf_map_get_next_key(processes_fd, &to_lookup, &next_key))
   {
     bpf_map_lookup_elem(processes_fd, &next_key, &container_value);
-    // printf("%-10u %-15u %lu \n", container_value.pid, container_value.ppid, container_value.container_id);
+    // printf("%-10u %-15u %lu \n", container_value.pid, container_value.ppid,
+    // container_value.container_id);
     to_lookup = next_key;
   }
 
