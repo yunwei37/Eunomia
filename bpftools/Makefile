@@ -24,7 +24,7 @@ files:
 	@make -C files
 
 tcp:
-	@make -C tcp
+	@make -C tcpconnect
 
 container:
 	@make -C container

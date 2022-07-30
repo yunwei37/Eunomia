@@ -29,7 +29,7 @@ set(headers
     bpftools/process/process_tracker.h
     bpftools/ipc/ipc_tracker.h
     bpftools/syscall/syscall_tracker.h
-    bpftools/tcp/tcp_tracker.h
+    bpftools/tcpconnect/tcp_tracker.h
     bpftools/oomkill/oom_tracker.h
     bpftools/tcpconnlat/tcpconnlat_tracker.h
     include/eunomia/myseccomp.h
@@ -38,7 +38,7 @@ set(headers
 set(skel_includes
     bpftools/ipc/.output
     bpftools/process/.output
-    bpftools/tcp/.output
+    bpftools/tcpconnect/.output
     bpftools/syscall/.output
     bpftools/container/.output
     bpftools/files/.output

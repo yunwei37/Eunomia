@@ -151,7 +151,7 @@ static int sort_column(const void *obj1, const void *obj2)
 void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> &e)
 {
   static const int default_size = 20;
-  (void)std::system("clear");
+  int res = std::system("clear");
   qsort(e.data.values, e.data.rows, sizeof(struct file_stat), sort_column);
   spdlog::info(
       "{:6} {:10} {:6} {:6} {:10} {:10} {:6} {:12} {:12}",
