@@ -16,4 +16,11 @@ struct oomkill_tracker final: public tracker_alone_base {
   static std::unique_ptr<oomkill_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 };
 
+struct tcpconnlat_tracker final: public tracker_alone_base {
+  tcpconnlat_tracker(config_data config) : tracker_alone_base(config) {}
+  tcpconnlat_tracker(tracker_alone_env env) : tracker_alone_base(env) {}
+
+  static std::unique_ptr<tcpconnlat_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+};
+
 #endif

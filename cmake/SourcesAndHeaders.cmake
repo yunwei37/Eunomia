@@ -12,7 +12,8 @@ set(sources
     src/config.cpp
     src/myseccomp.cpp
     src/tracker_alone.cpp
-    src/tracker_integrations.cpp
+    src/tracker_integrations/oomkill.cpp
+    src/tracker_integrations/tcpconnlat.cpp
     src/btf_helpers.c
     src/trace_helpers.c
     src/uprobe_helpers.c
@@ -30,6 +31,7 @@ set(headers
     bpftools/syscall/syscall_tracker.h
     bpftools/tcp/tcp_tracker.h
     bpftools/oomkill/oom_tracker.h
+    bpftools/tcpconnlat/tcpconnlat_tracker.h
     include/eunomia/myseccomp.h
 )
 
@@ -41,6 +43,7 @@ set(skel_includes
     bpftools/container/.output
     bpftools/files/.output
     bpftools/oomkill/.output
+    bpftools/tcpconnlat/.output
 )
 
 set(test_sources
