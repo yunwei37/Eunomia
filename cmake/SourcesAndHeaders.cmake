@@ -56,4 +56,5 @@ set(test_sources
     src/logger_test.cpp
     src/analyze_toml_test.cpp
     src/sec_analyzer_test.cpp
+    src/config_test.cpp
 )
