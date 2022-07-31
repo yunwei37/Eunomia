@@ -21,6 +21,7 @@ struct tracker_manager
   std::map<int, std::unique_ptr<tracker_base>> trackers;
 
  public:
+  ~tracker_manager() = default;
   void remove_tracker(int id)
   {
     trackers.erase(id);

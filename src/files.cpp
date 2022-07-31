@@ -144,7 +144,7 @@ static int sort_column(const void *obj1, const void *obj2)
   struct file_stat *s2 = (struct file_stat *)obj2;
 
   return (int)(-(
-      (long long int)(s2->reads + s2->writes + s2->read_bytes + s2->write_bytes) -
+      (s2->reads + s2->writes + s2->read_bytes + s2->write_bytes) -
       (s1->reads + s1->writes + s1->read_bytes + s1->write_bytes)));
 }
 

@@ -41,6 +41,7 @@ private:
 public:
   tracker_alone_base(config_data config);
   tracker_alone_base(tracker_alone_env env);
+  ~tracker_alone_base();
 
   // start the separated process
   void start_tracker();

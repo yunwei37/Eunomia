@@ -34,7 +34,7 @@ void tracker_alone_base::start_child_process()
   argv.push_back(nullptr);
   spdlog::info("starting {} tracker...", current_config.name);
   // start child process ebpf program
-  res = env.main_func(env.process_args.size(), argv.data());
+  res = env.main_func(static_cast<int>(env.process_args.size()), argv.data());
   // exit child process
   exit(res);
 }
@@ -65,17 +65,14 @@ void tracker_alone_base::start_parent_process()
       break;
     }
   }
+}
+
+tracker_alone_base::~tracker_alone_base()
+{
   // close pipe
-  res = close(stdout_pipe_fd[0]);
-  if (res == -1)
-  {
-    spdlog::error("parent process close pipe failed");
-  }
-  res = kill(child_pid, SIGINT);
-  if(res == -1)
-  {
-    spdlog::warn("parent process kill child process failed");
-  }
+  int res;
+  (void)close(stdout_pipe_fd[0]);
+  (void)kill(child_pid, SIGKILL);
   res = waitpid(child_pid, nullptr, 0);
   if (res == -1)
   {

@@ -26,16 +26,16 @@ struct tracker_base
  public:
   virtual ~tracker_base()
   {
-    exiting = true;
-    if (thread.joinable())
-    {
-      thread.join();
-    }
+    stop_tracker();
   }
   virtual void start_tracker(void) = 0;
   void stop_tracker(void)
   {
     exiting = true;
+    if (thread.joinable())
+    {
+      thread.join();
+    }
   }
 };
 
@@ -89,6 +89,9 @@ struct tracker_with_config : public tracker_base
   tracker_config<ENV, EVENT> current_config;
   tracker_with_config(tracker_config<ENV, EVENT> config) : current_config(config)
   {
+  }
+  virtual ~tracker_with_config(){
+    stop_tracker();
   }
 };
 
