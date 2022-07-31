@@ -27,13 +27,6 @@ std::unique_ptr<syscall_tracker> syscall_tracker::create_tracker_with_default_en
   return std::make_unique<syscall_tracker>(config);
 }
 
-syscall_tracker::syscall_tracker(syscall_env env)
-    : syscall_tracker(config_data{
-          .env = env,
-      })
-{
-}
-
 void syscall_tracker::start_tracker()
 {
   // current_config.env.ctx = (void *)this;

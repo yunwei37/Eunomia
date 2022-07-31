@@ -26,8 +26,6 @@ struct syscall_tracker : public tracker_with_config<syscall_env, syscall_event> 
   // create a tracker with deafult config
   static std::unique_ptr<syscall_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 
-  syscall_tracker(syscall_env env);
-
   void start_tracker();
 
   // used for prometheus exporter

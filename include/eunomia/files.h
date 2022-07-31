@@ -32,7 +32,6 @@ struct files_tracker : public tracker_with_config<files_env, files_event>
   // create a tracker with deafult config
   static std::unique_ptr<files_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 
-  files_tracker(files_env env);
   // start files tracker
   void start_tracker();
 

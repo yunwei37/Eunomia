@@ -96,11 +96,41 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_handler(
   return tracker_ptr;
 }
 
+
+// create a default tracker with other handlers
+template<tracker_concept TRACKER>
+std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_handler(
+    const tracker_config_data& base,
+    TRACKER::tracker_event_handler additional_handler)
+{
+  auto handler = create_tracker_event_handler<TRACKER>(nullptr);
+  if (!handler)
+  {
+    spdlog::error("no handler was created for tracker");
+    return nullptr;
+  }
+  if (additional_handler)
+  {
+    additional_handler->add_handler(handler);
+    handler = additional_handler;
+  }
+  auto tracker_ptr = TRACKER::create_tracker_with_default_env(handler);
+
+  return tracker_ptr;
+}
+
 template<tracker_concept TRACKER>
 std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_data_base* base)
 {
   return create_default_tracker_with_handler<TRACKER>(base, nullptr);
 }
+
+template<tracker_concept TRACKER>
+std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_config_data& base)
+{
+  return create_default_tracker_with_handler<TRACKER>(base, nullptr);
+}
+
 
 template<tracker_concept TRACKER, typename SEC_ANALYZER_HANDLER>
 std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_sec_analyzer(const tracker_data_base* base)
@@ -112,6 +142,18 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_sec_analyzer(
   }
   return create_default_tracker_with_handler<TRACKER>(base, handler);
 }
+
+template<tracker_concept TRACKER, typename SEC_ANALYZER_HANDLER>
+std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_sec_analyzer(const tracker_config_data& base)
+{
+  std::shared_ptr<SEC_ANALYZER_HANDLER> handler = nullptr;
+  if (core_config.enable_sec_rule_detect)
+  {
+    handler = std::make_shared<SEC_ANALYZER_HANDLER>(core_sec_analyzer);
+  }
+  return create_default_tracker_with_handler<TRACKER>(base, handler);
+}
+
 
 void eunomia_core::start_trackers(void)
 {

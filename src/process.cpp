@@ -83,13 +83,6 @@ std::unique_ptr<process_tracker> process_tracker::create_tracker_with_default_en
   return std::make_unique<process_tracker>(config);
 }
 
-process_tracker::process_tracker(process_env env)
-    : process_tracker(config_data{
-          .env = env,
-      })
-{
-}
-
 void process_tracker::start_tracker()
 {
   struct process_bpf *skel = nullptr;

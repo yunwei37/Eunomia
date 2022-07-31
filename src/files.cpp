@@ -96,13 +96,6 @@ std::unique_ptr<files_tracker> files_tracker::create_tracker_with_default_env(tr
   return std::make_unique<files_tracker>(config);
 }
 
-files_tracker::files_tracker(files_env env)
-    : files_tracker(config_data{
-          .env = env,
-      })
-{
-}
-
 void files_tracker::start_tracker()
 {
   struct files_bpf *skel = nullptr;

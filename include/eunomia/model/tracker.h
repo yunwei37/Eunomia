@@ -90,6 +90,7 @@ struct tracker_with_config : public tracker_base
   tracker_with_config(tracker_config<ENV, EVENT> config) : current_config(config)
   {
   }
+
   virtual ~tracker_with_config(){
     stop_tracker();
   }

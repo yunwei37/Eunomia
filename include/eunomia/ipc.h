@@ -22,8 +22,6 @@ struct ipc_tracker : public tracker_with_config<ipc_env, ipc_event> {
   // create a tracker with deafult config
   static std::unique_ptr<ipc_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 
-  ipc_tracker(ipc_env env);
-
   void start_tracker();
 
   // convert event to json

@@ -129,13 +129,6 @@ std::unique_ptr<tracker_alone_base> tracker_alone_base::create_tracker_with_defa
   return std::make_unique<tracker_alone_base>(config);
 }
 
-tracker_alone_base::tracker_alone_base(tracker_alone_env env)
-    : tracker_alone_base(config_data{
-          .env = env,
-      })
-{
-}
-
 void tracker_alone_base::plain_text_event_printer::handle(tracker_event<tracker_alone_event>& e)
 {
   spdlog::info(e.data.process_messages);

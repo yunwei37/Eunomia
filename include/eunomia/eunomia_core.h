@@ -31,6 +31,7 @@ struct eunomia_core
   tracker_manager core_tracker_manager;
   // manager for container events
   container_manager core_container_manager;
+  // prometheus server
   prometheus_server core_prometheus_server;
 
   // sec analyzer
@@ -47,16 +48,26 @@ struct eunomia_core
   // create a default tracker with default env
   template<tracker_concept TRACKER>
   std::unique_ptr<TRACKER> create_default_tracker(const tracker_data_base* base);
+  template<tracker_concept TRACKER>
+  std::unique_ptr<TRACKER> create_default_tracker(const tracker_config_data& base);
 
   // create a default tracker with other handlers
   template<tracker_concept TRACKER>
   std::unique_ptr<TRACKER> create_default_tracker_with_handler(
       const tracker_data_base* base,
       TRACKER::tracker_event_handler);
+  // create a default tracker with other handlers
+  template<tracker_concept TRACKER>
+  std::unique_ptr<TRACKER> create_default_tracker_with_handler(
+      const tracker_config_data& base,
+      TRACKER::tracker_event_handler);
 
   // create a default tracker with sec_analyzer handlers
   template<tracker_concept TRACKER, typename SEC_ANALYZER_HANDLER>
   std::unique_ptr<TRACKER> create_default_tracker_with_sec_analyzer(const tracker_data_base* base);
+  // create a default tracker with sec_analyzer handlers
+  template<tracker_concept TRACKER, typename SEC_ANALYZER_HANDLER>
+  std::unique_ptr<TRACKER> create_default_tracker_with_sec_analyzer(const tracker_config_data& base);
 
   // start all trackers
   void start_trackers(void);

@@ -37,7 +37,6 @@ struct tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
   // create a tracker with deafult config
   static std::unique_ptr<tcp_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 
-  tcp_tracker(tcp_env env);
   // start tcp tracker
   void start_tracker();
 

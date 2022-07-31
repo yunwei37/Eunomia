@@ -29,13 +29,6 @@ std::unique_ptr<ipc_tracker> ipc_tracker::create_tracker_with_default_env(tracke
   return std::make_unique<ipc_tracker>(config);
 }
 
-ipc_tracker::ipc_tracker(ipc_env env)
-    : ipc_tracker(config_data{
-          .env = env,
-      })
-{
-}
-
 void ipc_tracker::start_tracker()
 {
   // current_config.env.ctx = (void *)this;
