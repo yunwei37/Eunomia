@@ -43,11 +43,15 @@ struct container_tracker : public tracker_with_config<container_env, container_e
   container_tracker(container_env env, container_manager &manager);
   void start_tracker();
 
+  void add_to_map() {
+    
+  }
+
   void fill_event(struct process_event &event);
 
   void init_container_table();
 
-  void print_container(const struct container_event &e);
+  void print_process_in_container(const struct container_event &e);
 
   void judge_container(const struct process_event &e);
 
