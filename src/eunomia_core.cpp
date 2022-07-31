@@ -31,6 +31,56 @@ TRACKER::tracker_event_handler eunomia_core::create_print_event_handler(const TR
   return nullptr;
 }
 
+template<tracker_concept TRACKER>
+TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler(const handler_config_data& config)
+{
+  if (config.name == "json_format")
+  {
+    return std::make_shared<typename TRACKER::json_event_printer>();
+  }
+  else if (config.name == "plain_text")
+  {
+    return std::make_shared<typename TRACKER::plain_text_event_printer>();
+  }
+  else if (config.name == "csv")
+  {
+    return std::make_shared<typename TRACKER::csv_event_printer>();
+  }
+  else if (config.name == "prometheus")
+  {
+    return std::make_shared<typename TRACKER::prometheus_event_handler>(
+        typename TRACKER::prometheus_event_handler(core_prometheus_server));
+  }
+  else
+  {
+    spdlog::error("unsupported event handler {}", config.name);
+    return nullptr;
+  }
+}
+
+template<tracker_concept TRACKER>
+TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handlers(
+    const std::vector<handler_config_data>& handler_configs)
+{
+  typename TRACKER::tracker_event_handler handler = nullptr;
+  for (auto& config : handler_configs)
+  {
+    auto new_handler = create_tracker_event_handler<TRACKER>(config);
+    if (new_handler)
+    {
+      if (handler)
+      {
+        handler->add_handler(new_handler);
+      }
+      else
+      {
+        handler = new_handler;
+      }
+    }
+  }
+  return handler;
+}
+
 // create all event handlers for a tracker
 template<tracker_concept TRACKER>
 TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler(const TRACKER* tracker_ptr)
@@ -96,14 +146,13 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_handler(
   return tracker_ptr;
 }
 
-
 // create a default tracker with other handlers
 template<tracker_concept TRACKER>
 std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_handler(
     const tracker_config_data& base,
     TRACKER::tracker_event_handler additional_handler)
 {
-  auto handler = create_tracker_event_handler<TRACKER>(nullptr);
+  auto handler = create_tracker_event_handlers<TRACKER>(base.export_handlers);
   if (!handler)
   {
     spdlog::error("no handler was created for tracker");
@@ -131,7 +180,6 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_conf
   return create_default_tracker_with_handler<TRACKER>(base, nullptr);
 }
 
-
 template<tracker_concept TRACKER, typename SEC_ANALYZER_HANDLER>
 std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_sec_analyzer(const tracker_data_base* base)
 {
@@ -154,42 +202,37 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_sec_analyzer(
   return create_default_tracker_with_handler<TRACKER>(base, handler);
 }
 
+void eunomia_core::start_tracker(const tracker_config_data& config)
+{
+  if (config.name == "files")
+  {
+    core_tracker_manager.start_tracker(create_default_tracker<files_tracker>(config));
+  }
+  else if (config.name == "process")
+  {
+    core_tracker_manager.start_tracker(create_default_tracker<process_tracker>(config));
+  }
+  else if (config.name == "syscall")
+  {
+    create_default_tracker_with_sec_analyzer<syscall_tracker, syscall_rule_checker>(config);
+  }
+  else if (config.name == "tcpconnect")
+  {
+    core_tracker_manager.start_tracker(create_default_tracker<tcp_tracker>(config));
+  }
+  else
+  {
+    spdlog::error("unknown tracker name: {}", config.name);
+  }
+  spdlog::info("{} tracker is started", config.name);
+}
 
 void eunomia_core::start_trackers(void)
 {
-  for (auto t : core_config.enabled_trackers)
+  for (auto& t : core_config.enabled_trackers)
   {
     spdlog::info("start ebpf tracker...");
-    if (!t)
-    {
-      spdlog::error("tracker data is null");
-      continue;
-    }
-    switch (t->type)
-    {
-      case avaliable_tracker::tcp:
-        spdlog::info("tcp tracker is started");
-        core_tracker_manager.start_tracker(create_default_tracker<tcp_tracker>(t.get()));
-        break;
-      case avaliable_tracker::syscall:
-        spdlog::info("syscall tracker is started");
-        core_tracker_manager.start_tracker(
-            create_default_tracker_with_sec_analyzer<syscall_tracker, syscall_rule_checker>(t.get()));
-        break;
-      case avaliable_tracker::ipc:
-        spdlog::info("ipc tracker is started");
-        core_tracker_manager.start_tracker(create_default_tracker<ipc_tracker>(t.get()));
-        break;
-      case avaliable_tracker::process:
-        spdlog::info("process tracker is started");
-        core_tracker_manager.start_tracker(create_default_tracker<process_tracker>(t.get()));
-        break;
-      case avaliable_tracker::files:
-        spdlog::info("files tracker is started");
-        core_tracker_manager.start_tracker(create_default_tracker<files_tracker>(t.get()));
-        break;
-      default: std::cout << "unsupported tracker type\n"; break;
-    }
+    start_tracker(t);
   }
 }
 

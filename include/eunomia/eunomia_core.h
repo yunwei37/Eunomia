@@ -26,7 +26,7 @@ struct eunomia_core
 {
  private:
   // eunomia config
-  config core_config;
+  eunomia_config_data core_config;
   // manager for all tracker
   tracker_manager core_tracker_manager;
   // manager for container events
@@ -40,6 +40,14 @@ struct eunomia_core
   // create all event handlers for a tracker
   template<tracker_concept TRACKER>
   TRACKER::tracker_event_handler create_tracker_event_handler(const TRACKER* tracker_ptr);
+
+  // create a event handlers for a tracker
+  // if the config is invalid, it will return a nullptr.
+  template<tracker_concept TRACKER>
+  TRACKER::tracker_event_handler create_tracker_event_handler(const handler_config_data& config);
+  // create all event handlers for a tracker
+  template<tracker_concept TRACKER>
+  TRACKER::tracker_event_handler create_tracker_event_handlers(const std::vector<handler_config_data>& handler_configs);
 
   // create event handler for print to console
   template<tracker_concept TRACKER>
@@ -69,6 +77,7 @@ struct eunomia_core
   template<tracker_concept TRACKER, typename SEC_ANALYZER_HANDLER>
   std::unique_ptr<TRACKER> create_default_tracker_with_sec_analyzer(const tracker_config_data& base);
 
+  void start_tracker(const tracker_config_data& config);
   // start all trackers
   void start_trackers(void);
   // check and stop all trackers if needed
