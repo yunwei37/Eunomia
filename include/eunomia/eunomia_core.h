@@ -37,10 +37,6 @@ struct eunomia_core
   // sec analyzer
   std::shared_ptr<sec_analyzer> core_sec_analyzer;
 
-  // create all event handlers for a tracker
-  template<tracker_concept TRACKER>
-  TRACKER::tracker_event_handler create_tracker_event_handler(const TRACKER* tracker_ptr);
-
   // create a event handlers for a tracker
   // if the config is invalid, it will return a nullptr.
   template<tracker_concept TRACKER>
@@ -53,26 +49,15 @@ struct eunomia_core
   template<tracker_concept TRACKER>
   TRACKER::tracker_event_handler create_print_event_handler(const TRACKER* tracker_ptr);
 
-  // create a default tracker with default env
-  template<tracker_concept TRACKER>
-  std::unique_ptr<TRACKER> create_default_tracker(const tracker_data_base* base);
   template<tracker_concept TRACKER>
   std::unique_ptr<TRACKER> create_default_tracker(const tracker_config_data& base);
 
   // create a default tracker with other handlers
   template<tracker_concept TRACKER>
   std::unique_ptr<TRACKER> create_default_tracker_with_handler(
-      const tracker_data_base* base,
-      TRACKER::tracker_event_handler);
-  // create a default tracker with other handlers
-  template<tracker_concept TRACKER>
-  std::unique_ptr<TRACKER> create_default_tracker_with_handler(
       const tracker_config_data& base,
       TRACKER::tracker_event_handler);
 
-  // create a default tracker with sec_analyzer handlers
-  template<tracker_concept TRACKER, typename SEC_ANALYZER_HANDLER>
-  std::unique_ptr<TRACKER> create_default_tracker_with_sec_analyzer(const tracker_data_base* base);
   // create a default tracker with sec_analyzer handlers
   template<tracker_concept TRACKER, typename SEC_ANALYZER_HANDLER>
   std::unique_ptr<TRACKER> create_default_tracker_with_sec_analyzer(const tracker_config_data& base);
@@ -90,7 +75,7 @@ struct eunomia_core
   void start_sec_analyzer(void);
 
  public:
-  eunomia_core(config& config);
+  eunomia_core(eunomia_config_data& config);
   int start_eunomia(void);
 };
 

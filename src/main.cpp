@@ -13,7 +13,8 @@
 
 using namespace std::chrono_literals;
 
-void run_mode_operation(avaliable_tracker selected, config core_config)
+/*
+void run_mode_operation(avaliable_tracker selected, eunomia_config_data core_config)
 {
   core_config.enabled_trackers.clear();
   switch (selected)
@@ -38,22 +39,20 @@ void run_mode_operation(avaliable_tracker selected, config core_config)
   eunomia_core core(core_config);
   core.start_eunomia();
 }
-
-void safe_mode_opertiaon(config core_config)
+*/
+void safe_mode_opertiaon(eunomia_config_data core_config)
 {
-  core_config.fmt = export_format::none;
+  core_config.fmt = "none";
   core_config.enable_sec_rule_detect = true;
   eunomia_core core(core_config);
   core.start_eunomia();
 }
 
-void server_mode_operation(bool load_from_config_file, config core_config)
+void server_mode_operation(bool load_from_config_file, eunomia_config_data core_config)
 {
-  // std::cout << prometheus_flag << " " << listening_address << " " <<
-  // std::endl;
   if (!load_from_config_file)
   {
-    core_config.fmt = export_format::none;
+    core_config.fmt = "none";
     core_config.enable_sec_rule_detect = true;
   }
   std::cout << "start server mode...\n";
@@ -64,12 +63,8 @@ void server_mode_operation(bool load_from_config_file, config core_config)
   */
 }
 
-void seccomp_mode_operation(config core_config)
+void seccomp_mode_operation(eunomia_config_data core_config)
 {
-  /*
-    TODO
-  */
-  spdlog::warn("seccomp mode is not ready yet");
   // enable seccomp with config white list
   // if (core_config.seccomp.len >= 439)
   // {
@@ -82,6 +77,7 @@ void seccomp_mode_operation(config core_config)
 
 int main(int argc, char* argv[])
 {
+  /*
   bool prometheus_flag = true, container_flag = false, safe_flag = true;
   ;
   bool load_from_config_file = false;
@@ -203,6 +199,6 @@ int main(int argc, char* argv[])
       std::cout << clipp::make_man_page(cli, argv[0]);
       break;
   }
-
+  */
   return 0;
 }
