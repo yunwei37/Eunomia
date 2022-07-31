@@ -184,7 +184,7 @@ using socket_t = SOCKET;
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
-
+#include <sys/un.h>
 using socket_t = int;
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET (-1)
@@ -2565,7 +2565,36 @@ socket_t create_socket(const std::string &host, const std::string &ip, int port,
     hints.ai_family = address_family;
     hints.ai_flags = socket_flags;
   }
+  std::string hostName = host;
 
+  int sock = INVALID_SOCKET;
+  if (hostName.size() > 5 && hostName.substr(0, 5) == "unix:") {
+      sock = socket(AF_UNIX, SOCK_STREAM, 0);
+
+      sockaddr_un addr{};
+      addr.sun_family = AF_UNIX;
+      strncpy(
+          addr.sun_path,
+          hostName.substr(5, hostName.size() - 5).c_str(),
+          std::min(sizeof(addr.sun_path) - 1, hostName.size() - 5)
+      );
+
+      addrinfo info{};
+      info.ai_addr = (sockaddr *)&addr;
+      info.ai_addrlen = sizeof(addr);
+      info.ai_next = nullptr;
+      info.ai_socktype = SOCK_STREAM;
+      info.ai_family = AF_UNIX;
+      info.ai_canonname = nullptr;
+      info.ai_protocol = 0;
+
+      if (bind_or_connect(sock, info)) {
+          return sock;
+      }
+
+      return INVALID_SOCKET;
+  }
+  
   auto service = std::to_string(port);
 
   if (getaddrinfo(node, service.c_str(), &hints, &result)) {
@@ -3797,7 +3826,11 @@ class MultipartFormDataParser {
 public:
   MultipartFormDataParser() = default;
 
-  void set_boundary(std::string &&boundary) { boundary_ = boundary; }
+  void set_boundary(std::string &&boundary) {
+    boundary_ = boundary;
+    dash_boundary_crlf_ = dash_ + boundary_ + crlf_;
+    crlf_dash_boundary_ = crlf_ + dash_ + boundary_;
+  }
 
   bool is_valid() const { return is_valid_; }
 
@@ -3809,19 +3842,15 @@ public:
         R"~(^Content-Disposition:\s*form-data;\s*name="(.*?)"(?:;\s*filename="(.*?)")?(?:;\s*filename\*=\S+)?\s*$)~",
         std::regex_constants::icase);
 
-    static const std::string dash_ = "--";
-    static const std::string crlf_ = "\r\n";
-
     buf_append(buf, n);
 
     while (buf_size() > 0) {
       switch (state_) {
       case 0: { // Initial boundary
-        auto pattern = dash_ + boundary_ + crlf_;
-        buf_erase(buf_find(pattern));
-        if (pattern.size() > buf_size()) { return true; }
-        if (!buf_start_with(pattern)) { return false; }
-        buf_erase(pattern.size());
+        buf_erase(buf_find(dash_boundary_crlf_));
+        if (dash_boundary_crlf_.size() > buf_size()) { return true; }
+        if (!buf_start_with(dash_boundary_crlf_)) { return false; }
+        buf_erase(dash_boundary_crlf_.size());
         state_ = 1;
         break;
       }
@@ -3856,7 +3885,6 @@ public:
               file_.filename = m[2];
             }
           }
-
           buf_erase(pos + crlf_.size());
           pos = buf_find(crlf_);
         }
@@ -3864,40 +3892,25 @@ public:
         break;
       }
       case 3: { // Body
-        {
-          auto pattern = crlf_ + dash_;
-          if (pattern.size() > buf_size()) { return true; }
-
-          auto pos = buf_find(pattern);
-
+        if (crlf_dash_boundary_.size() > buf_size()) { return true; }
+        auto pos = buf_find(crlf_dash_boundary_);
+        if (pos < buf_size()) {
           if (!content_callback(buf_data(), pos)) {
             is_valid_ = false;
             return false;
           }
-
-          buf_erase(pos);
-        }
-        {
-          auto pattern = crlf_ + dash_ + boundary_;
-          if (pattern.size() > buf_size()) { return true; }
-
-          auto pos = buf_find(pattern);
-          if (pos < buf_size()) {
-            if (!content_callback(buf_data(), pos)) {
+          buf_erase(pos + crlf_dash_boundary_.size());
+          state_ = 4;
+        } else {
+          auto len = buf_size() - crlf_dash_boundary_.size();
+          if (len > 0) {
+            if (!content_callback(buf_data(), len)) {
               is_valid_ = false;
               return false;
             }
-
-            buf_erase(pos + pattern.size());
-            state_ = 4;
-          } else {
-            if (!content_callback(buf_data(), pattern.size())) {
-              is_valid_ = false;
-              return false;
-            }
-
-            buf_erase(pattern.size());
+            buf_erase(len);
           }
+          return true;
         }
         break;
       }
@@ -3907,10 +3920,9 @@ public:
           buf_erase(crlf_.size());
           state_ = 1;
         } else {
-          auto pattern = dash_ + crlf_;
-          if (pattern.size() > buf_size()) { return true; }
-          if (buf_start_with(pattern)) {
-            buf_erase(pattern.size());
+          if (dash_crlf_.size() > buf_size()) { return true; }
+          if (buf_start_with(dash_crlf_)) {
+            buf_erase(dash_crlf_.size());
             is_valid_ = true;
             buf_erase(buf_size()); // Remove epilogue
           } else {
@@ -3941,7 +3953,12 @@ private:
     return true;
   }
 
+  const std::string dash_ = "--";
+  const std::string crlf_ = "\r\n";
+  const std::string dash_crlf_ = "--\r\n";
   std::string boundary_;
+  std::string dash_boundary_crlf_;
+  std::string crlf_dash_boundary_;
 
   size_t state_ = 0;
   bool is_valid_ = false;
@@ -7702,11 +7719,13 @@ inline bool SSLClient::is_ssl() const { return true; }
 
 inline bool SSLClient::verify_host(X509 *server_cert) const {
   /* Quote from RFC2818 section 3.1 "Server Identity"
+
      If a subjectAltName extension of type dNSName is present, that MUST
      be used as the identity. Otherwise, the (most specific) Common Name
      field in the Subject field of the certificate MUST be used. Although
      the use of the Common Name is existing practice, it is deprecated and
      Certification Authorities are encouraged to use the dNSName instead.
+
      Matching is performed using the matching rules specified by
      [RFC2459].  If more than one identity of a given type is present in
      the certificate (e.g., more than one dNSName name, a match in any one
@@ -7714,9 +7733,11 @@ inline bool SSLClient::verify_host(X509 *server_cert) const {
      character * which is considered to match any single domain name
      component or component fragment. E.g., *.a.com matches foo.a.com but
      not bar.foo.a.com. f*.com matches foo.com but not bar.com.
+
      In some cases, the URI is specified as an IP address rather than a
      hostname. In this case, the iPAddress subjectAltName must be present
      in the certificate and must exactly match the IP in the URI.
+
   */
   return verify_host_with_subject_alt_name(server_cert) ||
          verify_host_with_common_name(server_cert);
