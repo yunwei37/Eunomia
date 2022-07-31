@@ -102,13 +102,13 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker(const tracker_data
   return create_default_tracker_with_handler<TRACKER>(base, nullptr);
 }
 
-template<tracker_concept TRACKER, typename CHECKER>
+template<tracker_concept TRACKER, typename SEC_ANALYZER_HANDLER>
 std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_sec_analyzer(const tracker_data_base* base)
 {
-  std::shared_ptr<CHECKER> handler = nullptr;
+  std::shared_ptr<SEC_ANALYZER_HANDLER> handler = nullptr;
   if (core_config.enable_sec_rule_detect)
   {
-    handler = std::make_shared<CHECKER>(core_sec_analyzer);
+    handler = std::make_shared<SEC_ANALYZER_HANDLER>(core_sec_analyzer);
   }
   return create_default_tracker_with_handler<TRACKER>(base, handler);
 }
