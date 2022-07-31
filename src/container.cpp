@@ -117,7 +117,7 @@ void container_tracker::init_container_table()
 {
   unsigned long cid;
   pid_t pid, ppid;
-  add_to_map()
+  add_to_map();
   // std::stringstream ss;
   // nlohmann::json res_json;
 
