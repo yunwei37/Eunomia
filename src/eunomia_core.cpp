@@ -16,6 +16,7 @@ eunomia_core::eunomia_core(eunomia_config_data& config)
     : core_config(config),
       core_prometheus_server(config.prometheus_listening_address)
 {
+  core_config.load_config_options_to_trackers();
 }
 
 template<tracker_concept TRACKER>
