@@ -25,7 +25,7 @@ enum class eunomia_mode
 void run_mode_operation(const std::string& name, eunomia_config_data& core_config)
 {
   core_config.enabled_trackers.clear();
-  core_config.enabled_trackers.push_back(tracker_config_data{.name = name});
+  core_config.enabled_trackers.push_back(tracker_config_data{ .name = name });
   eunomia_core core(core_config);
   core.start_eunomia();
 }
@@ -48,9 +48,6 @@ void server_mode_operation(bool load_from_config_file, eunomia_config_data core_
   std::cout << "start server mode...\n";
   eunomia_core core(core_config);
   core.start_eunomia();
-  /*
-    TODO
-  */
 }
 
 void seccomp_mode_operation(eunomia_config_data core_config)
@@ -67,7 +64,6 @@ void seccomp_mode_operation(eunomia_config_data core_config)
 
 int main(int argc, char* argv[])
 {
-  
   bool prometheus_flag = true, container_flag = false, safe_flag = true;
   ;
   bool load_from_config_file = false;

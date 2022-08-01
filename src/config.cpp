@@ -83,7 +83,7 @@ eunomia_config_data eunomia_config_data::from_toml_file(const std::string& file_
   }
   catch (const toml::parse_error& err)
   {
-    std::cerr << err << "\n";
+    spdlog::error("parse toml file error: {}", err);
     return eunomia_config_data{};
   }
   auto json_data = toml::json_formatter{ data };

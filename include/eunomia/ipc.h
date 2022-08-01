@@ -16,7 +16,7 @@ extern "C" {
 }
 
 struct ipc_tracker : public tracker_with_config<ipc_env, ipc_event> {
-  
+
   ipc_tracker(config_data config);
 
   // create a tracker with deafult config

@@ -15,7 +15,7 @@
 // pass this to create a tracker
 template <typename ENV, typename EVENT>
 struct tracker_config
-{   
+{
     // tracker env in C code
     ENV env;
     std::string name;

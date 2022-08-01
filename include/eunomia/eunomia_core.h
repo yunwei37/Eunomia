@@ -62,6 +62,7 @@ struct eunomia_core
   template<tracker_concept TRACKER, typename SEC_ANALYZER_HANDLER>
   std::unique_ptr<TRACKER> create_default_tracker_with_sec_analyzer(const tracker_config_data& base);
 
+  // start a single tracker base on config
   void start_tracker(const tracker_config_data& config);
   // start all trackers
   void start_trackers(void);

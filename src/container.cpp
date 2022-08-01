@@ -5,11 +5,13 @@
  */
 
 #include "eunomia/container.h"
-#include "httplib.h"
-#include "json.hpp"
 
 #include <string.h>
+
 #include <sstream>
+
+#include "httplib.h"
+#include "json.hpp"
 
 extern "C"
 {
@@ -63,7 +65,8 @@ void container_tracker::fill_event(struct process_event &event)
   event.common.pid_namespace_id = ns;
 }
 
-void container_tracker::add_to_map() {
+void container_tracker::add_to_map()
+{
   unsigned long cid;
   pid_t pid, ppid;
   std::stringstream ss;
@@ -73,7 +76,8 @@ void container_tracker::add_to_map() {
   auto response = client.Get("/containers/json");
   ss << response->body;
   ss >> res_json;
-  for(auto &element : res_json) {
+  for (auto &element : res_json)
+  {
     nlohmann::json ele_json, top_json;
     ss << element;
     ss >> ele_json;
@@ -81,7 +85,7 @@ void container_tracker::add_to_map() {
     postfix += ele_json["Id"];
     postfix += "/top";
     unsigned long cid = 0;
-    sscanf(container_id.substr(0, 12).c_str(),"%lx", &cid);
+    sscanf(container_id.substr(0, 12).c_str(), "%lx", &cid);
     auto top_response = client.Get(postfix);
     ss << top_response->body;
     ss >> top_json;
@@ -103,15 +107,12 @@ void container_tracker::add_to_map() {
         };
         sprintf(con.container_name, "%s", container_name.substr(1).c_str());
         print_process_in_container(con);
-        this_manager.container_processes[pid] = con;  
+        this_manager.container_processes[pid] = con;
       }
       this_manager.mp_lock.unlock();
     }
   }
-
-
 }
-
 
 void container_tracker::init_container_table()
 {
@@ -159,7 +160,6 @@ void container_tracker::init_container_table()
   //     this_manager.mp_lock.unlock();
   //   }
   // }
-
 
   // std::string ps_cmd("docker ps -q");
   // std::unique_ptr<FILE, int (*)(FILE *)> ps(popen(ps_cmd.c_str(), "r"), pclose);
@@ -246,8 +246,6 @@ void container_tracker::judge_container(const struct process_event &e)
           (p_event.common.mount_namespace_id != e.common.mount_namespace_id))
       {
         add_to_map();
-        
-
 
         // std::unique_ptr<FILE, int (*)(FILE *)> fp(popen("docker ps -q", "r"), pclose);
         // unsigned long cid;

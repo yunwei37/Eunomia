@@ -7,18 +7,9 @@
 #ifndef EUNOMIA_CONFIG_H
 #define EUNOMIA_CONFIG_H
 
-#include <chrono>
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
-
-#include "files.h"
-#include "ipc.h"
-#include "model/tracker_config.h"
-#include "process.h"
-#include "syscall.h"
-#include "tcp.h"
 
 struct rule_config
 {

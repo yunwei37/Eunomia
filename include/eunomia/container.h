@@ -66,7 +66,7 @@ struct container_manager
 
  public:
   void start_container_tracing(std::string log_path)
-  { 
+  {
     tracker.start_tracker(std::make_unique<container_tracker>(container_env{
       .log_path = log_path,
       .print_result = true,

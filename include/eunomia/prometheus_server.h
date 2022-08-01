@@ -20,7 +20,7 @@
 #include "model/event_handler.h"
 
 struct prometheus_server
-{   
+{
     prometheus_server(std::string bind_address);
     prometheus::Exposer exposer;
     std::shared_ptr<prometheus::Registry> registry;
