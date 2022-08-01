@@ -5,6 +5,7 @@
  */
 
 #include <clipp.h>
+#include <spdlog/spdlog.h>
 
 #include <string>
 #include <vector>

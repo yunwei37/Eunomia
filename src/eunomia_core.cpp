@@ -8,7 +8,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include "eunomia/container.h"
 #include "eunomia/sec_analyzer.h"
 #include "eunomia/tracker_manager.h"
 

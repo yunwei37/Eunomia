@@ -143,7 +143,9 @@ void eunomia_config_data::load_config_options_to_trackers()
     if (export_type == "stdout")
     {
       name = fmt;
-    } else {
+    }
+    else
+    {
       name = export_type;
     }
     add_handler_config_to_trackers(enabled_trackers, name);

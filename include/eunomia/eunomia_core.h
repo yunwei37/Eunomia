@@ -9,7 +9,7 @@
 
 #include "config.h"
 #include "eunomia/config.h"
-#include "eunomia/container.h"
+#include "eunomia/container_manager.h"
 #include "eunomia/files.h"
 #include "eunomia/ipc.h"
 #include "eunomia/myseccomp.h"
