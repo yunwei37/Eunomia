@@ -5,6 +5,7 @@
  */
 
 #include <clipp.h>
+#include <spdlog/spdlog.h>
 
 #include <string>
 #include <vector>
@@ -13,33 +14,23 @@
 
 using namespace std::chrono_literals;
 
-/*
-void run_mode_operation(avaliable_tracker selected, eunomia_config_data core_config)
+enum class eunomia_mode
+{
+  run,
+  safe,
+  seccomp,
+  server,
+  help
+};
+
+void run_mode_operation(const std::string& name, eunomia_config_data& core_config)
 {
   core_config.enabled_trackers.clear();
-  switch (selected)
-  {
-    case avaliable_tracker::tcp:
-      core_config.enabled_trackers.push_back(std::make_shared<tcp_tracker_data>(avaliable_tracker::tcp));
-      break;
-    case avaliable_tracker::syscall:
-      core_config.enabled_trackers.push_back(std::make_shared<syscall_tracker_data>(avaliable_tracker::syscall));
-      break;
-    case avaliable_tracker::process:
-      core_config.enabled_trackers.push_back(std::make_shared<process_tracker_data>(avaliable_tracker::process));
-      break;
-    case avaliable_tracker::files:
-      core_config.enabled_trackers.push_back(std::make_shared<files_tracker_data>(avaliable_tracker::files));
-      break;
-    case avaliable_tracker::ipc:
-      core_config.enabled_trackers.push_back(std::make_shared<ipc_tracker_data>(avaliable_tracker::ipc));
-      break;
-    default: break;
-  }
+  core_config.enabled_trackers.push_back(tracker_config_data{ .name = name });
   eunomia_core core(core_config);
   core.start_eunomia();
 }
-*/
+
 void safe_mode_opertiaon(eunomia_config_data core_config)
 {
   core_config.fmt = "none";
@@ -58,9 +49,6 @@ void server_mode_operation(bool load_from_config_file, eunomia_config_data core_
   std::cout << "start server mode...\n";
   eunomia_core core(core_config);
   core.start_eunomia();
-  /*
-    TODO
-  */
 }
 
 void seccomp_mode_operation(eunomia_config_data core_config)
@@ -77,7 +65,6 @@ void seccomp_mode_operation(eunomia_config_data core_config)
 
 int main(int argc, char* argv[])
 {
-  /*
   bool prometheus_flag = true, container_flag = false, safe_flag = true;
   ;
   bool load_from_config_file = false;
@@ -86,7 +73,7 @@ int main(int argc, char* argv[])
   std::string fmt = "", listening_address = "127.0.0.1:8528";
   std::string config_file = "", output_file = "", container_log_path = "";
   eunomia_mode selected = eunomia_mode::help;
-  avaliable_tracker run_selected = avaliable_tracker::help;
+  std::string run_selected = "process";
   unsigned long container_id = 0;
 
   // spdlog::set_level(spdlog::level::debug);
@@ -98,12 +85,7 @@ int main(int argc, char* argv[])
   auto run_time_cmd =
       (clipp::option("-T") & clipp::value("trace time in seconds", time_tracing)) % "The time the ENUNOMIA will monitor for";
 
-  auto run_required_cmd =
-      (clipp::option("tcpconnect").set(run_selected, avaliable_tracker::tcp) |
-       clipp::option("syscall").set(run_selected, avaliable_tracker::syscall) |
-       clipp::option("ipc").set(run_selected, avaliable_tracker::ipc) |
-       clipp::option("process").set(run_selected, avaliable_tracker::process) |
-       clipp::option("files").set(run_selected, avaliable_tracker::files));
+  auto run_required_cmd = clipp::value("run required cmd name", run_selected);
 
   auto config_cmd =
       (clipp::option("--config") & clipp::value("config file", config_file)) % "The toml file stores the config data";
@@ -142,17 +124,16 @@ int main(int argc, char* argv[])
 
   auto cli = ((run_mode | safe_mode | seccomp_mode | server_cmd | clipp::command("help").set(selected, eunomia_mode::help)));
 
-  if (!parse(argc, argv, cli))
+  if (!clipp::parse(argc, argv, cli))
   {
     std::cout << clipp::make_man_page(cli, argv[0]);
     return 1;
   }
 
-  config core_config = { .enable_container_manager = container_flag, .container_log_path = container_log_path };
+  eunomia_config_data core_config;
   if (config_file != "")
   {
-    core_config.enabled_trackers.clear();
-    analyze_toml(config_file, core_config);
+    core_config = eunomia_config_data::from_toml_file(config_file);
     load_from_config_file = true;
   }
   // set base on flags
@@ -163,24 +144,16 @@ int main(int argc, char* argv[])
   }
   if (container_id)
   {
-    core_config.target_contaienr_id = container_id;
+    core_config.tracing_target_id = container_id;
   }
   if (target_pid)
   {
-    core_config.target_pid = target_pid;
+    core_config.tracing_target_id = target_pid;
   }
   if (time_tracing > 0)
   {
     core_config.exit_after = time_tracing;
     core_config.is_auto_exit = true;
-  }
-  if (!load_from_config_file && fmt != "")
-  {
-    int idx = trans_string2enum(str_export_format, fmt);
-    if (idx >= 0)
-    {
-      core_config.fmt = export_format(idx);
-    }
   }
 
   spdlog::info("eunomia run in cmd...");
@@ -199,6 +172,5 @@ int main(int argc, char* argv[])
       std::cout << clipp::make_man_page(cli, argv[0]);
       break;
   }
-  */
   return 0;
 }

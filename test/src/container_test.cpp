@@ -4,33 +4,51 @@
  * All rights reserved.
  */
 
-#include "eunomia/tracker_manager.h"
-#include "eunomia/container.h"
+#include <httplib.h>
 
+#include <json.hpp>
+
+#include "eunomia/container_manager.h"
+extern "C"
+{
+#include <process/process.h>
+}
+
+using namespace nlohmann;
 using namespace std::chrono_literals;
 
-int main(int argc, char **argv)
-{ 
-  container_manager manager;
-  std::cout << "start ebpf...\n";
+class container_client
+  {
+   private:
+    // for dockerd
+    httplib::Client dockerd_client;
 
-  manager.start_container_tracing("./logs/container_log.txt");
+   public:
+    // get all container info json string
+    std::string list_all_containers(void) {
+      std::stringstream ss;
+      auto response = dockerd_client.Get("/containers/json");
+      ss << response->body;
+      return ss.str();
+    }
+    // get container process by id
+    std::string list_all_process_running_in_container(const std::string &container_id) {
+  std::stringstream ss;
+  auto response = dockerd_client.Get("/containers/" + container_id + "/top");
+  ss << response->body;
+  return ss.str();
+}
 
-  std::this_thread::sleep_for(100s);
+    // get container info by id
+    std::string inspect_container(const std::string &container_id);
+    container_info get_os_container_info(void);
+    container_client() : dockerd_client("unix:/var/run/docker.sock") {
+      dockerd_client.set_default_headers({ { "Host", "localhost" } });
+    }
+  };
+
+int main(int argc, char** argv)
+{
+  container_manager mp;
   return 0;
 }
-
-
-/*
-TEST(TmpAddTest, CheckValues)
-{
-  ASSERT_EQ(tmp::add(1, 2), 3);
-  EXPECT_TRUE(true);
-}
-
-int main(int argc, char **argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
-*/

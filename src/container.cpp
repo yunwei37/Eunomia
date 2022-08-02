@@ -4,12 +4,14 @@
  * All rights reserved.
  */
 
-#include "eunomia/container.h"
+#include <spdlog/spdlog.h>
+#include <string.h>
+
+#include <sstream>
+
+#include "eunomia/container_manager.h"
 #include "httplib.h"
 #include "json.hpp"
-
-#include <string.h>
-#include <sstream>
 
 extern "C"
 {
@@ -18,298 +20,80 @@ extern "C"
 #include <unistd.h>
 }
 
-container_tracker::container_tracker(container_env env, container_manager &manager)
-    : tracker_with_config(tracker_config<container_env, container_event>{}),
-      current_env(env),
-      this_manager(manager)
+using namespace nlohmann;
+
+container_manager::container_client::container_client() : dockerd_client("unix:/var/run/docker.sock")
 {
-  // do container settings
-  // this->env.process_env.exclude_current_ppid = ::getpid();
-  // ignore short process
-  this->current_env.penv.min_duration_ms = 20;
-  exiting = false;
-  this->current_env.penv.exiting = &exiting;
+  dockerd_client.set_default_headers({ { "Host", "localhost" } });
 }
 
-void container_tracker::start_tracker()
+std::string container_manager::container_client::list_all_containers(void)
 {
-  std::string log_path = this->current_env.log_path != "" ? this->current_env.log_path : "./logs/container_log.txt";
-  container_logger = spdlog::rotating_logger_mt("container_logger", log_path, 1024 * 1024 * 5, 3);
-  container_logger->set_level(spdlog::level::trace);
-  container_logger->flush_on(spdlog::level::trace);
-  struct process_bpf *skel = nullptr;
-  if (current_env.print_result)
-    container_logger->info("{}\t{}\t{}\t{}\t{}\t", "PID", "PARENT_PID", "CONTAINER_ID", "CONTAINER_NAME", "STATE");
-  init_container_table();
-  start_process_tracker(handle_event, libbpf_print_fn, current_env.penv, skel, (void *)this);
-}
-
-void container_tracker::fill_event(struct process_event &event)
-{
-  std::string cmd("ls -Li /proc/"), cgroup("/ns/cgroup"), user("/ns/user"), pid("/ns/pid"), mnt("/ns/mnt");
-  unsigned int ns;
-  cmd += std::to_string(event.common.pid);
-  std::unique_ptr<FILE, int (*)(FILE *)> fp_cgroup(popen((cmd + cgroup).c_str(), "r"), pclose);
-  (void)fscanf(fp_cgroup.get(), "%u %*[^\n]\n", &ns);
-  event.common.cgroup_id = ns;
-  std::unique_ptr<FILE, int (*)(FILE *)> fp_user(popen((cmd + user).c_str(), "r"), pclose);
-  (void)fscanf(fp_user.get(), "%u %*[^\n]\n", &ns);
-  event.common.user_namespace_id = ns;
-  std::unique_ptr<FILE, int (*)(FILE *)> fp_mnt(popen((cmd + mnt).c_str(), "r"), pclose);
-  (void)fscanf(fp_mnt.get(), "%u %*[^\n]\n", &ns);
-  event.common.mount_namespace_id = ns;
-  std::unique_ptr<FILE, int (*)(FILE *)> fp_pid(popen((cmd + pid).c_str(), "r"), pclose);
-  (void)fscanf(fp_pid.get(), "%u %*[^\n]\n", &ns);
-  event.common.pid_namespace_id = ns;
-}
-
-void container_tracker::add_to_map() {
-  unsigned long cid;
-  pid_t pid, ppid;
   std::stringstream ss;
-  nlohmann::json res_json;
-  httplib::Client client("unix:/var/run/docker.sock");
-  client.set_default_headers({ { "Host", "localhost" } });
-  auto response = client.Get("/containers/json");
+  auto response = dockerd_client.Get("/containers/json");
   ss << response->body;
-  ss >> res_json;
-  for(auto &element : res_json) {
-    nlohmann::json ele_json, top_json;
-    ss << element;
-    ss >> ele_json;
-    std::string postfix("/containers/"), container_id(ele_json["Id"]), container_name(ele_json["Names"][0]);
-    postfix += ele_json["Id"];
-    postfix += "/top";
-    unsigned long cid = 0;
-    sscanf(container_id.substr(0, 12).c_str(),"%lx", &cid);
-    auto top_response = client.Get(postfix);
-    ss << top_response->body;
-    ss >> top_json;
-    for (auto process : top_json["Processes"])
+  return ss.str();
+}
+
+std::string container_manager::container_client::list_all_process_running_in_container(const std::string& container_id)
+{
+  std::stringstream ss;
+  auto response = dockerd_client.Get("/containers/" + container_id + "/top");
+  ss << response->body;
+  return ss.str();
+}
+
+std::string container_manager::container_client::inspect_container(const std::string& container_id)
+{
+  std::stringstream ss;
+  auto response = dockerd_client.Get("/containers/" + container_id + "/json");
+  ss << response->body;
+  return ss.str();
+}
+
+container_info container_manager::container_client::get_os_container_info(void)
+{
+  try
+  {
+    json res_json;
+    std::stringstream ss;
+    auto response = dockerd_client.Get("/info");
+    ss << response->body;
+    ss >> res_json;
+    return container_info{
+      .id = "0",
+      .name = res_json["OperatingSystem"].get<std::string>(),
+    };
+  }
+  catch (...)
+  {
+    spdlog::error("Failed to get os container info, is dockerd running?");
+    return container_info{
+      .id = "0",
+      .name = "Bare metal",
+    };
+  }
+}
+
+container_manager::container_manager()
+{
+  os_info = client.get_os_container_info();
+  spdlog::info("OS container info: {}", os_info.name);
+  init_container_map_data();
+}
+
+void container_manager::init_container_map_data(void)
+{
+  auto response = client.list_all_containers();
+  json containers_json = json::parse(response);
+  for (const auto c : containers_json)
+  {
+    container_info info = { c["Id"], c["Names"][0], container_status_from_str(c["State"]) };
+
+    json process_resp = json::parse(client.list_all_process_running_in_container(info.id));
+    for (const auto p : process_resp["Processes"])
     {
-      struct process_event event;
-      std::string tmp_id;
-      tmp_id = process[1];
-      event.common.pid = std::stoi(tmp_id);
-      this_manager.mp_lock.lock();
-      if (this_manager.container_processes.find(event.common.pid) == this_manager.container_processes.end())
-      {
-        tmp_id = process[2];
-        event.common.ppid = std::stoi(tmp_id);
-        fill_event(event);
-        struct container_event con = {
-          .process = event,
-          .container_id = cid,
-        };
-        sprintf(con.container_name, "%s", container_name.substr(1).c_str());
-        print_process_in_container(con);
-        this_manager.container_processes[pid] = con;  
-      }
-      this_manager.mp_lock.unlock();
+      info_map.insert(std::atoi(std::string(p[2]).c_str()), info);
     }
   }
-
-
-}
-
-
-void container_tracker::init_container_table()
-{
-  unsigned long cid;
-  pid_t pid, ppid;
-  add_to_map();
-  // std::stringstream ss;
-  // nlohmann::json res_json;
-
-  // httplib::Client client("unix:/var/run/docker.sock");
-  // client.set_default_headers({ { "Host", "localhost" } });
-  // auto response = client.Get("/containers/json");
-  // ss << response->body;
-  // ss >> res_json;
-
-  // for(auto &element : res_json) {
-  //   nlohmann::json ele_json, top_json;
-  //   ss << element;
-  //   ss >> ele_json;
-  //   std::string postfix("/containers/"), container_id(ele_json["Id"]), container_name(ele_json["Names"][0]);
-  //   postfix += ele_json["Id"];
-  //   postfix += "/top";
-  //   unsigned long cid = 0;
-  //   sscanf(container_id.substr(0, 12).c_str(),"%lx", &cid);
-  //   auto top_response = client.Get(postfix);
-  //   ss << top_response->body;
-  //   ss >> top_json;
-  //   for (auto process : top_json["Processes"])
-  //   {
-  //     struct process_event event;
-  //     std::string tmp_id;
-  //     tmp_id = process[1];
-  //     event.common.pid = std::stoi(tmp_id);
-  //     tmp_id = process[2];
-  //     event.common.ppid = std::stoi(tmp_id);
-  //     fill_event(event);
-  //     struct container_event con = {
-  //       .process = event,
-  //       .container_id = cid,
-  //     };
-  //     sprintf(con.container_name, "%s", container_name.substr(1).c_str());
-  //     print_process_in_container(con);
-  //     this_manager.mp_lock.lock();
-  //     this_manager.container_processes[pid] = con;
-  //     this_manager.mp_lock.unlock();
-  //   }
-  // }
-
-
-  // std::string ps_cmd("docker ps -q");
-  // std::unique_ptr<FILE, int (*)(FILE *)> ps(popen(ps_cmd.c_str(), "r"), pclose);
-  // while (fscanf(ps.get(), "%lx\n", &cid) == 1)
-  // {
-  //   std::string top_cmd("docker top "), name_cmd("docker inspect -f '{{.Name}}' ");
-  //   char hex_cid[20], container_name[50];
-  //   sprintf(hex_cid, "%lx", cid);
-  //   top_cmd += hex_cid;
-  //   name_cmd += hex_cid;
-  //   std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose),
-  //       name(popen(name_cmd.c_str(), "r"), pclose);
-  //   (void)fscanf(name.get(), "/%s", container_name);
-  //   /* delet the first row */
-  //   char useless[150];
-  //   (void)fgets(useless, 150, top.get());
-  //   while (fscanf(top.get(), "%*s %d %d %*[^\n]\n", &pid, &ppid) == 2)
-  //   {
-  //     struct process_event event;
-  //     event.common.pid = pid;
-  //     event.common.ppid = ppid;
-  //     fill_event(event);
-  //     struct container_event con = {
-  //       .process = event,
-  //       .container_id = cid,
-  //     };
-  //     strcpy(con.container_name, container_name);
-  //     print_process_in_container(con);
-  //     this_manager.mp_lock.lock();
-  //     this_manager.container_processes[pid] = con;
-  //     this_manager.mp_lock.unlock();
-  //   }
-  // }
-}
-void container_tracker::print_process_in_container(const struct container_event &e)
-{
-  if (!current_env.print_result)
-  {
-    return;
-  }
-  std::string state = e.process.exit_event == true ? "EXIT" : "EXEC";
-  container_logger->info(
-      "{}\t{}\t{}\t{}\t{}\t", e.process.common.pid, e.process.common.ppid, e.container_id, e.container_name, state.c_str());
-}
-
-void container_tracker::judge_container(const struct process_event &e)
-{
-  if (e.exit_event)
-  {
-    this_manager.mp_lock.lock();
-    auto event = this_manager.container_processes.find(e.common.pid);
-    // remove from map
-    if (event != this_manager.container_processes.end())
-    {
-      event->second.process.exit_event = true;
-      print_process_in_container(event->second);
-      this_manager.container_processes.erase(event);
-    }
-    this_manager.mp_lock.unlock();
-  }
-  else
-  {
-    /* parent process exists in map */
-    this_manager.mp_lock.lock();
-    auto event = this_manager.container_processes.find(e.common.ppid);
-    this_manager.mp_lock.unlock();
-    if (event != this_manager.container_processes.end())
-    {
-      struct container_event con = { .process = e, .container_id = (*event).second.container_id };
-      sprintf(con.container_name, "%s", (*event).second.container_name);
-      this_manager.mp_lock.lock();
-      this_manager.container_processes[e.common.pid] = con;
-      print_process_in_container(this_manager.container_processes[e.common.pid]);
-      this_manager.mp_lock.unlock();
-    }
-    else
-    {
-      /* parent process doesn't exist in map */
-      struct process_event p_event = { 0 };
-      p_event.common.pid = e.common.ppid;
-      fill_event(p_event);
-      if ((p_event.common.user_namespace_id != e.common.user_namespace_id) ||
-          (p_event.common.pid_namespace_id != e.common.pid_namespace_id) ||
-          (p_event.common.mount_namespace_id != e.common.mount_namespace_id))
-      {
-        add_to_map();
-        
-
-
-        // std::unique_ptr<FILE, int (*)(FILE *)> fp(popen("docker ps -q", "r"), pclose);
-        // unsigned long cid;
-        // /* show all alive container */
-        // pid_t pid, ppid;
-        // while (fscanf(fp.get(), "%lx\n", &cid) == 1)
-        // {
-        //   std::string top_cmd = "docker top ", name_cmd = "docker inspect -f '{{.Name}}' ";
-        //   char hex_cid[20], container_name[50];
-        //   sprintf(hex_cid, "%lx", cid);
-        //   top_cmd += hex_cid;
-        //   name_cmd += hex_cid;
-        //   std::unique_ptr<FILE, int (*)(FILE *)> top(popen(top_cmd.c_str(), "r"), pclose),
-        //       name(popen(name_cmd.c_str(), "r"), pclose);
-        //   fscanf(name.get(), "/%s", container_name);
-        //   char useless[150];
-        //   /* delet the first row */
-        //   (void)fgets(useless, 150, top.get());
-        //   while (fscanf(top.get(), "%*s %d %d %*[^\n]\n", &pid, &ppid) == 2)
-        //   {
-        //     this_manager.mp_lock.lock();
-        //     /* this is the first show time for this process */
-        //     if (this_manager.container_processes.find(pid) == this_manager.container_processes.end())
-        //     {
-        //       struct container_event con = {
-        //         .process = e,
-        //         .container_id = cid,
-        //       };
-        //       strcpy(con.container_name, container_name);
-        //       this_manager.container_processes[pid] = con;
-        //       print_process_in_container(this_manager.container_processes[pid]);
-        //     }
-        //     this_manager.mp_lock.unlock();
-        //   }
-        // }
-      }
-    }
-  }
-}
-
-int container_tracker::handle_event(void *ctx, void *data, size_t data_sz)
-{
-  if (!data || !ctx)
-  {
-    return -1;
-  }
-  const struct process_event &e = *(const struct process_event *)data;
-  container_tracker &pt = *(container_tracker *)ctx;
-  /* judge whether this a container related cmd */
-  pt.judge_container(e);
-  return 0;
-}
-
-unsigned long container_manager::get_container_id_via_pid(pid_t pid)
-{
-  unsigned long ret = 0;
-  mp_lock.lock();
-  auto event = container_processes.find(pid);
-  if (event != container_processes.end())
-  {
-    ret = event->second.container_id;
-  }
-  mp_lock.unlock();
-  return ret;
 }

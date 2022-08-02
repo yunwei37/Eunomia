@@ -12,6 +12,7 @@
 #include <string>
 #include <thread>
 #include <memory>
+#include "container_info.h"
 
 // the basic event type
 // T is the event from C code
@@ -19,7 +20,8 @@ template <typename T>
 struct tracker_event
 {
     T data;
-    // TODO: add more data here
+    std::unique_ptr<container_info> container_info_ptr;
+    // TODO: add more data options here
 };
 
 // the event handler for share_ptr
@@ -53,7 +55,7 @@ public:
     // do the handle event
     // pass the event to next handler
     void do_handle_event(tracker_event<T> &e)
-    {   
+    {
         bool is_catched = false;
         try {
             handle(e);

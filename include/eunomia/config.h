@@ -7,18 +7,9 @@
 #ifndef EUNOMIA_CONFIG_H
 #define EUNOMIA_CONFIG_H
 
-#include <chrono>
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
-
-#include "files.h"
-#include "ipc.h"
-#include "model/tracker_config.h"
-#include "process.h"
-#include "syscall.h"
-#include "tcp.h"
 
 struct rule_config
 {
@@ -80,16 +71,15 @@ struct eunomia_config_data
   std::string run_selected = "server";
 
   // config for all enabled tracker
-  // each tracker should have its own config, for example, process_tracker_data
-  // you can add fields to config_data, just replace the using with struct decleration
-  // see:
-  // using config_data = tracker_config<process_env, process_event>;
   std::vector<tracker_config_data> enabled_trackers = {
     { "process", {}, {} },
     { "files", {}, {} },
     { "syscall", {}, {} },
     { "tcpconnect", {}, {} },
   };
+  // use the config data from enabled_trackers,
+  // disable others.
+  bool disable_other_configs = false;
 
   // tracing config
   std::string tracing_selected = "all";
@@ -126,8 +116,12 @@ struct eunomia_config_data
   // run container under seccomp
   bool enable_seccomp_module = false;
 
+  // parse config from files
   static eunomia_config_data from_toml_file(const std::string &file_path);
   static eunomia_config_data from_json_file(const std::string &file_path);
+
+  // load config options to enable_trackers
+  void load_config_options_to_trackers();
 };
 
 #endif

@@ -12,13 +12,14 @@
 
 #include "toml.hpp"
 
-#define get_from_json_at(name)     \
-  try                              \
-  {                                \
-    j.at(#name).get_to(data.name); \
-  }                                \
-  catch (...)                      \
-  {                                \
+#define get_from_json_at(name)                   \
+  try                                            \
+  {                                              \
+    j.at(#name).get_to(data.name);               \
+  }                                              \
+  catch (...)                                    \
+  {                                              \
+    spdlog::warn("{} use default value", #name); \
   }
 
 static void from_json(const nlohmann::json& j, handler_config_data& data)
@@ -50,28 +51,21 @@ static void from_json(const nlohmann::json& j, seccomp_config_data& data)
 
 static void from_json(const nlohmann::json& j, eunomia_config_data& data)
 {
-  try
-  {
-    get_from_json_at(run_selected);
-    get_from_json_at(enabled_trackers);
-    get_from_json_at(tracing_selected);
-    get_from_json_at(tracing_target_id);
-    get_from_json_at(is_auto_exit);
-    get_from_json_at(exit_after);
-    get_from_json_at(enabled_export_types);
-    get_from_json_at(fmt);
-    get_from_json_at(enable_container_manager);
-    get_from_json_at(prometheus_listening_address);
-    get_from_json_at(enable_sec_rule_detect);
-    get_from_json_at(security_rules);
-    get_from_json_at(seccomp_data);
-    get_from_json_at(enable_seccomp_module);
-  }
-  catch (...)
-  {
-    spdlog::info("some part of toml is not right!");
-    exit(0);
-  };
+  get_from_json_at(run_selected);
+  get_from_json_at(enabled_trackers);
+  get_from_json_at(tracing_selected);
+  get_from_json_at(tracing_target_id);
+  get_from_json_at(is_auto_exit);
+  get_from_json_at(exit_after);
+  get_from_json_at(enabled_export_types);
+  get_from_json_at(fmt);
+  get_from_json_at(enable_container_manager);
+  get_from_json_at(prometheus_listening_address);
+  get_from_json_at(enable_sec_rule_detect);
+  get_from_json_at(security_rules);
+  get_from_json_at(seccomp_data);
+  get_from_json_at(enable_seccomp_module);
+  get_from_json_at(disable_other_configs);
 }
 
 eunomia_config_data eunomia_config_data::from_toml_file(const std::string& file_path)
@@ -83,7 +77,7 @@ eunomia_config_data eunomia_config_data::from_toml_file(const std::string& file_
   }
   catch (const toml::parse_error& err)
   {
-    std::cerr << err << "\n";
+    spdlog::error("parse toml file error: {}", err.description());
     return eunomia_config_data{};
   }
   auto json_data = toml::json_formatter{ data };
@@ -127,4 +121,33 @@ rule_config_data rule_config_data::from_json_str(const std::string& json_str)
     spdlog::error("json parse error for rule_config_data! {}", json_str);
   }
   return rule_config_data{};
+}
+
+static void add_handler_config_to_trackers(std::vector<tracker_config_data>& trackers, const std::string& handler_name)
+{
+  for (auto& tracker : trackers)
+  {
+    tracker.export_handlers.push_back(handler_config_data{ handler_name, std::vector<std::string>{} });
+  }
+}
+
+void eunomia_config_data::load_config_options_to_trackers()
+{
+  if (disable_other_configs)
+  {
+    return;
+  }
+  for (const auto& export_type : enabled_export_types)
+  {
+    std::string name;
+    if (export_type == "stdout")
+    {
+      name = fmt;
+    }
+    else
+    {
+      name = export_type;
+    }
+    add_handler_config_to_trackers(enabled_trackers, name);
+  }
 }

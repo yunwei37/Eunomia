@@ -1,9 +1,6 @@
 #include "eunomia/config.h"
 
-#include <json.hpp>
-#include <toml.hpp>
-
-using namespace nlohmann;
+#include <iostream>
 
 int main()
 {

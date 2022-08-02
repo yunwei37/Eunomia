@@ -12,7 +12,7 @@ VMLINUX := ../../vmlinux/$(ARCH)/vmlinux.h
 # libbpf to avoid dependency on system-wide headers, which could be missing or
 # outdated
 INCLUDES := -I$(OUTPUT) -I../../libbpf/include/uapi -I../include -I$(dir $(VMLINUX))
-CFLAGS := -g -Wall -Wno-unused-function
+CFLAGS := -g -Wall -Wno-unused-function -fsanitize=address
 
 APPS = process
 

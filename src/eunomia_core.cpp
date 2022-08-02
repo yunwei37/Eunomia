@@ -8,7 +8,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include "eunomia/container.h"
 #include "eunomia/sec_analyzer.h"
 #include "eunomia/tracker_manager.h"
 
@@ -16,6 +15,7 @@ eunomia_core::eunomia_core(eunomia_config_data& config)
     : core_config(config),
       core_prometheus_server(config.prometheus_listening_address)
 {
+  core_config.load_config_options_to_trackers();
 }
 
 template<tracker_concept TRACKER>
