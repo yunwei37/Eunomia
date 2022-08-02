@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
 # Copyright (c) 2022, 郑昱笙，濮雯旭，张典典（牛校牛子队）
 
-.PHONY:all ipc process syscall files tcp container oomkill tcpconnlat
+.PHONY:all ipc process syscall files tcp container oomkill tcpconnlat llcstat bitesize syscount 
 
-all: ipc process syscall files tcp container oomkill tcpconnlat
+all: ipc process syscall files tcp container oomkill tcpconnlat llcstat bitesize syscount
 
 ipc:
 	@make -C ipc
+
+llcstat:
+	@make -C llcstat
 
 oomkill:
 	@make -C oomkill
@@ -20,6 +23,9 @@ process:
 syscall:
 	@make -C syscall
 
+syscount:
+	@make -C syscount
+
 files:
 	@make -C files
 
@@ -28,6 +34,9 @@ tcp:
 
 container:
 	@make -C container
+
+bitesize:
+	@make -C bitesize
 
 clean:
 	@make -C files clean
@@ -38,3 +47,6 @@ clean:
 	@make -C container clean
 	@make -C oomkill clean
 	@make -C tcpconnlat clean
+	@make -C llcstat clean
+	@make -C syscount clean
+	@make -C bitesize clean
