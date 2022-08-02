@@ -132,10 +132,15 @@ void process_tracker::plain_text_event_printer::handle(tracker_event<process_eve
         "exit_code/comm",
         "duration_ns/filename");
   }
+  std::string container_name = "Ubuntu";
+  std::string container_id = "0";
+  container_name = e.ct_info.name;
+  container_id = e.ct_info.id;
+
   if (e.data.exit_event)
   {
     spdlog::info(
-        "{}\t{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}",
+        "{}\t{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\t{}",
         e.data.common.pid,
         e.data.common.ppid,
         e.data.common.cgroup_id,
@@ -143,11 +148,13 @@ void process_tracker::plain_text_event_printer::handle(tracker_event<process_eve
         e.data.common.pid_namespace_id,
         e.data.common.mount_namespace_id,
         e.data.exit_code,
-        e.data.duration_ns);
+        e.data.duration_ns,
+        container_name,
+        container_id);
     return;
   }
   spdlog::info(
-      "{}\t{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}",
+      "{}\t{}\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\t{}",
       e.data.common.pid,
       e.data.common.ppid,
       e.data.common.cgroup_id,
@@ -155,7 +162,9 @@ void process_tracker::plain_text_event_printer::handle(tracker_event<process_eve
       e.data.common.pid_namespace_id,
       e.data.common.mount_namespace_id,
       e.data.comm,
-      e.data.filename);
+      e.data.filename,
+      container_name,
+      container_id);
 }
 
 void process_tracker::csv_event_printer::handle(tracker_event<process_event> &e)

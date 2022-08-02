@@ -20,8 +20,8 @@ template <typename T>
 struct tracker_event
 {
     T data;
-    std::unique_ptr<container_info> container_info_ptr;
-    // TODO: add more data options here
+    container_info ct_info;
+    // TODO: add more data options here?
 };
 
 // the event handler for share_ptr

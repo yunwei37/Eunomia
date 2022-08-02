@@ -3,52 +3,40 @@
  * Copyright (c) 2022, 郑昱笙，濮雯旭，张典典（牛校牛子队）
  * All rights reserved.
  */
+#include <dirent.h>
 
-#include <httplib.h>
-
-#include <json.hpp>
+#include <algorithm>
+#include <cerrno>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <regex>
+#include <stdexcept>
 
 #include "eunomia/container_manager.h"
-extern "C"
-{
-#include <process/process.h>
-}
+#include "eunomia/process.h"
+#include "eunomia/tracker_manager.h"
 
-using namespace nlohmann;
 using namespace std::chrono_literals;
-
-class container_client
-  {
-   private:
-    // for dockerd
-    httplib::Client dockerd_client;
-
-   public:
-    // get all container info json string
-    std::string list_all_containers(void) {
-      std::stringstream ss;
-      auto response = dockerd_client.Get("/containers/json");
-      ss << response->body;
-      return ss.str();
-    }
-    // get container process by id
-    std::string list_all_process_running_in_container(const std::string &container_id) {
-  std::stringstream ss;
-  auto response = dockerd_client.Get("/containers/" + container_id + "/top");
-  ss << response->body;
-  return ss.str();
-}
-
-    // get container info by id
-    std::string inspect_container(const std::string &container_id);
-    container_info get_os_container_info(void);
-    container_client() : dockerd_client("unix:/var/run/docker.sock") {
-      dockerd_client.set_default_headers({ { "Host", "localhost" } });
-    }
-  };
 
 int main(int argc, char** argv)
 {
-  container_manager mp;
+  {
+    container_manager mp;
+    tracker_manager manager;
+    std::cout << "start ebpf...\n";
+
+    auto server = prometheus_server("127.0.0.1:8528");
+
+    auto stdout_event_printer = std::make_shared<process_tracker::plain_text_event_printer>(process_tracker::plain_text_event_printer{});    auto container_tracking_handler = std::make_shared<container_manager::container_tracking_handler>(container_manager::container_tracking_handler{mp});
+
+    container_tracking_handler->add_handler(stdout_event_printer);
+    auto tracker_ptr = process_tracker::create_tracker_with_default_env(container_tracking_handler);
+    manager.start_tracker(std::move(tracker_ptr));
+
+    server.start_prometheus_server();
+
+    std::this_thread::sleep_for(10s);
+  }
   return 0;
 }
