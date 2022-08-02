@@ -15,6 +15,7 @@
 
 #include "eunomia/container_manager.h"
 #include "eunomia/process.h"
+#include "eunomia/tcp.h"
 #include "eunomia/tracker_manager.h"
 
 using namespace std::chrono_literals;
@@ -28,11 +29,20 @@ int main(int argc, char** argv)
 
     auto server = prometheus_server("127.0.0.1:8528");
 
-    auto stdout_event_printer = std::make_shared<process_tracker::plain_text_event_printer>(process_tracker::plain_text_event_printer{});    auto container_tracking_handler = std::make_shared<container_manager::container_tracking_handler>(container_manager::container_tracking_handler{mp});
+    // auto stdout_event_printer =
+    //     std::make_shared<process_tracker::plain_text_event_printer>(process_tracker::plain_text_event_printer{});
+    auto container_tracking_handler =
+        std::make_shared<container_manager::container_tracking_handler>(container_manager::container_tracking_handler{ mp });
 
-    container_tracking_handler->add_handler(stdout_event_printer);
-    auto tracker_ptr = process_tracker::create_tracker_with_default_env(container_tracking_handler);
-    manager.start_tracker(std::move(tracker_ptr));
+    // container_tracking_handler->add_handler(stdout_event_printer);
+    auto stdout_event_printer =
+         std::make_shared<tcp_tracker::plain_text_event_printer>(tcp_tracker::plain_text_event_printer{});
+    auto container_info_handler =
+        std::make_shared<container_manager::container_info_handler<tcp_event>>(container_manager::container_info_handler<tcp_event>{ mp });
+    container_info_handler->add_handler(stdout_event_printer);
+
+    manager.start_tracker(process_tracker::create_tracker_with_default_env(container_tracking_handler));
+    manager.start_tracker(tcp_tracker::create_tracker_with_default_env(container_info_handler));
 
     server.start_prometheus_server();
 

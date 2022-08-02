@@ -68,7 +68,7 @@ struct tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
   {
     void handle(tracker_event<tcp_event> &e);
   };
-  
+
   struct csv_event_printer : public event_handler<tcp_event>
   {
     void handle(tracker_event<tcp_event> &e);

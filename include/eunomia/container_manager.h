@@ -29,25 +29,18 @@ class container_manager
     }
   };
 
-  template<typename EVENT> requires (not std::same_as<EVENT, process_event>)
-  // use process tracker to track the processes created in the container
-  class container_info_handler : public event_handler<EVENT>
+  template<typename EVENT>
+  requires(not std::same_as<EVENT, process_event>)
+      // use process tracker to track the processes created in the container
+      class container_info_handler : public event_handler<EVENT>
   {
     container_manager &manager;
 
    public:
     void handle(tracker_event<EVENT> &e)
     {
-      if (e.container_info_ptr.get())
-      {
-        // has container info; do nothing
-        return;
-      }
-      else
-      {
-        // no container info; get it
-        e.ct_info = manager.get_container_info_for_pid(e.data.pid);
-      }
+      // no container info; get it
+      e.ct_info = manager.get_container_info_for_pid(e.data.pid);
     }
     container_info_handler(container_manager &m) : manager(m){};
   };

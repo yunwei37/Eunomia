@@ -24,6 +24,7 @@ struct tracker_alone_env
 
 struct tracker_alone_event
 {
+  int pid;
   std::string process_messages;
 };
 

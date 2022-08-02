@@ -100,14 +100,16 @@ void tcp_tracker::plain_text_event_printer::handle(tracker_event<tcp_event> &e)
   }
 
   spdlog::info(
-      "{:6} {:6} {:16} {:2} {:20} {:20} {:6}",
+      "{:6} {:6} {:16} {:2} {:20} {:20} {:6} {} {}",
       e.data.uid,
       e.data.pid,
       e.data.task,
       e.data.af == AF_INET ? 4 : 6,
       inet_ntop((int)e.data.af, &s, src, sizeof(src)),
       inet_ntop((int)e.data.af, &d, dst, sizeof(dst)),
-      ntohs(e.data.dport));
+      ntohs(e.data.dport),
+      e.ct_info.id,
+      e.ct_info.name);
 }
 
 void tcp_tracker::csv_event_printer::handle(tracker_event<tcp_event> &e)

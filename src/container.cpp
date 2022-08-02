@@ -129,7 +129,6 @@ common_event get_process_common_event(int pid)
   common_event info = { 0 };
   info.pid = pid;
   info.pid_namespace_id = get_process_namespace("pid", pid);
-  info.cgroup_id = get_process_namespace("cgroup", pid);
   info.mount_namespace_id = get_process_namespace("mnt", pid);
   info.user_namespace_id = get_process_namespace("user", pid);
   return info;
@@ -206,7 +205,7 @@ void container_manager::update_container_map_data(void)
 
 static bool operator==(const common_event& a, const common_event& b)
 {
-  return a.cgroup_id == b.cgroup_id && a.pid_namespace_id == b.pid_namespace_id &&
+  return a.pid_namespace_id == b.pid_namespace_id &&
          a.user_namespace_id == b.user_namespace_id && a.mount_namespace_id == b.mount_namespace_id;
 }
 
@@ -240,6 +239,8 @@ void container_manager::container_tracking_handler::handle(tracker_event<process
       {
         // not same namespace, update container info.
         spdlog::info("different namespace from parent process {}, update info.", e.data.common.pid);
+        // spdlog::info("process namespace {} {} {} {}", data.common.pid_namespace_id, data.common.cgroup_id,
+        //              data.common.mount_namespace_id, data.common.user_namespace_id);
         manager.update_container_map_data();
       }
       data.common = e.data.common;
