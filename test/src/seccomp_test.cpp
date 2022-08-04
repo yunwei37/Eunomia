@@ -48,7 +48,5 @@ int main()
   //execv("./process_test_Tests",NULL);
   spdlog::info("if you can get here,that means seccomp is wrong\n");
 
-  //spdlog::info("current process comm: {0}, pid : {1}",current->comm, current->pid);
-
   return 0;
 }

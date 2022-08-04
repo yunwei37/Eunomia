@@ -28,6 +28,6 @@ int main(int argc, char **argv)
 
   server.start_prometheus_server();
 
-  std::this_thread::sleep_for(1000s);
+  std::this_thread::sleep_for(10s);
   return 0;
 }

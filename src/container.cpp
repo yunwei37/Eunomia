@@ -205,8 +205,8 @@ void container_manager::update_container_map_data(void)
 
 static bool operator==(const common_event& a, const common_event& b)
 {
-  return a.pid_namespace_id == b.pid_namespace_id &&
-         a.user_namespace_id == b.user_namespace_id && a.mount_namespace_id == b.mount_namespace_id;
+  return a.pid_namespace_id == b.pid_namespace_id && a.user_namespace_id == b.user_namespace_id &&
+         a.mount_namespace_id == b.mount_namespace_id;
 }
 
 void container_manager::container_tracking_handler::handle(tracker_event<process_event>& e)
