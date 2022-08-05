@@ -33,6 +33,9 @@ int main(int argc, char** argv)
     //     std::make_shared<process_tracker::plain_text_event_printer>(process_tracker::plain_text_event_printer{});
     auto container_tracking_handler =
         std::make_shared<container_manager::container_tracking_handler>(container_manager::container_tracking_handler{ mp });
+    auto container_process_handler =
+        std::make_shared<container_manager::container_info_handler<process_event>>(container_manager::container_info_handler<process_event>{ mp });
+    container_tracking_handler->add_handler(container_process_handler);
 
     // container_tracking_handler->add_handler(stdout_event_printer);
     auto stdout_event_printer =

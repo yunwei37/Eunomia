@@ -137,6 +137,10 @@ void eunomia_config_data::load_config_options_to_trackers()
   {
     return;
   }
+  if (enable_container_manager)
+  {
+    add_handler_config_to_trackers(enabled_trackers, "container_info");
+  }
   for (const auto& export_type : enabled_export_types)
   {
     std::string name;

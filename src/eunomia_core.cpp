@@ -38,6 +38,11 @@ TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler(const 
     return std::make_shared<typename TRACKER::prometheus_event_handler>(
         typename TRACKER::prometheus_event_handler(core_prometheus_server));
   }
+  else if (config.name == "container_info")
+  {
+    return std::make_shared<container_manager::container_info_handler<typename TRACKER::event>>(
+        container_manager::container_info_handler<typename TRACKER::event>{ core_container_manager });
+  }
   else if (config.name == "none")
   {
     return nullptr;
@@ -111,6 +116,18 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_sec_analyzer(
   return create_default_tracker_with_handler<TRACKER>(base, handler);
 }
 
+std::unique_ptr<process_tracker> eunomia_core::create_process_tracker_with_container_tracking(
+    const tracker_config_data& base)
+{
+  std::shared_ptr<container_manager::container_tracking_handler> handler = nullptr;
+  if (core_config.enable_container_manager)
+  {
+    handler = std::make_shared<container_manager::container_tracking_handler>(
+        container_manager::container_tracking_handler{ core_container_manager });
+  }
+  return create_default_tracker_with_handler<process_tracker>(base, handler);
+}
+
 void eunomia_core::start_tracker(const tracker_config_data& config)
 {
   if (config.name == "files")
@@ -119,11 +136,12 @@ void eunomia_core::start_tracker(const tracker_config_data& config)
   }
   else if (config.name == "process")
   {
-    core_tracker_manager.start_tracker(create_default_tracker<process_tracker>(config));
+    core_tracker_manager.start_tracker(create_process_tracker_with_container_tracking(config));
   }
   else if (config.name == "syscall")
   {
-    create_default_tracker_with_sec_analyzer<syscall_tracker, syscall_rule_checker>(config);
+    core_tracker_manager.start_tracker(
+        create_default_tracker_with_sec_analyzer<syscall_tracker, syscall_rule_checker>(config));
   }
   else if (config.name == "tcpconnect")
   {
@@ -193,8 +211,18 @@ void eunomia_core::start_container_manager(void)
 {
   if (core_config.enable_container_manager)
   {
-    spdlog::error("start container manager...not yet");
-    // core_container_manager.start_container_tracing(core_config.container_log_path);
+    spdlog::error("start container manager...");
+    core_container_manager.init();
+    // found process tracker
+    for (auto i : core_config.enabled_trackers)
+    {
+      if (i.name == "process")
+      {
+        return;
+      }
+    }
+    // if not found, add it
+    core_config.enabled_trackers.push_back(tracker_config_data{ "process", {} });
   }
 }
 

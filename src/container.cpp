@@ -87,7 +87,7 @@ container_info container_manager::get_container_info_for_pid(int pid)
   return os_info;
 }
 
-container_manager::container_manager()
+void container_manager::init()
 {
   // get os info base
   os_info = client.get_os_container_info();
@@ -96,6 +96,10 @@ container_manager::container_manager()
   get_all_process_info();
   // get all container process into the table
   update_container_map_data();
+}
+
+container_manager::container_manager()
+{
 }
 
 std::int64_t get_process_namespace(const char* type, int pid)

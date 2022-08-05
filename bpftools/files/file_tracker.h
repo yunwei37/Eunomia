@@ -45,6 +45,7 @@ struct files_env
 
 struct files_event
 {
+  int pid;
   size_t rows;
   struct file_stat *values;
 };
@@ -79,6 +80,7 @@ static int print_stat(struct files_bpf *obj, struct files_env env, ring_buffer_s
     prev_key = &key;
   }
   struct files_event e = {
+    .pid = 0,
     .rows = rows,
     .values = values,
   };

@@ -46,6 +46,7 @@ template<typename ENV, typename EVENT>
 struct tracker_with_config : public tracker_base
 {
   // type alias
+  using event = EVENT;
   using config_data = tracker_config<ENV, EVENT>;
   using tracker_event_handler = std::shared_ptr<event_handler<EVENT>>;
 
@@ -101,6 +102,7 @@ struct tracker_with_config : public tracker_base
 template<typename TRACKER>
 concept tracker_concept = requires
 {
+  typename TRACKER::event;
   typename TRACKER::config_data;
   typename TRACKER::tracker_event_handler;
   typename TRACKER::prometheus_event_handler;

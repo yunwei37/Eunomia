@@ -101,7 +101,7 @@ struct eunomia_config_data
   // enable container tracing
   // we can get container id and container name
   // using pid from the map of it
-  bool enable_container_manager = false;
+  bool enable_container_manager = true;
 
   // TODO: this should be add to export config
   std::string prometheus_listening_address = "127.0.0.1:8528";
