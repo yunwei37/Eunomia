@@ -321,13 +321,13 @@ static void print_combined_outstanding_allocations(struct ksyms *ksyms, struct s
 	printf("[%02x:%02d:%02d] Top %d stacks with outstanding allocations:\n",
 		timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, env.top);
 
-	ip = calloc(env.max_stack_depth, sizeof(*ip));
+	ip = (unsigned long *)(calloc(env.max_stack_depth, sizeof(*ip)));
 	if (!ip) {
 		fprintf(stderr, "failed to alloccate memory of stack trace\n");
 		return;
 	}
 
-	stacks = calloc(MAX_HASH_ENTRY_NUM, sizeof(*stacks));
+	stacks = (struct alloc_stack *)(calloc(MAX_HASH_ENTRY_NUM, sizeof(*stacks)));
 	if (stacks == NULL) {
 		fprintf(stderr, "failed to allocate memory for stack info\n");
 		goto cleanup;
@@ -423,13 +423,13 @@ static void print_outstanding_allocations(struct ksyms *ksyms, struct syms_cache
 	printf("[%02x:%02d:%02d] Top %d stacks with outstanding allocations:\n",
 		timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, env.top);
 
-	ip = calloc(env.max_stack_depth, sizeof(*ip));
+	ip = (unsigned long *)(calloc(env.max_stack_depth, sizeof(*ip)));
 	if (!ip) {
 		fprintf(stderr, "failed to alloccate memory of stack trace\n");
 		return;
 	}
 
-	stacks = calloc(MAX_HASH_ENTRY_NUM, sizeof(*stacks));
+	stacks = (struct alloc_stack *)(calloc(MAX_HASH_ENTRY_NUM, sizeof(*stacks)));
 	if (stacks == NULL) {
 		fprintf(stderr, "failed to allocate memory for stack info\n");
 		goto cleanup;
@@ -546,7 +546,7 @@ int start_memleak(int argc, char **argv)
 		char *cmd = strdup(env.command);
 		char **argv, *ptr, *filepath;
 		int j;
-		argv = malloc(sizeof(char *) * strlen(cmd));
+		argv = (char **)(malloc(sizeof(char *) * strlen(cmd)));
 		memset(argv, 0, sizeof(char *) * strlen(cmd));
 		ptr = strtok(cmd, delim);
 		if (ptr != NULL) {
