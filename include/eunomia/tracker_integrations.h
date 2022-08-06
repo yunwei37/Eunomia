@@ -21,4 +21,11 @@ struct tcpconnlat_tracker final: public tracker_alone_base {
   static std::unique_ptr<tcpconnlat_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 };
 
+struct capable_tracker final: public tracker_alone_base {
+  capable_tracker(config_data config) : tracker_alone_base(config) {}
+
+  static std::unique_ptr<capable_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+};
+
+
 #endif

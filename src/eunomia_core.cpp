@@ -9,6 +9,7 @@
 #include <spdlog/spdlog.h>
 
 #include "eunomia/sec_analyzer.h"
+#include "eunomia/tracker_integrations.h"
 #include "eunomia/tracker_manager.h"
 
 eunomia_core::eunomia_core(eunomia_config_data& config)
@@ -149,6 +150,10 @@ void eunomia_core::start_tracker(const tracker_config_data& config)
   else if (config.name == "tcpconnect")
   {
     core_tracker_manager.start_tracker(create_default_tracker<tcp_tracker>(config));
+  }
+  else if (config.name == "capable")
+  {
+    core_tracker_manager.start_tracker(create_default_tracker<capable_tracker>(config));
   }
   else
   {
