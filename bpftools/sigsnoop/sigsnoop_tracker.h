@@ -160,7 +160,7 @@ static void sig_int(int signo)
 
 static void handle_event(void *ctx, int cpu, void *data, __u32 data_sz)
 {
-	struct event *e = data;
+	struct event *e = (event *)(data);
 	struct tm *tm;
 	char ts[32];
 	time_t t;

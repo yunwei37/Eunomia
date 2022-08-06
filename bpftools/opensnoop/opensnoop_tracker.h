@@ -178,7 +178,7 @@ static void sig_int(int signo)
 
 void handle_event(void *ctx, int cpu, void *data, __u32 data_sz)
 {
-	const struct event *e = data;
+	const struct event *e = (struct event *)(data);
 	struct tm *tm;
 	char ts[32];
 	time_t t;

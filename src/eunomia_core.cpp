@@ -175,15 +175,14 @@ void eunomia_core::start_tracker(const tracker_config_data& config)
   {
     core_tracker_manager.start_tracker(create_default_tracker<bindsnoop_tracker>(config));
   }
-  else if (config.name == "syscount")
-  {
-    core_tracker_manager.start_tracker(create_default_tracker<syscount_tracker>(config));
-  }
-  else if (config.name == "funclatency")
-  {
-    core_tracker_manager.start_tracker(create_default_tracker<funclatency_tracker>(config));
-
-  }
+  // else if (config.name == "syscount")
+  // {
+  //   core_tracker_manager.start_tracker(create_default_tracker<syscount_tracker>(config));
+  // }
+  // else if (config.name == "funclatency")
+  // {
+  //   core_tracker_manager.start_tracker(create_default_tracker<funclatency_tracker>(config));
+  // }
   else
   {
     spdlog::error("unknown tracker name: {}", config.name);
