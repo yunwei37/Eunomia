@@ -5,8 +5,8 @@
 
 all: ipc process syscall files tcp container oomkill tcpconnlat bindsnoop biolatency biopattern biosnoop biostacks bitesize funclatency llcstat mountsnoop opensnoop sigsnoop syscount tcprtt
 
-# bindsnoop:
-# 	@make -C bindsnoop
+bindsnoop:
+	@make -C bindsnoop
 
 # biolatency:
 # 	@make -C biolatency
