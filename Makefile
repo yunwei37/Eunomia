@@ -69,6 +69,4 @@ install: generate-tools ## install the package to the `INSTALL_LOCATION`
 	cmake --build build --target install --config Release
 
 format: ## format the project sources
-	rm -rf build/
-	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION)
 	cmake --build build --target clang-format

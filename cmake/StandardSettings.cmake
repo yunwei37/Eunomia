@@ -25,7 +25,7 @@ option(${PROJECT_NAME}_ENABLE_VCPKG "Enable the Vcpkg package manager for this p
 #
 # Currently supporting: GoogleTest, Catch2.
 
-option(${PROJECT_NAME}_ENABLE_UNIT_TESTING "Enable unit tests for the projects (from the `test` subfolder)." OFF)
+option(${PROJECT_NAME}_ENABLE_UNIT_TESTING "Enable unit tests for the projects (from the `test` subfolder)." ON)
 
 option(${PROJECT_NAME}_USE_GTEST "Use the GoogleTest project for creating unit tests." ON)
 option(${PROJECT_NAME}_USE_GOOGLE_MOCK "Use the GoogleMock project for extending the unit tests." OFF)

@@ -48,6 +48,7 @@ void server_mode_operation(bool load_from_config_file, eunomia_config_data& core
     core_config.enable_sec_rule_detect = true;
   }
   std::cout << "start server mode...\n";
+  core_config.is_auto_exit = true;
   eunomia_server server(core_config, 8527);
   server.serve();
 }
@@ -57,15 +58,15 @@ void seccomp_mode_operation(eunomia_config_data& core_config)
   // enable seccomp with config white list
   for (const auto& item : core_config.seccomp_data)
   {
-      if (item.allow_syscall.size() >= 439)
-  {
-    spdlog::error("seccomp config file error : allow syscall cannot bigger than 439");
-    exit(0);
-  }
-  else
-  {
-    // enable_seccomp_white_list(item);
-  }
+    if (item.allow_syscall.size() >= 439)
+    {
+      spdlog::error("seccomp config file error : allow syscall cannot bigger than 439");
+      exit(0);
+    }
+    else
+    {
+      // enable_seccomp_white_list(item);
+    }
   }
 }
 

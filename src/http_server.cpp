@@ -16,13 +16,13 @@
     spdlog::warn("{} use default value", #name); \
   }
 
-static void from_json(const nlohmann::json& j, handler_config_data& data)
+static void from_json(const nlohmann::json &j, handler_config_data &data)
 {
   get_from_json_at(name);
   get_from_json_at(args);
 }
 
-static void from_json(const nlohmann::json& j, tracker_config_data& data)
+static void from_json(const nlohmann::json &j, tracker_config_data &data)
 {
   get_from_json_at(name);
   get_from_json_at(args);
@@ -35,80 +35,77 @@ eunomia_server::eunomia_server(eunomia_config_data &config, int p) : core(config
 
 void eunomia_server::serve()
 {
-  server.Post(
-      "/start",
-      [=](const httplib::Request &req, httplib::Response &res)
-      {
-        const std::lock_guard<std::mutex> lock(seq_mutex);
-        std::string req_str;
-        tracker_config_data data;
-        try
-        {
-          nlohmann::json j = nlohmann::json::parse(req.body);
-          data = j.get<tracker_config_data>();
-          auto id = core.start_tracker(data);
-          if (!id)
-          {
-            req_str = nlohmann::json{ "status", "error" }.dump();
-          }
-          else
-          {
-            req_str = nlohmann::json{ "status", "ok", "id", *id }.dump();
-          }
-        }
-        catch (...)
-        {
-          spdlog::error("json parse error for tracker_config_data! {}", req.body);
-          res.status = 404;
-          return;
-        }
-        res.status = 200;
-        res.set_content(req_str, "text/json");
-      });
-
-  server.Post(
-      "/stop",
-      [=](const httplib::Request &req, httplib::Response &res)
-      {
-        const std::lock_guard<std::mutex> lock(seq_mutex);
-        std::string req_str;
-        try
-        {
-          nlohmann::json j = nlohmann::json::parse(req.body);
-          auto id = j.at("id").get<std::size_t>();
-          core.stop_tracker(id);
-          req_str = nlohmann::json{ "status", "ok" }.dump();
-        }
-        catch (...)
-        {
-          spdlog::error("json parse error for stop tracker {}", req.body);
-          res.status = 404;
-          return;
-        }
-        res.status = 200;
-        res.set_content(req_str, "text/json");
-      });
-
-    server.Get("list", [=](const httplib::Request &req, httplib::Response &res)
+  server.Post("/start", [=](const httplib::Request &req, httplib::Response &res) {
+    spdlog::info("accept http start request: {}", req.body);
+    const std::lock_guard<std::mutex> lock(seq_mutex);
+    std::string req_str;
+    tracker_config_data data;
+    try
     {
-      const std::lock_guard<std::mutex> lock(seq_mutex);
-      std::string req_str;
-      try
+      nlohmann::json j = nlohmann::json::parse(req.body);
+      data = j.get<tracker_config_data>();
+      auto id = core.start_tracker(data);
+      if (!id)
       {
-        nlohmann::json j = nlohmann::json::parse(req.body);
-        auto id = j.at("id").get<std::size_t>();
-        auto list = core.list_all_trackers();
-        req_str = nlohmann::json{ "status", "ok", "list", list }.dump();
+        req_str = nlohmann::json{ "status", "error" }.dump();
       }
-      catch (...)
+      else
       {
-        spdlog::error("json parse error for list trackers {}", req.body);
-        res.status = 404;
-        return;
+        req_str = nlohmann::json{ "status", "ok", "id", *id }.dump();
       }
-      res.status = 200;
-      res.set_content(req_str, "text/json");
-    });
-    core.start_eunomia();
-    server.listen("127.0.0.1", port);
+    }
+    catch (...)
+    {
+      spdlog::error("json parse error for tracker_config_data! {}", req.body);
+      res.status = 404;
+      return;
+    }
+    res.status = 200;
+    res.set_content(req_str, "text/json");
+  });
+
+  server.Post("/stop", [=](const httplib::Request &req, httplib::Response &res) {
+    spdlog::info("accept http request to stop tracker {}", req.body);
+    const std::lock_guard<std::mutex> lock(seq_mutex);
+    std::string req_str;
+    try
+    {
+      nlohmann::json j = nlohmann::json::parse(req.body);
+      auto id = j.at("id").get<std::size_t>();
+      core.stop_tracker(id);
+      req_str = nlohmann::json{ "status", "ok" }.dump();
+    }
+    catch (...)
+    {
+      spdlog::error("json parse error for stop tracker {}", req.body);
+      res.status = 404;
+      return;
+    }
+    res.status = 200;
+    res.set_content(req_str, "text/json");
+  });
+
+  server.Get("list", [=](const httplib::Request &req, httplib::Response &res) {
+    spdlog::info("accept http request for list {}", req.body);
+    const std::lock_guard<std::mutex> lock(seq_mutex);
+    std::string req_str;
+    try
+    {
+      nlohmann::json j = nlohmann::json::parse(req.body);
+      auto id = j.at("id").get<std::size_t>();
+      auto list = core.list_all_trackers();
+      req_str = nlohmann::json{ "status", "ok", "list", list }.dump();
+    }
+    catch (...)
+    {
+      spdlog::error("json parse error for list trackers {}", req.body);
+      res.status = 404;
+      return;
+    }
+    res.status = 200;
+    res.set_content(req_str, "text/json");
+  });
+  core.start_eunomia();
+  spdlog::info("eunomia server start at port {}", port);
+  server.listen("localhost", port);
 }
