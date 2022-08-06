@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
 # Copyright (c) 2022, 郑昱笙，濮雯旭，张典典（牛校牛子队）
 
+<<<<<<< HEAD
 .PHONY:all ipc process syscall files tcp container oomkill tcpconnlat bindsnoop biolatency biopattern biosnoop biostacks bitesize funclatency llcstat mountsnoop opensnoop sigsnoop syscount tcprtt
 
 all: ipc process syscall files tcp container oomkill tcpconnlat bindsnoop biolatency biopattern biosnoop biostacks bitesize funclatency llcstat mountsnoop opensnoop sigsnoop syscount tcprtt
@@ -28,6 +29,7 @@ files:
 
 # funclatency:
 # 	@make -C funclatency
+=======
 
 ipc:
 	@make -C ipc

@@ -89,25 +89,37 @@ void tcp_tracker::plain_text_event_printer::handle(tracker_event<tcp_event> &e)
   if (is_start)
   {
     is_start = false;
-    spdlog::info("{:6} {:6} {:16} {:2} {:20} {:20} {:6}", "uid", "pid", "task", "af", "src", "dst", "dport");
+    spdlog::info(
+        "{:6} {:6} {:16} {:2} {:20} {:20} {:6} {:6} {}",
+        "uid",
+        "pid",
+        "task",
+        "af",
+        "src",
+        "dst",
+        "dport",
+        "container id",
+        "container name");
   }
   char src[INET6_ADDRSTRLEN];
   char dst[INET6_ADDRSTRLEN];
   sender s, d;
   if (tcp_tracker::fill_src_dst(s, d, e.data) < 0)
   {
-    spdlog::debug("broken tcp_event\n");
+    spdlog::warn("broken tcp_event\n");
   }
 
   spdlog::info(
-      "{:6} {:6} {:16} {:2} {:20} {:20} {:6}",
+      "{:6} {:6} {:16} {:2} {:20} {:20} {:6} {:12} {}",
       e.data.uid,
       e.data.pid,
       e.data.task,
       e.data.af == AF_INET ? 4 : 6,
       inet_ntop((int)e.data.af, &s, src, sizeof(src)),
       inet_ntop((int)e.data.af, &d, dst, sizeof(dst)),
-      ntohs(e.data.dport));
+      ntohs(e.data.dport),
+      e.ct_info.id,
+      e.ct_info.name);
 }
 
 void tcp_tracker::csv_event_printer::handle(tracker_event<tcp_event> &e)
@@ -137,37 +149,39 @@ void tcp_tracker::csv_event_printer::handle(tracker_event<tcp_event> &e)
       ntohs(e.data.dport));
 }
 
-void tcp_tracker::prometheus_event_handler::report_prometheus_event(const struct tcp_event &e)
+void tcp_tracker::prometheus_event_handler::report_prometheus_event(tracker_event<tcp_event> &e)
 {
   char src[INET6_ADDRSTRLEN];
   char dst[INET6_ADDRSTRLEN];
   sender s, d;
-  if (tcp_tracker::fill_src_dst(s, d, e) < 0)
+  if (tcp_tracker::fill_src_dst(s, d, e.data) < 0)
   {
     spdlog::warn("broken tcp_event\n");
   }
-  if (e.af == AF_INET)
+  if (e.data.af == AF_INET)
   {
     eunomia_tcp_v4_counter
-        .Add({ { "uid", std::to_string(e.uid) },
-               { "task", std::string(e.task) },
-               { "container_id", "0" },
-               { "src", std::string(inet_ntop((int)e.af, &s, src, sizeof(src))) },
-               { "dst", std::string(inet_ntop((int)e.af, &d, dst, sizeof(dst))) },
-               { "port", std::to_string(e.dport) },
-               { "pid", std::to_string(e.pid) } })
+        .Add({ { "uid", std::to_string(e.data.uid) },
+               { "task", std::string(e.data.task) },
+               { "container_id", e.ct_info.id },
+               { "container_name", e.ct_info.name },
+               { "src", std::string(inet_ntop((int)e.data.af, &s, src, sizeof(src))) },
+               { "dst", std::string(inet_ntop((int)e.data.af, &d, dst, sizeof(dst))) },
+               { "port", std::to_string(e.data.dport) },
+               { "pid", std::to_string(e.data.pid) } })
         .Increment();
   }
   else
   {
     eunomia_tcp_v6_counter
-        .Add({ { "uid", std::to_string(e.uid) },
-               { "task", std::string(e.task) },
-               { "container_id", "0" },
-               { "src", std::string(inet_ntop((int)e.af, &s, src, sizeof(src))) },
-               { "dst", std::string(inet_ntop((int)e.af, &d, dst, sizeof(dst))) },
-               { "port", std::to_string(e.dport) },
-               { "pid", std::to_string(e.pid) } })
+        .Add({ { "uid", std::to_string(e.data.uid) },
+               { "task", std::string(e.data.task) },
+               { "container_id", e.ct_info.id },
+               { "container_name", e.ct_info.name },
+               { "src", std::string(inet_ntop((int)e.data.af, &s, src, sizeof(src))) },
+               { "dst", std::string(inet_ntop((int)e.data.af, &d, dst, sizeof(dst))) },
+               { "port", std::to_string(e.data.dport) },
+               { "pid", std::to_string(e.data.pid) } })
         .Increment();
   }
 }
@@ -186,7 +200,7 @@ tcp_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_serve
 
 void tcp_tracker::prometheus_event_handler::handle(tracker_event<tcp_event> &e)
 {
-  report_prometheus_event(e.data);
+  report_prometheus_event(e);
 }
 
 void tcp_tracker::handle_tcp_sample_event(void *ctx, int cpu, void *data, unsigned int data_sz)

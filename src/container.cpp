@@ -4,9 +4,11 @@
  * All rights reserved.
  */
 
+#include <dirent.h>
 #include <spdlog/spdlog.h>
-#include <string.h>
 
+#include <cstring>
+#include <regex>
 #include <sstream>
 
 #include "eunomia/container_manager.h"
@@ -27,39 +29,39 @@ container_manager::container_client::container_client() : dockerd_client("unix:/
   dockerd_client.set_default_headers({ { "Host", "localhost" } });
 }
 
-std::string container_manager::container_client::list_all_containers(void)
+std::string container_manager::container_client::list_all_containers()
 {
-  std::stringstream ss;
+  std::stringstream resp_stream;
   auto response = dockerd_client.Get("/containers/json");
-  ss << response->body;
-  return ss.str();
+  resp_stream << response->body;
+  return resp_stream.str();
 }
 
 std::string container_manager::container_client::list_all_process_running_in_container(const std::string& container_id)
 {
-  std::stringstream ss;
+  std::stringstream resp_stream;
   auto response = dockerd_client.Get("/containers/" + container_id + "/top");
-  ss << response->body;
-  return ss.str();
+  resp_stream << response->body;
+  return resp_stream.str();
 }
 
 std::string container_manager::container_client::inspect_container(const std::string& container_id)
 {
-  std::stringstream ss;
+  std::stringstream resp_stream;
   auto response = dockerd_client.Get("/containers/" + container_id + "/json");
-  ss << response->body;
-  return ss.str();
+  resp_stream << response->body;
+  return resp_stream.str();
 }
 
-container_info container_manager::container_client::get_os_container_info(void)
+container_info container_manager::container_client::get_os_container_info()
 {
   try
   {
     json res_json;
-    std::stringstream ss;
+    std::stringstream resp_stream;
     auto response = dockerd_client.Get("/info");
-    ss << response->body;
-    ss >> res_json;
+    resp_stream << response->body;
+    resp_stream >> res_json;
     return container_info{
       .id = "0",
       .name = res_json["OperatingSystem"].get<std::string>(),
@@ -75,14 +77,104 @@ container_info container_manager::container_client::get_os_container_info(void)
   }
 }
 
-container_manager::container_manager()
+container_info container_manager::get_container_info_for_pid(int pid)
 {
-  os_info = client.get_os_container_info();
-  spdlog::info("OS container info: {}", os_info.name);
-  init_container_map_data();
+  auto res = info_map.get(pid);
+  if (res)
+  {
+    return res->info;
+  }
+  return os_info;
 }
 
-void container_manager::init_container_map_data(void)
+void container_manager::init()
+{
+  // get os info base
+  os_info = client.get_os_container_info();
+  spdlog::info("OS container info: {}", os_info.name);
+  // get all process info into the table
+  get_all_process_info();
+  // get all container process into the table
+  update_container_map_data();
+}
+
+container_manager::container_manager()
+{
+}
+
+std::int64_t get_process_namespace(const char* type, int pid)
+{
+  std::string path = "/proc/" + std::to_string(pid) + "/ns/" + type;
+  constexpr auto BUFFER_SIZE = 128;
+  char buffer[BUFFER_SIZE];
+  ssize_t res = 0;
+  std::int64_t ns = 0;
+
+  res = readlink(path.c_str(), buffer, 100);
+  if (res < 0)
+  {
+    spdlog::error("Failed to readlink {}", path);
+    return 0;
+  }
+  const std::string s = buffer;
+  std::regex rgx(".*:\\[([0-9]+)\\]");
+  std::smatch match;
+
+  if (std::regex_search(s.begin(), s.end(), match, rgx))
+  {
+    ns = std::stoll(match[1].str());
+  }
+  return ns;
+}
+
+// fill the process common event with namespace info
+common_event get_process_common_event(int pid)
+{
+  common_event info = { 0 };
+  info.pid = pid;
+  info.pid_namespace_id = get_process_namespace("pid", pid);
+  info.mount_namespace_id = get_process_namespace("mnt", pid);
+  info.user_namespace_id = get_process_namespace("user", pid);
+  return info;
+}
+
+void container_manager::get_all_process_info(void)
+{
+  DIR* dir = nullptr;
+
+  if (!(dir = opendir("/proc")))
+  {
+    spdlog::error("Failed to open /proc");
+    return;
+  }
+  while (dirent* dirp = readdir(dir))
+  {
+    // is this a directory?
+    if (dirp->d_type != DT_DIR)
+      continue;
+    try
+    {
+      int pid = std::atoi(dirp->d_name);
+      if (pid == 0)
+      {
+        continue;
+      }
+      info_map.insert(pid, process_container_info_data{ get_process_common_event(pid), os_info });
+    }
+    catch (...)
+    {
+      continue;
+    }
+  }
+  int res = closedir(dir);
+  if (res == -1)
+  {
+    spdlog::error("Failed to close /proc");
+    return;
+  }
+}
+
+void container_manager::update_container_map_data(void)
 {
   auto response = client.list_all_containers();
   json containers_json = json::parse(response);
@@ -93,7 +185,76 @@ void container_manager::init_container_map_data(void)
     json process_resp = json::parse(client.list_all_process_running_in_container(info.id));
     for (const auto p : process_resp["Processes"])
     {
-      info_map.insert(std::atoi(std::string(p[2]).c_str()), info);
+      int pid = std::atoi(std::string(p[1]).c_str());
+      int ppid = std::atoi(std::string(p[2]).c_str());
+
+      auto map_data = info_map.get(pid);
+      if (map_data)
+      {
+        // update existing data with new container info
+        map_data->common.pid = pid;
+        map_data->common.ppid = ppid;
+        map_data->info = info;
+        info_map.insert(pid, *map_data);
+      }
+      else
+      {
+        auto common_e = get_process_common_event(pid);
+        common_e.ppid = ppid;
+        info_map.insert(pid, process_container_info_data{ common_e, info });
+      }
     }
   }
+}
+
+static bool operator==(const common_event& a, const common_event& b)
+{
+  return a.pid_namespace_id == b.pid_namespace_id && a.user_namespace_id == b.user_namespace_id &&
+         a.mount_namespace_id == b.mount_namespace_id;
+}
+
+void container_manager::container_tracking_handler::handle(tracker_event<process_event>& e)
+{
+  if (e.data.exit_event)
+  {
+    // process exit;
+    manager.info_map.remove(e.data.common.pid);
+  }
+  else
+  {
+    // process start;
+    auto this_info = manager.info_map.get(e.data.common.pid);
+    if (this_info)
+    {
+      // find the pid and update the map
+      manager.info_map.insert(
+          e.data.common.pid, process_container_info_data{ .common = e.data.common, .info = this_info->info });
+      return;
+    }
+
+    // find ppid info
+    int ppid = e.data.common.ppid;
+    auto pp_info = manager.info_map.get(ppid);
+    if (pp_info)
+    {
+      // reinsert the info from the parent process
+      auto data = *pp_info;
+      if (!(data.common == e.data.common))
+      {
+        // not same namespace, update container info.
+        spdlog::info("different namespace from parent process {}, update info.", e.data.common.pid);
+        manager.update_container_map_data();
+      }
+      data.common = e.data.common;
+      manager.info_map.insert(e.data.common.pid, data);
+      return;
+    }
+    // add new info to ppid
+    manager.info_map.insert(
+        e.data.common.ppid, process_container_info_data{ get_process_common_event(e.data.common.ppid), manager.os_info });
+    // insert new info to the map
+    manager.info_map.insert(
+        e.data.common.pid, process_container_info_data{ .common = e.data.common, .info = this_info->info });
+  }
+  e.ct_info = manager.get_container_info_for_pid(e.data.common.pid);
 }

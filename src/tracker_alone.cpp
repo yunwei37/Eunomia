@@ -54,7 +54,7 @@ void tracker_alone_base::start_parent_process()
   while ((!exiting) && (read_bytes = read(stdout_pipe_fd[0], stdout_pipe_buf, MAX_PROCESS_MESSAGE_LENGTH)) > 0)
   {
     // send to event handler
-    auto event = tracker_event<tracker_alone_event>{ std::string(stdout_pipe_buf, read_bytes) };
+    auto event = tracker_event<tracker_alone_event>{ 0, std::string(stdout_pipe_buf, read_bytes) };
     if (current_config.handler)
     {
       current_config.handler->do_handle_event(event);
@@ -131,5 +131,5 @@ std::unique_ptr<tracker_alone_base> tracker_alone_base::create_tracker_with_defa
 
 void tracker_alone_base::plain_text_event_printer::handle(tracker_event<tracker_alone_event>& e)
 {
-  spdlog::info(e.data.process_messages);
+  // spdlog::info(e.data.process_messages);
 }

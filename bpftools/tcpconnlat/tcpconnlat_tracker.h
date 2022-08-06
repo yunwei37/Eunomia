@@ -266,7 +266,7 @@ static int start_tcpconnlat(int argc, char **argv)
   }
 
 cleanup:
-  // perf_buffer__free(pb);
+  perf_buffer__free(pb);
   tcpconnlat_bpf__destroy(obj);
 
   return err != 0;

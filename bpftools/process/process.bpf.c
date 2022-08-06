@@ -76,6 +76,7 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
 
 	bpf_get_current_comm(&e->comm, sizeof(e->comm));
 	e->exit_event = false;
+	e->pid = pid;
 	fname_off = ctx->__data_loc_filename & 0xFFFF;
 	bpf_probe_read_str(e->filename, sizeof(e->filename), (void *)ctx + fname_off);
 
@@ -131,7 +132,7 @@ int handle_exit(struct trace_event_raw_sched_process_template *ctx)
 
 	e->exit_event = true;
 	e->duration_ns = duration_ns;
-
+	e->pid = pid;
 	e->exit_code = (BPF_CORE_READ(task, exit_code) >> 8) & 0xff;
 	bpf_get_current_comm(&e->comm, sizeof(e->comm));
 

@@ -15,6 +15,7 @@ struct process_event
 	struct common_event common;
 
 	unsigned exit_code;
+	int pid;
 	unsigned long long duration_ns;
 	char comm[TASK_COMM_LEN];
 	char filename[MAX_FILENAME_LEN];

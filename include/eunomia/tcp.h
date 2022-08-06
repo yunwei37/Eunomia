@@ -45,7 +45,7 @@ struct tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
   {
     prometheus::Family<prometheus::Counter> &eunomia_tcp_v4_counter;
     prometheus::Family<prometheus::Counter> &eunomia_tcp_v6_counter;
-    void report_prometheus_event(const struct tcp_event &e);
+    void report_prometheus_event(tracker_event<tcp_event> &e);
 
     prometheus_event_handler(prometheus_server &server);
     void handle(tracker_event<tcp_event> &e);
@@ -68,7 +68,7 @@ struct tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
   {
     void handle(tracker_event<tcp_event> &e);
   };
-  
+
   struct csv_event_printer : public event_handler<tcp_event>
   {
     void handle(tracker_event<tcp_event> &e);

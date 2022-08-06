@@ -122,18 +122,22 @@ struct rule_base : event_handler<EVNET>
 // files rule:
 //
 // for example, a read or write to specific file
-struct files_rule_base : rule_base<files_event>
+struct files_rule_checker : rule_base<files_event>
 {
-  virtual ~files_rule_base() = default;
+  virtual ~files_rule_checker() = default;
+  files_rule_checker(std::shared_ptr<sec_analyzer> analyzer_ptr) : rule_base(analyzer_ptr)
+  {}
   int check_rule(const tracker_event<files_event> &e, rule_message &msg);
 };
 
 // process rule:
 //
 // for example, a specific process is running
-struct process_rule_base : rule_base<process_event>
+struct process_rule_checker : rule_base<process_event>
 {
-  virtual ~process_rule_base() = default;
+  virtual ~process_rule_checker() = default;
+  process_rule_checker(std::shared_ptr<sec_analyzer> analyzer_ptr) : rule_base(analyzer_ptr)
+  {}
   int check_rule(const tracker_event<process_event> &e, rule_message &msg);
 };
 

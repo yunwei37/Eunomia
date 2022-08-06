@@ -46,6 +46,7 @@ template<typename ENV, typename EVENT>
 struct tracker_with_config : public tracker_base
 {
   // type alias
+  using event = EVENT;
   using config_data = tracker_config<ENV, EVENT>;
   using tracker_event_handler = std::shared_ptr<event_handler<EVENT>>;
 
@@ -67,15 +68,10 @@ struct tracker_with_config : public tracker_base
     }
   };
   // used for json exporter, inherits from json_event_handler
-  struct json_event_printer final
+  struct json_event_printer final : public event_handler<EVENT>
   {
-    std::string to_json(const EVENT &e)
-    {
-      return std::string("{}");
-    }
     void handle(tracker_event<EVENT> &e)
     {
-      std::cout << to_json(e.event) << std::endl;
     }
   };
   // print to csv
@@ -101,6 +97,7 @@ struct tracker_with_config : public tracker_base
 template<typename TRACKER>
 concept tracker_concept = requires
 {
+  typename TRACKER::event;
   typename TRACKER::config_data;
   typename TRACKER::tracker_event_handler;
   typename TRACKER::prometheus_event_handler;

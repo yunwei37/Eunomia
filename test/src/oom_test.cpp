@@ -4,8 +4,8 @@
  * All rights reserved.
  */
 
-#include "eunomia/tracker_integrations.h"
 #include "eunomia/prometheus_server.h"
+#include "eunomia/tracker_integrations.h"
 
 //#include <gtest/gtest.h>
 
@@ -16,21 +16,15 @@ using namespace std::chrono_literals;
 int main(int argc, char **argv)
 {
   {
-  tracker_manager manager;
-  std::cout << "start ebpf...\n";
+    tracker_manager manager;
+    std::cout << "start ebpf...\n";
 
-  //auto server = prometheus_server("127.0.0.1:8528");
+    auto test_event_printer =
+        std::make_shared<tcpconnlat_tracker::plain_text_event_printer>(tcpconnlat_tracker::plain_text_event_printer{});
 
-  // prometheus_event_handler =
-  //    std::make_shared<tcpconnlat_tracker::prometheus_event_handler>(tcpconnlat_tracker::prometheus_event_handler(server));
-  auto test_event_printer = std::make_shared<tcpconnlat_tracker::plain_text_event_printer>(tcpconnlat_tracker::plain_text_event_printer{});
-  // auto json_event_printer2 = std::make_shared<process_tracker::json_event_printer>(process_tracker::json_event_printer{});
-  // prometheus_event_handler->add_handler(json_event_printer);
-  // prometheus_event_handler->add_handler(json_event_printer)->add_handler(json_event_printer2);
-
-  auto tracker_ptr = tcpconnlat_tracker::create_tracker_with_default_env(std::move(test_event_printer));
-  manager.start_tracker(std::move(tracker_ptr));
+    auto tracker_ptr = tcpconnlat_tracker::create_tracker_with_default_env(std::move(test_event_printer));
+    manager.start_tracker(std::move(tracker_ptr));
     std::this_thread::sleep_for(10s);
-}
+  }
   return 0;
 }

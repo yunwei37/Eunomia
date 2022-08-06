@@ -58,8 +58,8 @@ function(set_project_warnings project_name)
       -Wdouble-promotion # warn if float is implicit promoted to double
       -Wformat=2 # warn on security issues around functions that format output
                  # (ie printf)
-        -Wno-unused-function 
-        -Wno-unused-variable 
+        -Wno-unused-function
+        -Wno-unused-variable
         -Wno-unused-parameter
         -Wno-missing-field-initializers
         -Wno-pointer-arith
@@ -72,6 +72,7 @@ function(set_project_warnings project_name)
 
   set(GCC_WARNINGS
       ${CLANG_WARNINGS}
+      -fno-strict-aliasing
       -Wmisleading-indentation # warn if indentation implies blocks where blocks
                                # do not exist
       -Wduplicated-cond # warn if if / else chain has duplicated conditions

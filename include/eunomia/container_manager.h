@@ -1,10 +1,12 @@
 #ifndef CONTAINER_MANAGER_EUNOMIA_H
 #define CONTAINER_MANAGER_EUNOMIA_H
 
+#include <httplib.h>
+#include <optional>
 #include <mutex>
 #include <shared_mutex>
 #include <unordered_map>
-#include <httplib.h>
+
 #include "model/tracker.h"
 
 extern "C"
@@ -18,21 +20,36 @@ class container_manager
   // use process tracker to track the processes created in the container
   class container_tracking_handler : public event_handler<process_event>
   {
+    container_manager &manager;
+
    public:
     void handle(tracker_event<process_event> &e);
-    container_tracking_handler(container_manager &manager);
+    container_tracking_handler(container_manager &m) : manager(m)
+    {
+    }
   };
 
   template<typename EVENT>
-  // use process tracker to track the processes created in the container
-  class container_info_handler : public event_handler<EVENT>
+      // use process tracker to track the processes created in the container
+      class container_info_handler : public event_handler<EVENT>
   {
+    container_manager &manager;
+
    public:
-    void handle(tracker_event<EVENT> &e);
-    container_info_handler(container_manager &manager);
+    void handle(tracker_event<EVENT> &e)
+    {
+      if (e.data.pid == 0) {
+        return;
+      }
+      // no container info; get it
+      e.ct_info = manager.get_container_info_for_pid(e.data.pid);
+    }
+    container_info_handler(container_manager &m) : manager(m){};
   };
 
   container_manager();
+  void init();
+  container_info get_container_info_for_pid(int pid);
 
  private:
   // container client for getting container info
@@ -53,27 +70,38 @@ class container_manager
     container_client();
   };
 
+  struct process_container_info_data
+  {
+    common_event common;
+    container_info info;
+  };
+
   // used to store container info
   class container_info_map
   {
    private:
     // use rw lock to protect the map
     mutable std::shared_mutex mutex_;
-    std::unordered_map<int, container_info> container_info_map__;
+    // pid -> container info
+    std::unordered_map<int, process_container_info_data> container_info_map__;
 
    public:
     container_info_map() = default;
     // insert a container info into the map
-    void insert(int pid, container_info info)
+    void insert(int pid, process_container_info_data info)
     {
       std::unique_lock<std::shared_mutex> lock(mutex_);
       container_info_map__[pid] = info;
     }
     // get a container info from the map
-    container_info get(int pid)
+    std::optional<process_container_info_data> get(int pid)
     {
       std::shared_lock<std::shared_mutex> lock(mutex_);
-      return container_info_map__[pid];
+      if (container_info_map__.find(pid) != container_info_map__.end())
+      {
+        return container_info_map__[pid];
+      }
+      return std::nullopt;
     }
     // remove a pid related container info from the map
     void remove(int pid)
@@ -89,7 +117,13 @@ class container_manager
   // This is the default info for process not in the container
   container_info os_info;
 
-  void init_container_map_data(void);
+  void get_all_process_info(void);
+  // init the container info map for all running processes
+  void update_container_map_data(void);
 };
+
+// helper functions
+std::int64_t get_process_namespace(const char *type, int pid);
+void fill_process_common_event(common_event &info, int pid);
 
 #endif
