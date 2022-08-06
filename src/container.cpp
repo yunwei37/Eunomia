@@ -243,8 +243,6 @@ void container_manager::container_tracking_handler::handle(tracker_event<process
       {
         // not same namespace, update container info.
         spdlog::info("different namespace from parent process {}, update info.", e.data.common.pid);
-        // spdlog::info("process namespace {} {} {} {}", data.common.pid_namespace_id, data.common.cgroup_id,
-        //              data.common.mount_namespace_id, data.common.user_namespace_id);
         manager.update_container_map_data();
       }
       data.common = e.data.common;

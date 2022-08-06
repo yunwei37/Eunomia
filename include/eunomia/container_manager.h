@@ -2,7 +2,7 @@
 #define CONTAINER_MANAGER_EUNOMIA_H
 
 #include <httplib.h>
-
+#include <optional>
 #include <mutex>
 #include <shared_mutex>
 #include <unordered_map>
