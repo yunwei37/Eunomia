@@ -40,5 +40,47 @@ struct capable_tracker final: public tracker_alone_base {
   static std::unique_ptr<capable_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 };
 
+struct memleak_tracker final: public tracker_alone_base {
+  memleak_tracker(config_data config) : tracker_alone_base(config) {}
+
+  static std::unique_ptr<memleak_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+};
+
+struct mountsnoop_tracker final: public tracker_alone_base {
+  mountsnoop_tracker(config_data config) : tracker_alone_base(config) {}
+
+  static std::unique_ptr<mountsnoop_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+};
+
+struct sigsnoop_tracker final: public tracker_alone_base {
+  sigsnoop_tracker(config_data config) : tracker_alone_base(config) {}
+
+  static std::unique_ptr<sigsnoop_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+};
+
+struct opensnoop_tracker final: public tracker_alone_base {
+  opensnoop_tracker(config_data config) : tracker_alone_base(config) {}
+
+  static std::unique_ptr<opensnoop_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+};
+
+struct bindsnoop_tracker final: public tracker_alone_base {
+  bindsnoop_tracker(config_data config) : tracker_alone_base(config) {}
+
+  static std::unique_ptr<bindsnoop_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+};
+
+struct syscount_tracker final: public tracker_alone_base {
+  syscount_tracker(config_data config) : tracker_alone_base(config) {}
+
+  static std::unique_ptr<syscount_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+};
+
+struct funclatency_tracker final: public tracker_alone_base {
+  funclatency_tracker(config_data config) : tracker_alone_base(config) {}
+
+  static std::unique_ptr<funclatency_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+};
+
 
 #endif

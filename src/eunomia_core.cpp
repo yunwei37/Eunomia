@@ -155,13 +155,34 @@ void eunomia_core::start_tracker(const tracker_config_data& config)
   {
     core_tracker_manager.start_tracker(create_default_tracker<capable_tracker>(config));
   }
-  else if (config.name == "tcpconnlat")
+  else if (config.name == "memleak")
   {
-    core_tracker_manager.start_tracker(create_default_tracker<tcpconnlat_tracker>(config));
+    core_tracker_manager.start_tracker(create_default_tracker<memleak_tracker>(config));
   }
-  else if (config.name == "oomkill")
+  else if (config.name == "mountsnoop")
   {
-    core_tracker_manager.start_tracker(create_default_tracker<oomkill_tracker>(config));
+    core_tracker_manager.start_tracker(create_default_tracker<mountsnoop_tracker>(config));
+  }
+  else if (config.name == "sigsnoop")
+  {
+    core_tracker_manager.start_tracker(create_default_tracker<sigsnoop_tracker>(config));
+  }
+  else if (config.name == "opensnoop")
+  {
+    core_tracker_manager.start_tracker(create_default_tracker<opensnoop_tracker>(config));
+  }
+  else if (config.name == "bindsnoop")
+  {
+    core_tracker_manager.start_tracker(create_default_tracker<bindsnoop_tracker>(config));
+  }
+  else if (config.name == "syscount")
+  {
+    core_tracker_manager.start_tracker(create_default_tracker<syscount_tracker>(config));
+  }
+  else if (config.name == "funclatency")
+  {
+    core_tracker_manager.start_tracker(create_default_tracker<funclatency_tracker>(config));
+
   }
   else
   {
