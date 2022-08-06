@@ -17,8 +17,12 @@
 struct tracker_manager
 {
  private:
+  struct tracker_base_data {
+    std::string name;
+    std::unique_ptr<tracker_base> tracker;
+  };
   int id_count = 1;
-  std::map<int, std::unique_ptr<tracker_base>> trackers;
+  std::map<int,  tracker_base_data> trackers;
 
  public:
   ~tracker_manager() = default;
@@ -26,8 +30,15 @@ struct tracker_manager
   {
     trackers.erase(id);
   }
-
-  std::size_t start_tracker(std::unique_ptr<tracker_base> tracker_ptr)
+  std::vector<std::tuple<int, std::string>> get_tracker_list()
+  {
+    std::vector<std::tuple<int, std::string>> list;
+    for (auto &[id, data] : trackers) {
+      list.push_back({id, data.name});
+    }
+    return list;
+  }
+  std::size_t start_tracker(std::unique_ptr<tracker_base> tracker_ptr, const std::string &name)
   {
     if (!tracker_ptr)
     {
@@ -35,7 +46,7 @@ struct tracker_manager
       return 0;
     }
     tracker_ptr->thread = std::thread(&tracker_base::start_tracker, tracker_ptr.get());
-    trackers.emplace(id_count++, std::move(tracker_ptr));
+    trackers.emplace(id_count++, tracker_base_data{name, std::move(tracker_ptr)});
     return trackers.size() - 1;
   }
 

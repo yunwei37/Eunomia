@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "eunomia/eunomia_core.h"
+#include "eunomia/http_server.h"
 
 using namespace std::chrono_literals;
 
@@ -31,7 +32,7 @@ void run_mode_operation(const std::string& name, eunomia_config_data& core_confi
   core.start_eunomia();
 }
 
-void safe_mode_opertiaon(eunomia_config_data core_config)
+void safe_mode_opertiaon(eunomia_config_data& core_config)
 {
   core_config.fmt = "none";
   core_config.enable_sec_rule_detect = true;
@@ -39,7 +40,7 @@ void safe_mode_opertiaon(eunomia_config_data core_config)
   core.start_eunomia();
 }
 
-void server_mode_operation(bool load_from_config_file, eunomia_config_data core_config)
+void server_mode_operation(bool load_from_config_file, eunomia_config_data& core_config)
 {
   if (!load_from_config_file)
   {
@@ -47,20 +48,25 @@ void server_mode_operation(bool load_from_config_file, eunomia_config_data core_
     core_config.enable_sec_rule_detect = true;
   }
   std::cout << "start server mode...\n";
-  eunomia_core core(core_config);
-  core.start_eunomia();
+  eunomia_server server(core_config, 8527);
+  server.serve();
 }
 
-void seccomp_mode_operation(eunomia_config_data core_config)
+void seccomp_mode_operation(eunomia_config_data& core_config)
 {
   // enable seccomp with config white list
-  // if (core_config.seccomp.len >= 439)
-  // {
-  //   spdlog::error("seccomp config file error : allow syscall cannot bigger
-  //   than 439"); exit(0);
-  // } else {
-  //   enable_seccomp_white_list(core_config.seccomp);
-  // }
+  for (const auto& item : core_config.seccomp_data)
+  {
+      if (item.allow_syscall.size() >= 439)
+  {
+    spdlog::error("seccomp config file error : allow syscall cannot bigger than 439");
+    exit(0);
+  }
+  else
+  {
+    // enable_seccomp_white_list(item);
+  }
+  }
 }
 
 int main(int argc, char* argv[])
@@ -70,7 +76,8 @@ int main(int argc, char* argv[])
   bool load_from_config_file = false;
   pid_t target_pid = 0;
   int time_tracing = 0;
-  std::string fmt = "", listening_address = "127.0.0.1:8528";
+  std::string fmt = "", prometheus_listening_address = "127.0.0.1:8528";
+  int server_port = 8527;
   std::string config_file = "", output_file = "", container_log_path = "";
   eunomia_mode selected = eunomia_mode::help;
   std::string run_selected = "process";
@@ -118,7 +125,7 @@ int main(int argc, char* argv[])
        config_cmd,
        (clipp::option("--no_safe").set(safe_flag, false)) % "Stop safe module",
        (clipp::option("--no_prometheus").set(prometheus_flag, false)) % "Stop prometheus server",
-       (clipp::option("--listen") & clipp::value("listening address", listening_address)) %
+       (clipp::option("--listen") & clipp::value("listening address", prometheus_listening_address)) %
            "Listen http requests on this address, the format is like "
            "\"127.0.0.1:8528\"");
 
@@ -140,7 +147,7 @@ int main(int argc, char* argv[])
   // note: cmd flags will override config file
   if (prometheus_flag)
   {
-    core_config.prometheus_listening_address = listening_address;
+    core_config.prometheus_listening_address = prometheus_listening_address;
   }
   if (container_id)
   {
@@ -157,12 +164,6 @@ int main(int argc, char* argv[])
   }
 
   spdlog::info("eunomia run in cmd...");
-
-  httplib::Server server;
-  server.Get("/boot", [](const httplib::Request &, httplib::Response &res) {
-    res.set_content("Eunomia server start successfully", "text/plain");
-  });
-  server.listen("0.0.0.0",8080);
 
   switch (selected)
   {

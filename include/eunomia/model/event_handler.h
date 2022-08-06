@@ -60,7 +60,7 @@ public:
         try {
             handle(e);
         } catch (const std::exception& error) {
-            std::cerr << "exception: " << error.what() << std::endl;
+            // std::cerr << "exception: " << error.what() << std::endl;
             is_catched = true;
         }
         if (!is_catched && next_handler)

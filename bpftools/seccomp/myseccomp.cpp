@@ -5,6 +5,7 @@
  */
 
 #include "eunomia/myseccomp.h"
+#include "spdlog/spdlog.h"
 
 // if interger var id is not exist in array syscall_id[] return true, otherwise return false
 bool is_not_exist(uint32_t syscall_id[], int len, int id)
@@ -84,11 +85,11 @@ int get_syscall_id(std::string syscall_name)
 
 // Enable Seccomp syscall
 // param seccomp_config type is defined by include/eunomia/config.h
-int enable_seccomp_white_list(seccomp_config config)
+int enable_seccomp_white_list(const seccomp_config& config)
 {
   spdlog::info("enabled seccomp");
   std::vector<uint32_t> syscall_vec;  // allow_syscall_id list
-  for (int i = 0; i < config.len; i++)
+  for (int i = 0; i < config.allow_syscall.size(); i++)
   {
     int id = get_syscall_id(config.allow_syscall[i]);
     if (id == -1)

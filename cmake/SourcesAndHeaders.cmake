@@ -12,6 +12,7 @@ set(sources
     src/config.cpp
     src/myseccomp.cpp
     src/tracker_alone.cpp
+    src/http_server.cpp
     src/tracker_integrations/oomkill.cpp
     src/tracker_integrations/tcpconnlat.cpp
     src/tracker_integrations/capable.cpp

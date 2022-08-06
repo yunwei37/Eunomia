@@ -1,11 +1,7 @@
 {
     "run_selected": "server",
     "enabled_trackers": [
-        {
-            "name": "process",
-            "export_handlers": [],
-            "args": []
-        },
+        {"name": "process","export_handlers": [],"args": []},
         {
             "name": "tcpconnect",
             "export_handlers": [],

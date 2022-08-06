@@ -132,48 +132,59 @@ std::unique_ptr<process_tracker> eunomia_core::create_process_tracker_with_conta
   return create_default_tracker_with_handler<process_tracker>(base, handler);
 }
 
-void eunomia_core::start_tracker(const tracker_config_data& config)
+std::vector<std::tuple<int, std::string>> eunomia_core::list_all_trackers(void)
 {
+  return core_tracker_manager.get_tracker_list();
+}
+
+void eunomia_core::stop_tracker(std::size_t tracker_id)
+{
+  core_tracker_manager.remove_tracker(tracker_id);
+}
+
+std::optional<std::size_t> eunomia_core::start_tracker(const tracker_config_data& config)
+{
+  spdlog::info("{} tracker is starting...", config.name);
   if (config.name == "files")
   {
-    core_tracker_manager.start_tracker(create_default_tracker<files_tracker>(config));
+    return core_tracker_manager.start_tracker(create_default_tracker<files_tracker>(config), config.name);
   }
   else if (config.name == "process")
   {
-    core_tracker_manager.start_tracker(create_process_tracker_with_container_tracking(config));
+    return core_tracker_manager.start_tracker(create_process_tracker_with_container_tracking(config), config.name);
   }
   else if (config.name == "syscall")
   {
-    core_tracker_manager.start_tracker(
-        create_default_tracker_with_sec_analyzer<syscall_tracker, syscall_rule_checker>(config));
+    return core_tracker_manager.start_tracker(
+        create_default_tracker_with_sec_analyzer<syscall_tracker, syscall_rule_checker>(config), config.name);
   }
   else if (config.name == "tcpconnect")
   {
-    core_tracker_manager.start_tracker(create_default_tracker<tcp_tracker>(config));
+    return core_tracker_manager.start_tracker(create_default_tracker<tcp_tracker>(config), config.name);
   }
   else if (config.name == "capable")
   {
-    core_tracker_manager.start_tracker(create_default_tracker<capable_tracker>(config));
+    return core_tracker_manager.start_tracker(create_default_tracker<capable_tracker>(config), config.name);
   }
   else if (config.name == "memleak")
   {
-    core_tracker_manager.start_tracker(create_default_tracker<memleak_tracker>(config));
+    return core_tracker_manager.start_tracker(create_default_tracker<memleak_tracker>(config), config.name);
+  }
+  else if (config.name == "tcpconnlat")
+  {
+    return core_tracker_manager.start_tracker(create_default_tracker<tcpconnlat_tracker>(config), config.name);
   }
   else if (config.name == "mountsnoop")
   {
-    core_tracker_manager.start_tracker(create_default_tracker<mountsnoop_tracker>(config));
+    return core_tracker_manager.start_tracker(create_default_tracker<mountsnoop_tracker>(config), config.name);
   }
   else if (config.name == "sigsnoop")
   {
-    core_tracker_manager.start_tracker(create_default_tracker<sigsnoop_tracker>(config));
-  }
-  else if (config.name == "opensnoop")
-  {
-    core_tracker_manager.start_tracker(create_default_tracker<opensnoop_tracker>(config));
+    return core_tracker_manager.start_tracker(create_default_tracker<sigsnoop_tracker>(config), config.name);
   }
   else if (config.name == "bindsnoop")
   {
-    core_tracker_manager.start_tracker(create_default_tracker<bindsnoop_tracker>(config));
+    return core_tracker_manager.start_tracker(create_default_tracker<bindsnoop_tracker>(config), config.name);
   }
   // else if (config.name == "syscount")
   // {
@@ -186,8 +197,8 @@ void eunomia_core::start_tracker(const tracker_config_data& config)
   else
   {
     spdlog::error("unknown tracker name: {}", config.name);
+    return std::nullopt;
   }
-  spdlog::info("{} tracker is started", config.name);
 }
 
 void eunomia_core::start_trackers(void)
@@ -195,7 +206,7 @@ void eunomia_core::start_trackers(void)
   for (auto& t : core_config.enabled_trackers)
   {
     spdlog::info("start ebpf tracker...");
-    start_tracker(t);
+    (void)start_tracker(t);
   }
 }
 

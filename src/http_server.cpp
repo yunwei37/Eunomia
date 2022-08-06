@@ -1,35 +1,114 @@
 #include "eunomia/http_server.h"
 
-eunomia_server::eunomia_server() {
-    port = 8080;
-    start_tracking();
-    end_trackting();
-    server.listen("0.0.0.0", port);
-}
-eunomia_server::eunomia_server(int p):port(p) {
-    start_tracking();
-    end_trackting();
-    server.listen("0.0.0.0", port);
+#include <spdlog/spdlog.h>
+
+#include <json.hpp>
+
+#include "eunomia/config.h"
+
+#define get_from_json_at(name)                   \
+  try                                            \
+  {                                              \
+    j.at(#name).get_to(data.name);               \
+  }                                              \
+  catch (...)                                    \
+  {                                              \
+    spdlog::warn("{} use default value", #name); \
+  }
+
+static void from_json(const nlohmann::json& j, handler_config_data& data)
+{
+  get_from_json_at(name);
+  get_from_json_at(args);
 }
 
-void eunomia_server::start_tracking() {
-    server.Get("/start", [](const httplib::Request &req, httplib::Response &res) {
-        std::string req_str("Start ");
-        eunomia_config_data core_config;
-        core_config.enabled_trackers.clear();
-        for (auto [_, tracker_name] : req.params)
+static void from_json(const nlohmann::json& j, tracker_config_data& data)
+{
+  get_from_json_at(name);
+  get_from_json_at(args);
+  get_from_json_at(export_handlers);
+}
+
+eunomia_server::eunomia_server(eunomia_config_data &config, int p) : core(config), port(p)
+{
+}
+
+void eunomia_server::serve()
+{
+  server.Post(
+      "/start",
+      [=](const httplib::Request &req, httplib::Response &res)
+      {
+        const std::lock_guard<std::mutex> lock(seq_mutex);
+        std::string req_str;
+        tracker_config_data data;
+        try
         {
-            req_str += tracker_name;
-            core_config.enabled_trackers.push_back(tracker_config_data{ .name = tracker_name});
-            req_str += ",";
+          nlohmann::json j = nlohmann::json::parse(req.body);
+          data = j.get<tracker_config_data>();
+          auto id = core.start_tracker(data);
+          if (!id)
+          {
+            req_str = nlohmann::json{ "status", "error" }.dump();
+          }
+          else
+          {
+            req_str = nlohmann::json{ "status", "ok", "id", *id }.dump();
+          }
         }
-        eunomia_core core(core_config);
-        core.start_eunomia();
+        catch (...)
+        {
+          spdlog::error("json parse error for tracker_config_data! {}", req.body);
+          res.status = 404;
+          return;
+        }
         res.status = 200;
-        res.set_content(req_str, "text/plain");
+        res.set_content(req_str, "text/json");
+      });
+
+  server.Post(
+      "/stop",
+      [=](const httplib::Request &req, httplib::Response &res)
+      {
+        const std::lock_guard<std::mutex> lock(seq_mutex);
+        std::string req_str;
+        try
+        {
+          nlohmann::json j = nlohmann::json::parse(req.body);
+          auto id = j.at("id").get<std::size_t>();
+          core.stop_tracker(id);
+          req_str = nlohmann::json{ "status", "ok" }.dump();
+        }
+        catch (...)
+        {
+          spdlog::error("json parse error for stop tracker {}", req.body);
+          res.status = 404;
+          return;
+        }
+        res.status = 200;
+        res.set_content(req_str, "text/json");
+      });
+
+    server.Get("list", [=](const httplib::Request &req, httplib::Response &res)
+    {
+      const std::lock_guard<std::mutex> lock(seq_mutex);
+      std::string req_str;
+      try
+      {
+        nlohmann::json j = nlohmann::json::parse(req.body);
+        auto id = j.at("id").get<std::size_t>();
+        auto list = core.list_all_trackers();
+        req_str = nlohmann::json{ "status", "ok", "list", list }.dump();
+      }
+      catch (...)
+      {
+        spdlog::error("json parse error for list trackers {}", req.body);
+        res.status = 404;
+        return;
+      }
+      res.status = 200;
+      res.set_content(req_str, "text/json");
     });
-}
-
-void eunomia_server::end_trackting() {
-
+    core.start_eunomia();
+    server.listen("127.0.0.1", port);
 }

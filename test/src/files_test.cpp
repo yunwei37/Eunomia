@@ -24,7 +24,7 @@ int main(int argc, char **argv)
   prometheus_event_handler->add_handler(json_event_printer);
 
   auto tracker_ptr = files_tracker::create_tracker_with_default_env(prometheus_event_handler);
-  manager.start_tracker(std::move(tracker_ptr));
+  manager.start_tracker(std::move(tracker_ptr), "");
 
   server.start_prometheus_server();
 

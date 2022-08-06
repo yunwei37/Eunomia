@@ -42,8 +42,8 @@ int main(int argc, char** argv)
         std::make_shared<container_manager::container_info_handler<tcp_event>>(container_manager::container_info_handler<tcp_event>{ mp });
     container_info_handler->add_handler(stdout_event_printer);
 
-    manager.start_tracker(process_tracker::create_tracker_with_default_env(container_tracking_handler));
-    manager.start_tracker(tcp_tracker::create_tracker_with_default_env(container_info_handler));
+    manager.start_tracker(process_tracker::create_tracker_with_default_env(container_tracking_handler), "");
+    manager.start_tracker(tcp_tracker::create_tracker_with_default_env(container_info_handler), "");
 
     std::this_thread::sleep_for(10s);
   }

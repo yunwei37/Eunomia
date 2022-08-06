@@ -27,9 +27,9 @@ int main(int argc, char **argv)
   auto files_ptr = files_tracker::create_tracker_with_default_env(prometheus_files_handler);
 
   std::cout<< "start tracker..." << std::endl;
-  manager.start_tracker(std::move(process_ptr));
+  manager.start_tracker(std::move(process_ptr), "");
   std::cout<< "start tracker..." << std::endl;
-  manager.start_tracker(std::move(files_ptr));
+  manager.start_tracker(std::move(files_ptr), "");
 
   std::cout<< "start server..." << std::endl;
   server.start_prometheus_server();

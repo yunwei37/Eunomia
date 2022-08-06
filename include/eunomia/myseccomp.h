@@ -36,6 +36,6 @@ int get_syscall_id(std::string syscall_name);
 
 // Enable Seccomp syscall
 // param seccomp_config type is defined by include/eunomia/config.h
-int enable_seccomp_white_list(seccomp_config config);
+int enable_seccomp_white_list(const seccomp_config& config);
 
 #endif

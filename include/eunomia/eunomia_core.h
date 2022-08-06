@@ -7,8 +7,9 @@
 #ifndef EUNOMIA_TRACKER_FACTORY_H
 #define EUNOMIA_TRACKER_FACTORY_H
 
+#include <optional>
+
 #include "config.h"
-#include "http_server.h"
 #include "eunomia/config.h"
 #include "eunomia/container_manager.h"
 #include "eunomia/files.h"
@@ -28,6 +29,7 @@ struct eunomia_core
  private:
   // eunomia config
   eunomia_config_data core_config;
+
   // manager for all tracker
   tracker_manager core_tracker_manager;
   // manager for container events
@@ -66,8 +68,6 @@ struct eunomia_core
   // create process tracker with docker info
   std::unique_ptr<process_tracker> create_process_tracker_with_container_tracking(const tracker_config_data& base);
 
-  // start a single tracker base on config
-  void start_tracker(const tracker_config_data& config);
   // start all trackers
   void start_trackers(void);
   // check and stop all trackers if needed
@@ -82,6 +82,12 @@ struct eunomia_core
  public:
   eunomia_core(eunomia_config_data& config);
   int start_eunomia(void);
+  // start a single tracker base on config
+  std::optional<std::size_t> start_tracker(const tracker_config_data& config);
+  // list all trackers
+  std::vector<std::tuple<int, std::string>> list_all_trackers(void);
+  // stop a tracker by id
+  void stop_tracker(std::size_t tracker_id);
 };
 
 #endif
