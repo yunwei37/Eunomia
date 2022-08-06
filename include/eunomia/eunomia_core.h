@@ -8,6 +8,7 @@
 #define EUNOMIA_TRACKER_FACTORY_H
 
 #include "config.h"
+#include "http_server.h"
 #include "eunomia/config.h"
 #include "eunomia/container_manager.h"
 #include "eunomia/files.h"

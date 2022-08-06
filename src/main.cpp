@@ -158,6 +158,12 @@ int main(int argc, char* argv[])
 
   spdlog::info("eunomia run in cmd...");
 
+  httplib::Server server;
+  server.Get("/boot", [](const httplib::Request &, httplib::Response &res) {
+    res.set_content("Eunomia server start successfully", "text/plain");
+  });
+  server.listen("0.0.0.0",8080);
+
   switch (selected)
   {
     case eunomia_mode::run: run_mode_operation(run_selected, core_config); break;
