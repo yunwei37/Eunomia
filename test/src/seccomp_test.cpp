@@ -34,7 +34,7 @@ int main()
 //      "read",
       "write",
       "exit",
-      "rt_sigreturn"      
+      "rt_sigreturn"
   };
 
   config.allow_syscall.assign(str.begin(), str.end());

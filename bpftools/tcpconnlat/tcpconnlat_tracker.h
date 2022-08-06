@@ -242,7 +242,7 @@ static int start_tcpconnlat(int argc, char **argv)
   }
   else
   {
-    printf("%-6s %-12s %-2s %-16s %-16s %-5s %s\n", "PID", "COMM", "IP", "SADDR", "DADDR", "DPORT", "LAT(ms)");
+    // printf("%-6s %-12s %-2s %-16s %-16s %-5s %s\n", "PID", "COMM", "IP", "SADDR", "DADDR", "DPORT", "LAT(ms)");
   }
 
   if (signal(SIGINT, sig_int) == SIG_ERR)

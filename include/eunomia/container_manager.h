@@ -49,7 +49,7 @@ class container_manager
 
   container_manager();
   void init();
-  container_info get_container_info_for_pid(int pid);
+  container_info get_container_info_for_pid(int pid) const;
 
  private:
   // container client for getting container info
@@ -94,12 +94,13 @@ class container_manager
       container_info_map__[pid] = info;
     }
     // get a container info from the map
-    std::optional<process_container_info_data> get(int pid)
+    std::optional<process_container_info_data> get(int pid) const
     {
       std::shared_lock<std::shared_mutex> lock(mutex_);
-      if (container_info_map__.find(pid) != container_info_map__.end())
+      auto ct_info_p = container_info_map__.find(pid);
+      if (ct_info_p != container_info_map__.end())
       {
-        return container_info_map__[pid];
+        return ct_info_p->second;
       }
       return std::nullopt;
     }

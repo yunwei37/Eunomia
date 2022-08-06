@@ -37,7 +37,7 @@ struct process_tracker : public tracker_with_config<process_env, process_event>
   {
     prometheus::Family<prometheus::Counter> &eunomia_process_start_counter;
     prometheus::Family<prometheus::Counter> &eunomia_process_exit_counter;
-    void report_prometheus_event(const struct process_event &e);
+    void report_prometheus_event(const struct process_event &e, const struct container_info& ct_info);
 
     prometheus_event_handler(prometheus_server &server);
     void handle(tracker_event<process_event> &e);

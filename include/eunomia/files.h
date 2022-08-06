@@ -46,6 +46,7 @@ struct files_tracker : public tracker_with_config<files_env, files_event>
     prometheus::Family<prometheus::Counter> &eunomia_files_write_bytes;
     // read bytes counter for field read_bytes
     prometheus::Family<prometheus::Counter> &eunomia_files_read_bytes;
+    const container_manager &container_manager_ref;
     void report_prometheus_event(const struct files_event &e);
 
     prometheus_event_handler(prometheus_server &server);

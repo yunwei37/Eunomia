@@ -77,7 +77,7 @@ container_info container_manager::container_client::get_os_container_info()
   }
 }
 
-container_info container_manager::get_container_info_for_pid(int pid)
+container_info container_manager::get_container_info_for_pid(int pid) const
 {
   auto res = info_map.get(pid);
   if (res)

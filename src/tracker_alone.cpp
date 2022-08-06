@@ -32,7 +32,6 @@ void tracker_alone_base::start_child_process()
     argv.push_back(const_cast<char*>(arg.c_str()));
   }
   argv.push_back(nullptr);
-  spdlog::info("starting {} tracker...", current_config.name);
   // start child process ebpf program
   res = env.main_func(static_cast<int>(env.process_args.size()), argv.data());
   // exit child process
@@ -131,5 +130,5 @@ std::unique_ptr<tracker_alone_base> tracker_alone_base::create_tracker_with_defa
 
 void tracker_alone_base::plain_text_event_printer::handle(tracker_event<tracker_alone_event>& e)
 {
-  // spdlog::info(e.data.process_messages);
+  std::cout << e.data.process_messages;
 }

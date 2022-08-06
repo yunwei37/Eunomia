@@ -427,7 +427,9 @@ int start_capable(int argc, char **argv)
         "AUDIT",
         "INSETID");
   else
-    printf("%-8s %-5s %-7s %-16s %-7s %-20s %-7s\n", "TIME", "UID", "PID", "COMM", "CAP", "NAME", "AUDIT");
+  {
+  }
+  // printf("%-8s %-5s %-7s %-16s %-7s %-20s %-7s\n", "TIME", "UID", "PID", "COMM", "CAP", "NAME", "AUDIT");
 
   /* main: poll */
   while (!exiting)

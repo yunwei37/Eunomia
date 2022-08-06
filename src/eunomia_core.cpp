@@ -14,7 +14,7 @@
 
 eunomia_core::eunomia_core(eunomia_config_data& config)
     : core_config(config),
-      core_prometheus_server(config.prometheus_listening_address)
+      core_prometheus_server(config.prometheus_listening_address, core_container_manager)
 {
   core_config.load_config_options_to_trackers();
 }
@@ -22,7 +22,7 @@ eunomia_core::eunomia_core(eunomia_config_data& config)
 template<tracker_concept TRACKER>
 TRACKER::tracker_event_handler eunomia_core::create_tracker_event_handler(const handler_config_data& config)
 {
-  spdlog::info("create event handler for {}", config.name);
+  // spdlog::info("create event handler for {}", config.name);
   if (config.name == "json_format")
   {
     return std::make_shared<typename TRACKER::json_event_printer>();
@@ -154,6 +154,14 @@ void eunomia_core::start_tracker(const tracker_config_data& config)
   else if (config.name == "capable")
   {
     core_tracker_manager.start_tracker(create_default_tracker<capable_tracker>(config));
+  }
+  else if (config.name == "tcpconnlat")
+  {
+    core_tracker_manager.start_tracker(create_default_tracker<tcpconnlat_tracker>(config));
+  }
+  else if (config.name == "oomkill")
+  {
+    core_tracker_manager.start_tracker(create_default_tracker<oomkill_tracker>(config));
   }
   else
   {

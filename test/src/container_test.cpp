@@ -27,8 +27,6 @@ int main(int argc, char** argv)
     tracker_manager manager;
     std::cout << "start ebpf...\n";
 
-    auto server = prometheus_server("127.0.0.1:8528");
-
     // auto stdout_event_printer =
     //     std::make_shared<process_tracker::plain_text_event_printer>(process_tracker::plain_text_event_printer{});
     auto container_tracking_handler =
@@ -46,8 +44,6 @@ int main(int argc, char** argv)
 
     manager.start_tracker(process_tracker::create_tracker_with_default_env(container_tracking_handler));
     manager.start_tracker(tcp_tracker::create_tracker_with_default_env(container_info_handler));
-
-    server.start_prometheus_server();
 
     std::this_thread::sleep_for(10s);
   }

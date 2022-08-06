@@ -13,9 +13,10 @@ using namespace std::chrono_literals;
 int main(int argc, char **argv)
 {
   tracker_manager manager;
+  container_manager mp;
   std::cout << "start ebpf...\n";
 
-  auto server = prometheus_server("127.0.0.1:8528");
+  auto server = prometheus_server("127.0.0.1:8528", mp);
 
   auto prometheus_event_handler =
       std::make_shared<files_tracker::prometheus_event_handler>(files_tracker::prometheus_event_handler(server));

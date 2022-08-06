@@ -17,21 +17,18 @@ extern "C"
 
 using json = nlohmann::json;
 
-void process_tracker::prometheus_event_handler::report_prometheus_event(const struct process_event &e)
+void process_tracker::prometheus_event_handler::report_prometheus_event(
+    const struct process_event &e,
+    const struct container_info &ct_info)
 {
-  // TODO: fix this
-  std::string ids[] = { "36fca8c5eec1" };  //, "e2055f599ca6" };
-  std::string names[] = { "Ubuntu" };      //, "Debian" };
-  size_t n = 0;                            // (size_t)std::rand() % 2;
   if (e.exit_event)
   {
     eunomia_process_exit_counter
         .Add({ { "exit_code", std::to_string(e.exit_code) },
                { "duration_ms", std::to_string(e.duration_ns / 1000000) },
                { "comm", std::string(e.comm) },
-               // TODO: fix container part
-               { "container_name", names[n] },
-               { "container_id", ids[n] },
+               { "container_id", ct_info.id },
+               { "container_name", ct_info.name },
                { "pid", std::to_string(e.common.pid) } })
         .Increment();
   }
@@ -41,9 +38,8 @@ void process_tracker::prometheus_event_handler::report_prometheus_event(const st
         .Add({ { "comm", std::string(e.comm) },
                { "filename", std::string(e.filename) },
                { "mount_namespace", std::to_string(e.common.mount_namespace_id) },
-               // TODO: fix container part
-               { "container_name", names[n] },
-               { "container_id", ids[n] },
+               { "container_id", ct_info.id },
+               { "container_name", ct_info.name },
                { "pid", std::to_string(e.common.pid) } })
         .Increment();
   }
@@ -63,7 +59,7 @@ process_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_s
 
 void process_tracker::prometheus_event_handler::handle(tracker_event<process_event> &e)
 {
-  report_prometheus_event(e.data);
+  report_prometheus_event(e.data, e.ct_info);
 }
 
 process_tracker::process_tracker(config_data config) : tracker_with_config(config)

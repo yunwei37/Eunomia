@@ -14,3 +14,7 @@ sudo docker run -d --user root -p 9090:9090 -v /etc/prometheus/prometheus.yml:/e
 
 sudo docker pull grafana/grafana:latest
 sudo docker run -d -p 3000:3000 --name=grafana grafana/grafana:latest
+
+# or run local
+
+

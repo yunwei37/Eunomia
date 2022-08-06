@@ -8,6 +8,9 @@
 #define TRACKER_INTEGRATIONS_CMD_H
 
 #include "eunomia/model/tracker_alone.h"
+#include "prometheus/histogram.h"
+#include "prometheus/counter.h"
+#include "prometheus_server.h"
 
 struct oomkill_tracker final: public tracker_alone_base {
   oomkill_tracker(config_data config) : tracker_alone_base(config) {}
@@ -17,6 +20,16 @@ struct oomkill_tracker final: public tracker_alone_base {
 
 struct tcpconnlat_tracker final: public tracker_alone_base {
   tcpconnlat_tracker(config_data config) : tracker_alone_base(config) {}
+
+    struct prometheus_event_handler : public event_handler<tracker_alone_event>
+  {
+    prometheus::Family<prometheus::Histogram> &eunomia_tcpconnlat_v4_counter;
+    prometheus::Family<prometheus::Histogram> &eunomia_tcpconnlat_v6_counter;
+    const container_manager &container_manager_ref;
+
+    prometheus_event_handler(prometheus_server &server);
+    void handle(tracker_event<tracker_alone_event> &e);
+  };
 
   static std::unique_ptr<tcpconnlat_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 };

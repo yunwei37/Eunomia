@@ -16,32 +16,47 @@ void files_tracker::prometheus_event_handler::report_prometheus_event(const stru
 {
   for (size_t i = 0; i < e.rows; i++)
   {
+    auto pid = e.values[i].pid;
+    auto container_info = container_manager_ref.get_container_info_for_pid(pid);
+    auto pid_str = std::to_string(e.values[i].pid);
+    auto file_name_str = std::string(e.values[i].filename);
+    auto comm_str = std::string(e.values[i].comm);
+    auto type_str = std::to_string(e.values[i].type);
+
     eunomia_files_write_counter
-        .Add({ { "type", std::to_string(e.values[i].type) },
-               { "filename", std::string(e.values[i].filename) },
-               { "comm", std::string(e.values[i].comm) },
-               { "pid", std::to_string(e.values[i].pid) } })
+        .Add({ { "type", type_str },
+               { "filename", file_name_str },
+               { "comm", comm_str },
+               { "container_id", container_info.id },
+               { "container_name", container_info.name },
+               { "pid", pid_str } })
         .Increment((double)e.values[i].writes);
     eunomia_files_read_counter
         .Add({
-            { "comm", std::string(e.values[i].comm) },
-            { "filename", std::string(e.values[i].filename) },
-            { "pid", std::to_string(e.values[i].pid) },
-            { "type", std::to_string(e.values[i].type) },
+            { "comm", comm_str },
+            { "container_id", container_info.id },
+            { "container_name", container_info.name },
+            { "filename", file_name_str },
+            { "pid", pid_str },
+            { "type", type_str },
         })
         .Increment((double)e.values[i].reads);
     eunomia_files_write_bytes
-        .Add({ { "type", std::to_string(e.values[i].type) },
-               { "filename", std::string(e.values[i].filename) },
-               { "comm", std::string(e.values[i].comm) },
-               { "pid", std::to_string(e.values[i].pid) } })
+        .Add({ { "type", type_str },
+               { "container_id", container_info.id },
+               { "container_name", container_info.name },
+               { "filename", file_name_str },
+               { "comm", comm_str },
+               { "pid", pid_str } })
         .Increment((double)e.values[i].write_bytes);
     eunomia_files_read_bytes
         .Add({
-            { "comm", std::string(e.values[i].comm) },
-            { "filename", std::string(e.values[i].filename) },
-            { "pid", std::to_string(e.values[i].pid) },
-            { "type", std::to_string(e.values[i].type) },
+            { "comm", comm_str },
+            { "container_id", container_info.id },
+            { "container_name", container_info.name },
+            { "filename", file_name_str },
+            { "pid", pid_str },
+            { "type", type_str },
         })
         .Increment((double)e.values[i].read_bytes);
   }
@@ -63,7 +78,8 @@ files_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_ser
       eunomia_files_read_bytes(prometheus::BuildCounter()
                                    .Name("eunomia_observed_files_read_bytes")
                                    .Help("Number of observed files read bytes")
-                                   .Register(*server.registry))
+                                   .Register(*server.registry)),
+      container_manager_ref(server.core_container_manager_ref)
 {
 }
 
@@ -157,14 +173,11 @@ void files_tracker::plain_text_event_printer::handle(tracker_event<files_event> 
       "type",
       "comm",
       "filename");
-  // spdlog::info("pid\tread_bytes\tread count\twrite_bytes\twrite
-  // count\tcomm\ttype\ttid\tfilename");
   for (int i = 0; i < default_size; i++)
   {
     spdlog::info(
         "{:6} {:10} {:6} {:6} {:10} {:10} {:6} {:12} {:12}",
         e.data.values[i].pid,
-        // TODO: get container name
         "ubuntu",
         e.data.values[i].reads,
         e.data.values[i].writes,

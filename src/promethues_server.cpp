@@ -17,7 +17,9 @@
 #include "prometheus/exposer.h"
 #include "prometheus/family.h"
 
-prometheus_server::prometheus_server(std::string bind_address) : exposer(bind_address)
+prometheus_server::prometheus_server(std::string bind_address, container_manager& cm)
+    : core_container_manager_ref(cm),
+      exposer(bind_address)
 {
   registry = std::make_shared<prometheus::Registry>();
 }

@@ -10,7 +10,7 @@ RUN apt-get upgrade -y
 RUN apt-get install -y net-tools
 RUN apt-get install -y libelf-dev
 RUN apt-get install -y curl libssl-dev libcurl4-openssl-dev libcurl4
- 
+
 EXPOSE 80
 
 COPY ./ /usr/local/src
