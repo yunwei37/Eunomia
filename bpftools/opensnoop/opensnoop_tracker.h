@@ -325,4 +325,4 @@ cleanup:
 
 	return err != 0;
 }
-#define
+#endif

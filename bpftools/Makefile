@@ -41,8 +41,8 @@ llcstat:
 oomkill:
 	@make -C oomkill
 
-# opensnoop:
-# 	@make -C opensnoop
+opensnoop:
+	@make -C opensnoop
 
 process:
 	@make -C process

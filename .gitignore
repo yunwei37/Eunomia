@@ -365,6 +365,7 @@ healthchecksdb
 
 # target .o file
 *.o
+bpftools/*/.output/
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
