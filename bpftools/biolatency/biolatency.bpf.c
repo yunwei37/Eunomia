@@ -5,6 +5,7 @@
 #include <bpf/bpf_core_read.h>
 #include <bpf/bpf_tracing.h>
 #include "biolatency.h"
+#include "core_fixes.bpf.h"
 #include "bits.bpf.h"
 
 #define MAX_ENTRIES	10240

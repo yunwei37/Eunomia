@@ -144,7 +144,7 @@ static void sig_int(int signo)
 
 static void handle_event(void *ctx, int cpu, void *data, __u32 data_sz)
 {
-	struct bind_event *e = (bind_event *)(data);
+	struct bind_event *e = (struct bind_event *)(data);
 	time_t t;
 	struct tm *tm;
 	char ts[32], addr[48];

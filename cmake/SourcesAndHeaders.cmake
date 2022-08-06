@@ -22,7 +22,7 @@ set(sources
     src/tracker_integrations/opensnoop.cpp
     src/tracker_integrations/bindsnoop.cpp
     # src/tracker_integrations/syscount.cpp
-    # src/tracker_integrations/funclatency.cpp
+    src/tracker_integrations/funclatency.cpp
     src/btf_helpers.c
     src/trace_helpers.c
     src/uprobe_helpers.c
@@ -43,12 +43,12 @@ set(headers
     bpftools/tcpconnlat/tcpconnlat_tracker.h
     bpftools/capable/capable_tracker.h
     bpftools/memleak/memleak_tracker.h
-    bpftools/memleak/mountsnoop_tracker.h
-    bpftools/memleak/sigsnoop_tracker.h
-    bpftools/memleak/opensnoop_tracker.h
-    bpftools/memleak/bindsnoop_tracker.h
-    # bpftools/memleak/syscount_tracker.h
-    # bpftools/memleak/funclatency_tracker.h
+    bpftools/mountsnoop/mountsnoop_tracker.h
+    bpftools/sigsnoop/sigsnoop_tracker.h
+    bpftools/opensnoop/opensnoop_tracker.h
+    bpftools/bindsnoop/bindsnoop_tracker.h
+    bpftools/syscount/syscount_tracker.h
+    bpftools/funclatency/funclatency_tracker.h
     include/eunomia/myseccomp.h
 )
 
@@ -67,8 +67,8 @@ set(skel_includes
     bpftools/sigsnoop/.output
     bpftools/opensnoop/.output
     bpftools/bindsnoop/.output
-    # bpftools/syscount/.output
-    # bpftools/funclatency/.output
+    bpftools/syscount/.output
+    bpftools/funclatency/.output
 )
 
 set(test_sources

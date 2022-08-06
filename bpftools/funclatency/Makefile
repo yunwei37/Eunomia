@@ -86,8 +86,11 @@ btf_helpers.o: btf_helpers.c
 uprobe_helpers.o: uprobe_helpers.c 
 	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -c $(filter %.c,$^) -o $@
 
+map_helpers.o: map_helpers.c 
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -c $(filter %.c,$^) -o $@
+
 # Build application binary
-$(APPS): %: $(OUTPUT)/%.o trace_helpers.o uprobe_helpers.o btf_helpers.o map_helpers.o $(LIBBPF_OBJ) | $(OUTPUT)
+$(APPS): %: $(OUTPUT)/%.o trace_helpers.o uprobe_helpers.o btf_helpers.o $(LIBBPF_OBJ) | $(OUTPUT)
 	$(call msg,BINARY,$@)
 	$(Q)$(CC) $(CFLAGS) $^ -lelf -lz -o $@
 

@@ -70,17 +70,17 @@ struct bindsnoop_tracker final: public tracker_alone_base {
   static std::unique_ptr<bindsnoop_tracker> create_tracker_with_default_env(tracker_event_handler handler);
 };
 
-// struct syscount_tracker final: public tracker_alone_base {
-//   syscount_tracker(config_data config) : tracker_alone_base(config) {}
+struct syscount_tracker final: public tracker_alone_base {
+  syscount_tracker(config_data config) : tracker_alone_base(config) {}
 
-//   static std::unique_ptr<syscount_tracker> create_tracker_with_default_env(tracker_event_handler handler);
-// };
+  static std::unique_ptr<syscount_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+};
 
-// struct funclatency_tracker final: public tracker_alone_base {
-//   funclatency_tracker(config_data config) : tracker_alone_base(config) {}
+struct funclatency_tracker final: public tracker_alone_base {
+  funclatency_tracker(config_data config) : tracker_alone_base(config) {}
 
-//   static std::unique_ptr<funclatency_tracker> create_tracker_with_default_env(tracker_event_handler handler);
-// };
+  static std::unique_ptr<funclatency_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+};
 
 
 #endif

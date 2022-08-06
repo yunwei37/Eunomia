@@ -22,7 +22,6 @@
 #include <fcntl.h>
 
 #include <bpf/libbpf.h>
-#include <bpf/bpf.h>
 #include "funclatency.h"
 #include "funclatency.skel.h"
 #include "trace_helpers.h"
