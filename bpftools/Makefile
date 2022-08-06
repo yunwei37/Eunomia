@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
 # Copyright (c) 2022, 郑昱笙，濮雯旭，张典典（牛校牛子队）
 
-.PHONY:all ipc process syscall files tcp container oomkill tcpconnlat bindsnoop biolatency biopattern biosnoop biostacks bitesize funclatency llcstat mountsnoop opensnoop sigsnoop syscount tcprtt
+.PHONY:all ipc process syscall files tcp container oomkill tcpconnlat bindsnoop biolatency biopattern biosnoop biostacks bitesize funclatency llcstat mountsnoop opensnoop sigsnoop syscount tcprtt memleak
 
-all: ipc process syscall files tcp container oomkill tcpconnlat bindsnoop biolatency biopattern biosnoop biostacks bitesize funclatency llcstat mountsnoop opensnoop sigsnoop syscount tcprtt
+all: ipc process syscall files tcp container oomkill tcpconnlat bindsnoop biolatency biopattern biosnoop biostacks bitesize funclatency llcstat mountsnoop opensnoop sigsnoop syscount tcprtt memleak
 
 bindsnoop:
 	@make -C bindsnoop
@@ -34,6 +34,9 @@ ipc:
 
 llcstat:
 	@make -C llcstat
+
+memleak:
+	@make -C memleak
 
 mountsnoop:
 	@make -C mountsnoop
@@ -87,6 +90,7 @@ clean:
 	@make -C funclatency clean
 	@make -C ipc clean
 	@make -C llcstat clean
+	@make -C memleak clean
 	@make -C mountsnoop clean
 	@make -C oomkill clean
 	@make -C opensnoop clean
