@@ -106,11 +106,11 @@ void tcp_tracker::plain_text_event_printer::handle(tracker_event<tcp_event> &e)
   sender s, d;
   if (tcp_tracker::fill_src_dst(s, d, e.data) < 0)
   {
-    spdlog::debug("broken tcp_event\n");
+    spdlog::warn("broken tcp_event\n");
   }
 
   spdlog::info(
-      "{:6} {:6} {:16} {:2} {:20} {:20} {:6} {:12.12} {}",
+      "{:6} {:6} {:16} {:2} {:20} {:20} {:6} {:12} {}",
       e.data.uid,
       e.data.pid,
       e.data.task,

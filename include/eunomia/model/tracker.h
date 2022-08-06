@@ -68,15 +68,10 @@ struct tracker_with_config : public tracker_base
     }
   };
   // used for json exporter, inherits from json_event_handler
-  struct json_event_printer final
+  struct json_event_printer final : public event_handler<EVENT>
   {
-    std::string to_json(const EVENT &e)
-    {
-      return std::string("{}");
-    }
     void handle(tracker_event<EVENT> &e)
     {
-      std::cout << to_json(e.event) << std::endl;
     }
   };
   // print to csv
