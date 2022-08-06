@@ -53,8 +53,8 @@ process:
 # seccomp:
 # 	@make -C seccomp
 
-# sigsnoop:
-# 	@make -C sigsnoop
+sigsnoop:
+	@make -C sigsnoop
 
 syscall:
 	@make -C syscall
