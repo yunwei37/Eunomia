@@ -104,4 +104,3 @@ int dump_hash(int map_fd,
 	return dump_hash_iter(map_fd, keys, key_size,
 			      values, value_size, count, invalid_key);
 }
-Footer

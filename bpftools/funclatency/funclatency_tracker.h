@@ -27,6 +27,7 @@
 #include "trace_helpers.h"
 #include "map_helpers.h"
 #include "uprobe_helpers.h"
+#include "../../libbpf/src/libbpf_internal.h"
 
 #define warn(...) fprintf(stderr, __VA_ARGS__)
 
