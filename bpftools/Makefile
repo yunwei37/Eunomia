@@ -35,8 +35,8 @@ ipc:
 llcstat:
 	@make -C llcstat
 
-# mountsnoop:
-# 	@make -C mountsnoop
+mountsnoop:
+	@make -C mountsnoop
 
 oomkill:
 	@make -C oomkill
