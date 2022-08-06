@@ -26,8 +26,8 @@ container:
 files:
 	@make -C files
 
-# funclatency:
-# 	@make -C funclatency
+funclatency:
+	@make -C funclatency
 
 ipc:
 	@make -C ipc
