@@ -39,7 +39,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 
 ### Describe
 
-`Eunomia` 是一个使用 C/C++ 开发的基于eBPF的云原生监控工具，旨在帮助用户了解容器的各项行为、监控可疑的容器安全事件，力求为工业界提供覆盖容器全生命周期的轻量级开源监控解决方案。它使用 `Linux` `eBPF` 技术在运行时跟踪您的系统和应用程序，并分析收集的事件以检测可疑的行为模式。目前，它包含 `profile`、容器集群网络可视化分析*、容器安全感知告警、一键部署、持久化存储监控等功能。
+`Eunomia` 是一个使用 C/C++ 开发的基于 eBPF的轻量级，高性能云原生监控工具，旨在帮助用户了解容器的各项行为、监控可疑的容器安全事件，力求提供覆盖容器全生命周期的轻量级开源监控解决方案。它使用 `Linux` `eBPF` 技术在运行时跟踪您的系统和应用程序，并分析收集的事件以检测可疑的行为模式。目前，它包含性能分析、容器集群网络可视化分析*、容器安全感知告警、一键部署、持久化存储监控等功能，提供了多样化的 ebpf 追踪点。其核心导出器/命令行工具最小仅需要约 4MB 大小的二进制程序，即可在支持的 Linux 内核上启动。
 
 * [X] 开箱即用：以单一二进制文件或 `docker` 镜像方式分发，一次编译，到处运行，一行代码即可启动，包含多种 ebpf 工具和多种监测点，支持多种输出格式（json, csv, etc) 并保存到文件；
 * [X] 轻量级，高性能：编译成的二进制大小仅 `4MB`;
@@ -61,13 +61,12 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 - `syscall`: 系统调用
 - `tcpconnlat`: TCP 连接延时
 - `profile`: 定时采集堆栈跟踪样本, 并进行性能分; 支持C/C++/Rust等，也支持对 lua 虚拟机进行采样分析
-- `oomkill`: 跟踪 Linux 内存不足 (OOM) 终止
 - `funclatency`
 - `bindsnoop`
 - `sigsnoop`
 - `mountsnoop`
 - `memleak`
-
+- `oomkill`: 跟踪 Linux 内存不足 (OOM) 终止
 
 ### Tutorial
 
