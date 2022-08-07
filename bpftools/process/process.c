@@ -23,9 +23,7 @@ static const char *headers[] = {
 
 static struct process_env process_env = {0};
 
-const char *argp_program_version = "process 1.0";
-const char *argp_program_bug_address = "<1067852565@qq.com>";
-const char argp_program_doc[] =
+static const char argp_program_doc[] =
 	"eBPF process tracing application.\n"
 	"\n"
 	"It traces process start and exits and shows associated \n"

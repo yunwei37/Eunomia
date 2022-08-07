@@ -47,7 +47,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 * [X] 可集成 `prometheus` 和 `Grafana`，作为监控可视化和预警平台；也可作为 `openTelemetry` 的 collector 使用；
 * [X] 可自定义运行时安全预警规则, 并通过 prometheus 等实现监控告警;
 * [X] 可以自动收集进程行为并通过 `seccomp`/`capability` 进行限制；
-* [X] 提供远程的 http API 控制，可自行定制插件进行数据分析;
+* [X] 提供远程的 http API 和前端进行控制，可自行定制插件进行数据分析;
 
 除了收集容器中的一般系统运行时内核指标，例如系统调用、网络连接、文件访问、进程执行等，我们在探索实现过程中还发现目前对于 `lua` 和 `nginx` 相关用户态 `profile` 工具和指标可观测性开源工具存在一定的空白，但又有相当大的潜在需求；因此我们还计划添加一系列基于 uprobe 的用户态 `nginx/lua` 追踪器，作为可选的扩展方案；（这部分需求来自中科院开源之夏， APISIX 社区的选题）
 
@@ -62,6 +62,12 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 - `tcpconnlat`: TCP 连接延时
 - `profile`: 定时采集堆栈跟踪样本, 并进行性能分; 支持C/C++/Rust等，也支持对 lua 虚拟机进行采样分析
 - `oomkill`: 跟踪 Linux 内存不足 (OOM) 终止
+- `funclatency`
+- `bindsnoop`
+- `sigsnoop`
+- `mountsnoop`
+- `memleak`
+
 
 ### Tutorial
 

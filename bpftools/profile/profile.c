@@ -55,10 +55,7 @@ static struct env {
 
 #define warn(...) fprintf(stderr, __VA_ARGS__)
 
-const char *argp_program_version = "profile 0.1";
-const char *argp_program_bug_address =
-	"https://github.com/iovisor/bcc/tree/master/libbpf-tools";
-const char argp_program_doc[] =
+static const char argp_program_doc[] =
 "Profile CPU usage by sampling stack traces at a timed interval.\n"
 "\n"
 "USAGE: profile [OPTIONS...] [duration]\n"

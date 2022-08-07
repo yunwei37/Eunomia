@@ -63,6 +63,7 @@ function(set_project_warnings project_name)
         -Wno-unused-parameter
         -Wno-missing-field-initializers
         -Wno-pointer-arith
+        -fno-strict-aliasing
   )
 
   if (${PROJECT_NAME}_WARNINGS_AS_ERRORS)
@@ -72,7 +73,6 @@ function(set_project_warnings project_name)
 
   set(GCC_WARNINGS
       ${CLANG_WARNINGS}
-      -fno-strict-aliasing
       -Wmisleading-indentation # warn if indentation implies blocks where blocks
                                # do not exist
       -Wduplicated-cond # warn if if / else chain has duplicated conditions

@@ -31,10 +31,7 @@ static struct env {
 
 static volatile __u64 start_ts;
 
-const char *argp_program_version = "biosnoop 0.1";
-const char *argp_program_bug_address =
-	"https://github.com/iovisor/bcc/tree/master/libbpf-tools";
-const char argp_program_doc[] =
+static const char argp_program_doc[] =
 "Trace block I/O.\n"
 "\n"
 "USAGE: biosnoop [--help] [-d DISK] [-Q]\n"
@@ -140,7 +137,7 @@ static void blk_fill_rwbs(char *rwbs, unsigned int op)
 
 static struct partitions *partitions;
 
-void handle_event(void *ctx, int cpu, void *data, __u32 data_sz)
+static void handle_event(void *ctx, int cpu, void *data, __u32 data_sz)
 {
 	const struct partition *partition;
 	const struct event *e = data;

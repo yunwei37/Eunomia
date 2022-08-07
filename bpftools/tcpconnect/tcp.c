@@ -23,8 +23,6 @@ static struct tcp_env env = {
 };
 static volatile int exiting = 0;
 
-const char *argp_program_version = "tcpconnect 0.1";
-const char *argp_program_bug_address = "https://github.com/iovisor/bcc/tree/master/libbpf-tools";
 static const char argp_program_doc[] =
     "\ntcpconnect: Count/Trace active tcp connections\n"
     "\n"

@@ -22,9 +22,7 @@ static int interval = 1;
 static int count = 99999999;
 static bool verbose = false;
 
-const char *argp_program_version = "filetop 1.0";
-const char *argp_program_bug_address = "<1067852565@qq.com>";
-const char argp_program_doc[] =
+static const char argp_program_doc[] =
     "Trace file reads/writes by process.\n"
     "\n"
     "USAGE: filetop [-h] [-p PID] [interval] [count]\n"
