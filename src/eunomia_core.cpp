@@ -98,9 +98,11 @@ std::unique_ptr<TRACKER> eunomia_core::create_default_tracker_with_handler(
     additional_handler->add_handler(handler);
     handler = additional_handler;
   }
-  auto tracker_ptr = TRACKER::create_tracker_with_default_env(handler);
-
-  return tracker_ptr;
+  if (base.args.empty())
+  {
+    return TRACKER::create_tracker_with_default_env(handler);
+  }
+  return TRACKER::create_tracker_with_args(handler, base.args);
 }
 
 template<tracker_concept TRACKER>

@@ -31,7 +31,7 @@ struct tracker_alone_event
 // Run tracker as a standalone process, and communicate with pipe
 struct tracker_alone_base : public tracker_with_config<tracker_alone_env, tracker_alone_event>
 {
-private:
+ private:
   constexpr static int MAX_PROCESS_MESSAGE_LENGTH = 1024 * 1024 * 4;
   pid_t child_pid;
   int stdout_pipe_fd[2];
@@ -39,16 +39,18 @@ private:
   void start_child_process();
   void start_parent_process();
 
-public:
+ public:
   tracker_alone_base(config_data config);
   ~tracker_alone_base();
 
   // start the separated process
   void start_tracker();
+
+  // create a tracker with config
   static std::unique_ptr<tracker_alone_base> create_tracker_with_default_env(tracker_event_handler handler);
 
   // print to stdout
-  struct plain_text_event_printer final: public event_handler<tracker_alone_event>
+  struct plain_text_event_printer final : public event_handler<tracker_alone_event>
   {
     void handle(tracker_event<tracker_alone_event> &e);
   };

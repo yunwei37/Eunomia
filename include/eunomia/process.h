@@ -28,6 +28,12 @@ struct process_tracker : public tracker_with_config<process_env, process_event>
 
   // create a tracker with deafult config
   static std::unique_ptr<process_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+  static std::unique_ptr<process_tracker> create_tracker_with_args(
+      tracker_event_handler handler,
+      const std::vector<std::string> &args)
+  {
+    return create_tracker_with_default_env(handler);
+  }
 
   // start process tracker
   void start_tracker();

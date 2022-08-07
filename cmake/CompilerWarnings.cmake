@@ -61,6 +61,7 @@ function(set_project_warnings project_name)
         -Wno-unused-function
         -Wno-unused-variable
         -Wno-unused-parameter
+        -Wno-useless-cast
         -Wno-missing-field-initializers
         -Wno-pointer-arith
         -fno-strict-aliasing

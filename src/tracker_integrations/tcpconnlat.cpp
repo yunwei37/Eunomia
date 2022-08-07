@@ -75,3 +75,15 @@ void tcpconnlat_tracker::prometheus_event_handler::handle(tracker_event<tracker_
         .Observe(std::stod(lat));
   }
 }
+
+std::unique_ptr<tcpconnlat_tracker> tcpconnlat_tracker::create_tracker_with_args(
+    tracker_event_handler handler,
+    const std::vector<std::string> &args)
+{
+  auto tracker = tcpconnlat_tracker::create_tracker_with_default_env(handler);
+  if (tracker)
+  {
+    tracker->current_config.env.process_args = args;
+  }
+  return tracker;
+}

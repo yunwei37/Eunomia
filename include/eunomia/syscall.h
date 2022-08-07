@@ -25,6 +25,12 @@ struct syscall_tracker : public tracker_with_config<syscall_env, syscall_event> 
 
   // create a tracker with deafult config
   static std::unique_ptr<syscall_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+  static std::unique_ptr<syscall_tracker> create_tracker_with_args(
+      tracker_event_handler handler,
+      const std::vector<std::string> &args)
+  {
+    return create_tracker_with_default_env(handler);
+  }
 
   void start_tracker();
 

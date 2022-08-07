@@ -44,7 +44,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 * [X] 开箱即用：以单一二进制文件或 `docker` 镜像方式分发，一次编译，到处运行，一行代码即可启动，包含多种 ebpf 工具和多种监测点，支持多种输出格式（json, csv, etc) 并保存到文件；
 * [X] 轻量级，高性能：编译成的二进制大小仅 `4MB`;
 * [X] 通过 `ebpf` 自动收集容器相关元信息，并和多种指标相结合；
-* [X] 可集成 `prometheus` 和 `Grafana`，作为监控可视化和预警平台；也可作为 `openTelemetry` 的 collector 使用；
+* [X] 可集成 `prometheus` 和 `Grafana`，作为监控可视化和预警平台；也可作为 `OpenTelemetry` 的 collector 使用；
 * [X] 可自定义运行时安全预警规则, 并通过 prometheus 等实现监控告警;
 * [X] 可以自动收集进程行为并通过 `seccomp`/`capability` 进行限制；
 * [X] 提供远程的 http API 和前端进行控制，可自行定制插件进行数据分析;

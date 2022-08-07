@@ -10,6 +10,8 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
+#include <memory>
+#include <vector>
 
 #include "tracker_config.h"
 
@@ -81,7 +83,6 @@ struct tracker_with_config : public tracker_base
     {
     }
   };
-
   tracker_config<ENV, EVENT> current_config;
   tracker_with_config(tracker_config<ENV, EVENT> config) : current_config(config)
   {

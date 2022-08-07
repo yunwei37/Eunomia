@@ -31,12 +31,18 @@ struct files_tracker : public tracker_with_config<files_env, files_event>
 
   // create a tracker with deafult config
   static std::unique_ptr<files_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+  static std::unique_ptr<files_tracker> create_tracker_with_args(
+      tracker_event_handler handler,
+      const std::vector<std::string> &args)
+  {
+    return create_tracker_with_default_env(handler);
+  }
 
   // start files tracker
   void start_tracker();
 
   // used for prometheus exporter
-  struct  prometheus_event_handler : public event_handler<files_event>
+  struct prometheus_event_handler : public event_handler<files_event>
   {
     // read times counter for field reads
     prometheus::Family<prometheus::Counter> &eunomia_files_read_counter;

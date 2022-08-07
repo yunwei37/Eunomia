@@ -82,6 +82,7 @@ int main(int argc, char* argv[])
   std::string config_file = "", output_file = "", container_log_path = "";
   eunomia_mode selected = eunomia_mode::help;
   std::string run_selected = "process";
+  std::vector<std::string> run_with_extra_args;
   unsigned long container_id = 0;
 
   // spdlog::set_level(spdlog::level::debug);
@@ -94,6 +95,7 @@ int main(int argc, char* argv[])
       (clipp::option("-T") & clipp::value("trace time in seconds", time_tracing)) % "The time the ENUNOMIA will monitor for";
 
   auto run_required_cmd = clipp::value("run required cmd name", run_selected);
+  auto run_opt_cmd_args = clipp::opt_values("extra args", run_with_extra_args);
 
   auto config_cmd =
       (clipp::option("--config") & clipp::value("config file", config_file)) % "The toml file stores the config data";
@@ -105,8 +107,7 @@ int main(int argc, char* argv[])
        process_id_cmd,
        run_time_cmd,
        config_cmd,
-       (clipp::option("-m").set(container_flag, true) & clipp::opt_value("path to store dir", container_log_path)) %
-           "Start container manager to trace contaienr.",
+       run_opt_cmd_args,
        (clipp::option("--fmt") & clipp::value("output format of the program", fmt)) %
            "The output format of EUNOMIA, it could be \"json\", \"csv\", "
            "\"plain_txt\", and \"plain_txt\" is the default "
@@ -175,10 +176,7 @@ int main(int argc, char* argv[])
       break;
     case eunomia_mode::server: server_mode_operation(load_from_config_file, core_config); break;
     case eunomia_mode::seccomp: seccomp_mode_operation(core_config); break;
-    case eunomia_mode::help:
-    gdefault:
-      std::cout << clipp::make_man_page(cli, argv[0]);
-      break;
+    case eunomia_mode::help: std::cout << clipp::make_man_page(cli, argv[0]); break;
   }
   return 0;
 }

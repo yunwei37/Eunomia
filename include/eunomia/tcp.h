@@ -7,9 +7,6 @@
 #ifndef TCP_CMD_H
 #define TCP_CMD_H
 
-
-
-
 #include "libbpf_print.h"
 #include "model/tracker.h"
 #include "prometheus/counter.h"
@@ -36,6 +33,12 @@ struct tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
 
   // create a tracker with deafult config
   static std::unique_ptr<tcp_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+  static std::unique_ptr<tcp_tracker> create_tracker_with_args(
+      tracker_event_handler handler,
+      const std::vector<std::string> &args)
+  {
+    return create_tracker_with_default_env(handler);
+  }
 
   // start tcp tracker
   void start_tracker();

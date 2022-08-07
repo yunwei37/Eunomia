@@ -69,4 +69,9 @@ install: generate-tools ## install the package to the `INSTALL_LOCATION`
 	cmake --build build --target install --config Release
 
 format: ## format the project sources
+	cmake -Bbuild
 	cmake --build build --target clang-format
+
+clean: ## clean the project build files
+	rm -rf build/
+	make -C bpftools clean

@@ -139,15 +139,15 @@ static void handle_event(void *ctx, int cpu, void *data, __u32 data_sz)
   if (env.lport)
   {
     printf(
-        "%-6d %-12.12s %-2d %-16s %-6d %-16s %-5d %.2f\n",
+        "%-6d %-12.12s %-2d %-16s %-16s %-5d %.2f %-6d\n",
         e->tgid,
         e->comm,
         e->af == AF_INET ? 4 : 6,
         inet_ntop(e->af, &s, src, sizeof(src)),
-        e->lport,
         inet_ntop(e->af, &d, dst, sizeof(dst)),
         ntohs(e->dport),
-        e->delta_us / 1000.0);
+        e->delta_us / 1000.0,
+        e->lport);
   }
   else
   {
@@ -238,11 +238,11 @@ static int start_tcpconnlat(int argc, char **argv)
     printf("%-9s ", ("TIME(s)"));
   if (env.lport)
   {
-    printf("%-6s %-12s %-2s %-16s %-6s %-16s %-5s %s\n", "PID", "COMM", "IP", "SADDR", "LPORT", "DADDR", "DPORT", "LAT(ms)");
+    printf("%-6s %-12s %-2s %-16s %-6s %-16s %-5s %s\n", "PID", "COMM", "IP", "SADDR", "DADDR", "DPORT", "LAT(ms)", "LPORT");
   }
   else
   {
-    // printf("%-6s %-12s %-2s %-16s %-16s %-5s %s\n", "PID", "COMM", "IP", "SADDR", "DADDR", "DPORT", "LAT(ms)");
+    printf("%-6s %-12s %-2s %-16s %-16s %-5s %s\n", "PID", "COMM", "IP", "SADDR", "DADDR", "DPORT", "LAT(ms)");
   }
 
   if (signal(SIGINT, sig_int) == SIG_ERR)
