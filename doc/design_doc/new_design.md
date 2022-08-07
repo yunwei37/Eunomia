@@ -72,3 +72,5 @@ Eunomia目前应当属于是采集器级别，目标是与其他开源组件完�
 collector 除了 RPC 或者 http 上报数据到 core 之外，就只有简单的启动停止、遍历 ebpf map 进行数据聚合（固定时间计数等等简单功能） ，还有输出到命令行的功能；
 
 一个 core 对应一个或者多个 collector/agent，可以实现不同的功能，在同一台机器上面（也可以只有一个）；分布式的消息传递、数据存储落盘、可视化等等的就由后面的 Opentelemetry 加上 MQ、DB、prometheus、grafana 等等别的东西实现；
+
+## 
