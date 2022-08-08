@@ -27,8 +27,9 @@ union sender
 // the true implementation is in tcp/tcp_tracker.h
 //
 // trace tcp start and exit
-struct tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
+class tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
 {
+public:
   tcp_tracker(config_data config);
 
   // create a tracker with deafult config

@@ -13,11 +13,8 @@ private:
     eunomia_core core;
     int port;
 
-    void start_tracker(const httplib::Request &req, httplib::Response &res);
-    void stop_tracker(const httplib::Request &req, httplib::Response &res);
-    void list_trackers(const httplib::Request &req, httplib::Response &res);
-
 public:
+    // create a server
     eunomia_server(eunomia_config_data& config, int p);
     ~eunomia_server() = default;
     void serve(void);

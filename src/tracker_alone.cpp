@@ -5,6 +5,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <chrono>
+#include <future>
+#include <thread>
+
 void tracker_alone_base::start_child_process()
 {
   int res = 0;
@@ -52,31 +56,62 @@ void tracker_alone_base::start_parent_process()
   ssize_t read_bytes;
   while ((!exiting) && (read_bytes = read(stdout_pipe_fd[0], stdout_pipe_buf, MAX_PROCESS_MESSAGE_LENGTH)) > 0)
   {
-    // send to event handler
-    auto event = tracker_event<tracker_alone_event>{ 0, std::string(stdout_pipe_buf, read_bytes) };
-    if (current_config.handler)
+    if (handle_message_event(std::string(stdout_pipe_buf, read_bytes)) < 0)
     {
-      current_config.handler->do_handle_event(event);
-    }
-    else
-    {
-      std::cout << "warn: no handler for tracker event" << std::endl;
       break;
     }
   }
 }
 
+// handle readed data from pipe
+int tracker_alone_base::handle_message_event(std::string&& message)
+{
+  // send to event handler
+  auto event = tracker_event<tracker_alone_event>{ 0, message };
+  if (current_config.handler)
+  {
+    current_config.handler->do_handle_event(event);
+  }
+  else
+  {
+    std::cout << "warn: no handler for tracker event" << std::endl;
+    return -1;
+  }
+  if (current_config.env.wait_ms_for_read > 0)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(current_config.env.wait_ms_for_read));
+  }
+  return 0;
+}
+
 tracker_alone_base::~tracker_alone_base()
 {
-  // close pipe
-  int res;
-  (void)close(stdout_pipe_fd[0]);
-  (void)kill(child_pid, SIGKILL);
-  res = waitpid(child_pid, nullptr, 0);
-  if (res == -1)
+  using namespace std::chrono_literals;
+  std::future<int> future = std::async(std::launch::async, [=]() {
+    // close pipe and clean up
+    int res = 0;
+    (void)kill(child_pid, SIGINT);
+    auto read_bytes = read(stdout_pipe_fd[0], stdout_pipe_buf, MAX_PROCESS_MESSAGE_LENGTH);
+    if (read_bytes > 0)
+    {
+      handle_message_event(std::string(stdout_pipe_buf, read_bytes));
+    }
+    (void)close(stdout_pipe_fd[0]);
+    res = waitpid(child_pid, nullptr, 0);
+    if (res == -1)
+    {
+      spdlog::error("parent process waitpid failed");
+      return -1;
+    }
+    return 0;
+  });
+
+  spdlog::info("waiting for the tracker to cleanup...");
+  std::future_status status;
+  switch (status = future.wait_for(3s); status)
   {
-    spdlog::error("parent process waitpid failed");
-    return;
+    case std::future_status::timeout: spdlog::info("timeout\n"); break;
+    case std::future_status::ready: spdlog::info("exit!\n"); break;
   }
 }
 

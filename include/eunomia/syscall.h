@@ -20,7 +20,10 @@ extern "C" {
 #include "syscall_helper.h"
 }
 
-struct syscall_tracker : public tracker_with_config<syscall_env, syscall_event> {
+// syscall tracker cpp interface
+// catch all syscall enter and exit events
+class syscall_tracker : public tracker_with_config<syscall_env, syscall_event> {
+public:
   syscall_tracker(config_data config);
 
   // create a tracker with deafult config

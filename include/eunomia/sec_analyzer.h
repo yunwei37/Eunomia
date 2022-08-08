@@ -55,10 +55,12 @@ struct sec_rule_describe
   std::string signature;
 };
 
-struct sec_analyzer
+class sec_analyzer
 {
+private:
   // EVNETODO: use the mutex
   std::mutex mutex;
+public:
   const std::vector<sec_rule_describe> rules;
 
   sec_analyzer(const std::vector<sec_rule_describe> &in_rules) : rules(in_rules)

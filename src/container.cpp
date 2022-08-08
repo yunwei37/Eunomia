@@ -113,7 +113,9 @@ std::int64_t get_process_namespace(const char* type, int pid)
   res = readlink(path.c_str(), buffer, 100);
   if (res < 0)
   {
-    spdlog::error("Failed to readlink {}", path);
+    // spdlog::error("Failed to readlink {}", path);
+    // This is common for short lived processes,
+    // so don't log an error
     return 0;
   }
   const std::string s = buffer;
@@ -176,6 +178,17 @@ void container_manager::get_all_process_info(void)
 
 void container_manager::update_container_map_data(void)
 {
+  // check the container list 2 seconds
+  constexpr auto duration = std::chrono::seconds(2);
+  // init once
+  static auto time = std::chrono::steady_clock::now();
+  auto current = std::chrono::steady_clock::now();
+  if ((current - time) <= duration)
+  {
+    return;
+  }
+  time = current;
+
   auto response = client.list_all_containers();
   json containers_json = json::parse(response);
   for (const auto c : containers_json)
@@ -242,7 +255,8 @@ void container_manager::container_tracking_handler::handle(tracker_event<process
       if (!(data.common == e.data.common))
       {
         // not same namespace, update container info.
-        spdlog::info("different namespace from parent process {}, update info.", e.data.common.pid);
+        spdlog::info(
+            "different namespace from parent process, update info for pid {} name {}.", e.data.common.pid, e.data.comm);
         manager.update_container_map_data();
       }
       data.common = e.data.common;
@@ -250,14 +264,17 @@ void container_manager::container_tracking_handler::handle(tracker_event<process
       return;
     }
     // no parent info, no this info
-    spdlog::info("No parent info and this pid container info", e.data.common.pid);
+    spdlog::info("No parent info and this pid container info: pid {} name {}", e.data.common.pid, e.data.comm);
     manager.update_container_map_data();
     this_info = manager.info_map.get(e.data.common.pid);
-    if (this_info) {
+    if (this_info)
+    {
       // insert new info to the map
       manager.info_map.insert(
           e.data.common.pid, process_container_info_data{ .common = e.data.common, .info = this_info->info });
-    } else {
+    }
+    else
+    {
       // no info, insert os info to the map
       manager.info_map.insert(
           e.data.common.pid, process_container_info_data{ .common = e.data.common, .info = manager.os_info });

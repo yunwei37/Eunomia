@@ -14,6 +14,9 @@ extern "C"
 #include <process/process.h>
 }
 
+// manager all container or k8s info
+// provide a interface to get container info in handler
+// thread safe for getters and setters
 class container_manager
 {
  public:
@@ -48,7 +51,9 @@ class container_manager
   };
 
   container_manager();
+  // init the container info table
   void init();
+  // get container info using the pid in root namespace
   container_info get_container_info_for_pid(int pid) const;
 
  private:
@@ -56,7 +61,7 @@ class container_manager
   class container_client
   {
    private:
-    // for dockerd
+    // for dockerd http api
     httplib::Client dockerd_client;
 
    public:
@@ -70,6 +75,7 @@ class container_manager
     container_client();
   };
 
+  // for datas store in the container_info_map
   struct process_container_info_data
   {
     common_event common;
@@ -77,6 +83,7 @@ class container_manager
   };
 
   // used to store container info
+  // thread safe
   class container_info_map
   {
    private:

@@ -14,8 +14,10 @@
 struct tracker_alone_env
 {
   volatile bool *exiting;
-  // wait for the child process to write
-  int wait_time_for_read;
+  // wait for the child process to write in the pipe
+  // the buffer will collect result for us
+  // avoid busy reading short buffer
+  int wait_ms_for_read;
   // The main func
   typedef int (*start_func)(int argc, char **argv);
   start_func main_func;
@@ -36,8 +38,13 @@ struct tracker_alone_base : public tracker_with_config<tracker_alone_env, tracke
   pid_t child_pid;
   int stdout_pipe_fd[2];
   char stdout_pipe_buf[MAX_PROCESS_MESSAGE_LENGTH];
+  // start child process for running ebpf program
   void start_child_process();
+  // start parent process for event handler
   void start_parent_process();
+
+  // handle readed data from pipe
+  int handle_message_event(std::string&& event);
 
  public:
   tracker_alone_base(config_data config);

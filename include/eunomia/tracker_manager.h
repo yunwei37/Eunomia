@@ -14,7 +14,10 @@
 #include <map>
 #include "model/tracker.h"
 
-struct tracker_manager
+// tracker manager for owning and managing tracker instances
+// provide interface for list, start and exit trackers
+// RAII style
+class tracker_manager
 {
  private:
   struct tracker_base_data {
@@ -26,10 +29,13 @@ struct tracker_manager
 
  public:
   ~tracker_manager() = default;
+  // remove a tracker with id
   void remove_tracker(int id)
   {
     trackers.erase(id);
   }
+  // get tracker lists
+  // return a list of tracker id and name
   std::vector<std::tuple<int, std::string>> get_tracker_list()
   {
     std::vector<std::tuple<int, std::string>> list;
@@ -38,6 +44,7 @@ struct tracker_manager
     }
     return list;
   }
+  // start a tracker and return id
   std::size_t start_tracker(std::unique_ptr<tracker_base> tracker_ptr, const std::string &name)
   {
     if (!tracker_ptr)
@@ -49,7 +56,7 @@ struct tracker_manager
     trackers.emplace(id_count++, tracker_base_data{name, std::move(tracker_ptr)});
     return trackers.size() - 1;
   }
-
+  // stop all tracker
   void remove_all_trackers()
   {
     trackers.clear();

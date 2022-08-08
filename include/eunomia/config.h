@@ -75,8 +75,6 @@ struct eunomia_config_data
     { "process", {}, {} },
     { "files", {}, {} },
     { "tcpconnect", {}, {} },
-    { "opensnoop", {}, {} },
-    { "sigsnoop", {}, {} },
   };
   // use the config data from enabled_trackers,
   // disable others.
