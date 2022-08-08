@@ -28,7 +28,9 @@ class tracker_manager
   std::map<int,  tracker_base_data> trackers;
 
  public:
-  ~tracker_manager() = default;
+  ~tracker_manager() {
+    spdlog::debug("tracker_manager::~tracker_manager()");
+  }
   // remove a tracker with id
   void remove_tracker(int id)
   {

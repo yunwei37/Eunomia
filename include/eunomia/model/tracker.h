@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "tracker_config.h"
-
+#include "spdlog/spdlog.h"
 // the base type of a tracker
 // for tracker manager to manage
 struct tracker_base
@@ -29,6 +29,7 @@ struct tracker_base
   virtual ~tracker_base()
   {
     stop_tracker();
+    spdlog::debug("tracker_base::~tracker_base()");
   }
   virtual void start_tracker(void) = 0;
   void stop_tracker(void)

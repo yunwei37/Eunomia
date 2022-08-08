@@ -231,16 +231,19 @@ void eunomia_core::check_auto_exit(void)
   {
     spdlog::info("set exit time...");
     std::this_thread::sleep_for(std::chrono::seconds(core_config.exit_after));
-    spdlog::info("auto exit...");
-    exit(0);
     // do nothing in server mode
   }
   else
   {
+    static bool is_exiting = false;
+    signal(SIGINT, [](int x) {
+      spdlog::info("Ctrl C exit...");
+      is_exiting = true;
+    });
     if (core_config.run_selected != "server")
     {
       spdlog::info("press 'Ctrl C' key to exit...");
-      while (std::cin.get() != 'x')
+      while (std::cin.get() != 'x' && !is_exiting)
       {
         std::this_thread::sleep_for(std::chrono::seconds(1));
       }
@@ -308,5 +311,6 @@ int eunomia_core::start_eunomia(void)
     spdlog::error("eunomia start failed: {}", e.what());
     return 1;
   }
+  spdlog::debug("eunomia exit. see you next time!");
   return 0;
 }

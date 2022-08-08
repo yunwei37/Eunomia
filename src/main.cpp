@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
   std::string run_tracker_selected = "process";
   std::vector<std::string> run_with_extra_args;
 
-  // spdlog::set_level(spdlog::level::debug);
+  spdlog::set_level(spdlog::level::info);
 
   auto container_id_cmd =
       (clipp::option("-c", "--container") & clipp::value("container id", core_config.tracing_target_id) %
