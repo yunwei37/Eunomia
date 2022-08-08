@@ -91,12 +91,15 @@ tracker_alone_base::~tracker_alone_base()
     // close pipe and clean up
     int res = 0;
     (void)kill(child_pid, SIGINT);
+    // wait for thr subprocess to print out the message
+    std::this_thread::sleep_for(1s);
     auto read_bytes = read(stdout_pipe_fd[0], stdout_pipe_buf, MAX_PROCESS_MESSAGE_LENGTH);
     if (read_bytes > 0)
     {
       handle_message_event(std::string(stdout_pipe_buf, read_bytes));
     }
     (void)close(stdout_pipe_fd[0]);
+    (void)kill(child_pid, SIGKILL);
     res = waitpid(child_pid, nullptr, 0);
     if (res == -1)
     {

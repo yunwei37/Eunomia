@@ -243,7 +243,7 @@ void eunomia_core::check_auto_exit(void)
     if (core_config.run_selected != "server")
     {
       spdlog::info("press 'Ctrl C' key to exit...");
-      while (std::cin.get() != 'x' && !is_exiting)
+      while (!is_exiting)
       {
         std::this_thread::sleep_for(std::chrono::seconds(1));
       }
