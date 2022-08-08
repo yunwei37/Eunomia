@@ -87,7 +87,6 @@ struct eunomia_config_data
   std::string tracing_target_id = "";
 
   // auto exit mode
-  bool is_auto_exit = false;
   int exit_after = 0;
 
   // export config
@@ -122,6 +121,9 @@ struct eunomia_config_data
 
   // load config options to enable_trackers
   void load_config_options_to_trackers();
+
+  // eunomia_http_server_port
+  int server_port = 8527;
 };
 
 #endif

@@ -55,7 +55,7 @@ static void from_json(const nlohmann::json& j, eunomia_config_data& data)
   get_from_json_at(enabled_trackers);
   get_from_json_at(tracing_selected);
   get_from_json_at(tracing_target_id);
-  get_from_json_at(is_auto_exit);
+  get_from_json_at(server_port);
   get_from_json_at(exit_after);
   get_from_json_at(enabled_export_types);
   get_from_json_at(fmt);

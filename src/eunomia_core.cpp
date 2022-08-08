@@ -188,6 +188,14 @@ std::optional<std::size_t> eunomia_core::start_tracker(const tracker_config_data
   {
     return core_tracker_manager.start_tracker(create_default_tracker<bindsnoop_tracker>(config), config.name);
   }
+  else if (config.name == "opensnoop")
+  {
+    return core_tracker_manager.start_tracker(create_default_tracker<opensnoop_tracker>(config), config.name);
+  }
+  else if (config.name == "oomkill")
+  {
+    return core_tracker_manager.start_tracker(create_default_tracker<oomkill_tracker>(config), config.name);
+  }
   else if (config.name == "syscount")
   {
     // return core_tracker_manager.start_tracker(create_default_tracker<syscount_tracker>(config), config.name);
@@ -215,22 +223,23 @@ void eunomia_core::start_trackers(void)
 
 void eunomia_core::check_auto_exit(void)
 {
-  if (core_config.is_auto_exit)
+  if (core_config.exit_after > 0)
   {
-    if (core_config.exit_after > 0)
-    {
-      spdlog::info("set exit time...");
-      std::this_thread::sleep_for(std::chrono::seconds(core_config.exit_after));
-      spdlog::info("auto exit...");
-      exit(0);
-    }
+    spdlog::info("set exit time...");
+    std::this_thread::sleep_for(std::chrono::seconds(core_config.exit_after));
+    spdlog::info("auto exit...");
+    exit(0);
+    // do nothing in server mode
   }
   else
   {
-    spdlog::info("press 'Ctrl C' key to exit...");
-    while (std::cin.get() != 'x')
+    if (core_config.run_selected != "server")
     {
-      std::this_thread::sleep_for(std::chrono::seconds(1));
+      spdlog::info("press 'Ctrl C' key to exit...");
+      while (std::cin.get() != 'x')
+      {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+      }
     }
   }
 }

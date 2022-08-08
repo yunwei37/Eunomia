@@ -91,8 +91,6 @@ void eunomia_server::serve()
     std::string req_str;
     try
     {
-      nlohmann::json j = nlohmann::json::parse(req.body);
-      auto id = j.at("id").get<std::size_t>();
       auto list = core.list_all_trackers();
       req_str = nlohmann::json{ "status", "ok", "list", list }.dump();
     }
