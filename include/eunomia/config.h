@@ -74,8 +74,9 @@ struct eunomia_config_data
   std::vector<tracker_config_data> enabled_trackers = {
     { "process", {}, {} },
     { "files", {}, {} },
-    { "syscall", {}, {} },
     { "tcpconnect", {}, {} },
+    { "opensnoop", {}, {} },
+    { "sigsnoop", {}, {} },
   };
   // use the config data from enabled_trackers,
   // disable others.

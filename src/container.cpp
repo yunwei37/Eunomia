@@ -249,12 +249,22 @@ void container_manager::container_tracking_handler::handle(tracker_event<process
       manager.info_map.insert(e.data.common.pid, data);
       return;
     }
+    // no parent info, no this info
+    spdlog::info("No parent info and this pid container info", e.data.common.pid);
+    manager.update_container_map_data();
+    this_info = manager.info_map.get(e.data.common.pid);
+    if (this_info) {
+      // insert new info to the map
+      manager.info_map.insert(
+          e.data.common.pid, process_container_info_data{ .common = e.data.common, .info = this_info->info });
+    } else {
+      // no info, insert os info to the map
+      manager.info_map.insert(
+          e.data.common.pid, process_container_info_data{ .common = e.data.common, .info = manager.os_info });
+    }
     // add new info to ppid
     manager.info_map.insert(
         e.data.common.ppid, process_container_info_data{ get_process_common_event(e.data.common.ppid), manager.os_info });
-    // insert new info to the map
-    manager.info_map.insert(
-        e.data.common.pid, process_container_info_data{ .common = e.data.common, .info = this_info->info });
   }
   e.ct_info = manager.get_container_info_for_pid(e.data.common.pid);
 }

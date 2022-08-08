@@ -23,6 +23,7 @@ set(sources
     src/tracker_integrations/bindsnoop.cpp
     # src/tracker_integrations/syscount.cpp
     src/tracker_integrations/funclatency.cpp
+    src/tracker_integrations/tcprtt.cpp
     src/btf_helpers.c
     src/trace_helpers.c
     src/uprobe_helpers.c
@@ -49,6 +50,7 @@ set(headers
     bpftools/bindsnoop/bindsnoop_tracker.h
     bpftools/syscount/syscount_tracker.h
     bpftools/funclatency/funclatency_tracker.h
+    bpftools/tcprtt/tcprtt_tracker.h
     include/eunomia/myseccomp.h
 )
 
@@ -69,6 +71,7 @@ set(skel_includes
     bpftools/bindsnoop/.output
     bpftools/syscount/.output
     bpftools/funclatency/.output
+    bpftools/tcprtt/.output
 )
 
 set(test_sources

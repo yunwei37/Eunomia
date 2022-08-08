@@ -142,4 +142,16 @@ struct funclatency_tracker final : public tracker_alone_base
       const std::vector<std::string> &args);
 };
 
+struct tcprtt_tracker final : public tracker_alone_base
+{
+  tcprtt_tracker(config_data config) : tracker_alone_base(config)
+  {
+  }
+
+  static std::unique_ptr<tcprtt_tracker> create_tracker_with_default_env(tracker_event_handler handler);
+  static std::unique_ptr<tcprtt_tracker> create_tracker_with_args(
+      tracker_event_handler handler,
+      const std::vector<std::string> &args);
+};
+
 #endif
