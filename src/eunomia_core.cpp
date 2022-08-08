@@ -217,10 +217,13 @@ void eunomia_core::check_auto_exit(void)
 {
   if (core_config.is_auto_exit)
   {
-    spdlog::info("set exit time...");
-    std::this_thread::sleep_for(std::chrono::seconds(core_config.exit_after));
-    spdlog::info("auto exit...");
-    exit(0);
+    if (core_config.exit_after > 0)
+    {
+      spdlog::info("set exit time...");
+      std::this_thread::sleep_for(std::chrono::seconds(core_config.exit_after));
+      spdlog::info("auto exit...");
+      exit(0);
+    }
   }
   else
   {
