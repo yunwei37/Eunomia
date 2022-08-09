@@ -14,8 +14,17 @@
 #include <memory>
 #include "container_info.h"
 
-// the basic event type
-// T is the event from C code
+/// concept for a eunomia event
+/// which will be reported by a tracker
+template<typename EVENT>
+concept event_concept =  requires
+{
+  /// pid of the associated process
+  typename EVENT::pid;
+};
+
+/// the basic event type
+/// T is the event from C code
 template <typename T>
 struct tracker_event
 {
@@ -24,7 +33,7 @@ struct tracker_event
     // TODO: add more data options here?
 };
 
-// the event handler for share_ptr
+/// the event handler for share_ptr
 template <typename T>
 struct event_handler_base
 {
@@ -34,8 +43,8 @@ public:
     virtual void do_handle_event(tracker_event<T> &e) = 0;
 };
 
-// the event handler for single type
-// all single type event hanlder should inherit from this class
+/// the event handler for single type
+/// all single type event hanlder should inherit from this class
 template <typename T>
 struct event_handler : event_handler_base<T>
 {
@@ -43,17 +52,17 @@ std::shared_ptr<event_handler_base<T>> next_handler = nullptr;
 public:
     virtual ~event_handler() = default;
 
-    // implement this function to handle the event
+    /// implement this function to handle the event
     virtual void handle(tracker_event<T> &e) = 0;
 
-    // add a next handler after this handler
+    /// add a next handler after this handler
     std::shared_ptr<event_handler<T>> add_handler(std::shared_ptr<event_handler<T>> handler)
     {
         next_handler = handler;
         return handler;
     }
-    // do the handle event
-    // pass the event to next handler
+    /// do the handle event
+    /// pass the event to next handler
     void do_handle_event(tracker_event<T> &e)
     {
         bool is_catched = false;
@@ -69,8 +78,8 @@ public:
     }
 };
 
-// type switcher
-// all switch type event hanlder should inherit from this class
+/// type switcher
+/// all switch type event hanlder should inherit from this class
 template <typename T1, typename T2>
 struct event_handler_adapter : event_handler_base<T2>
 {

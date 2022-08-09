@@ -23,9 +23,9 @@ bindsnoop_tracker::prometheus_event_handler::prometheus_event_handler(prometheus
 {
 }
 
-void opensnoop_tracker::prometheus_event_handler::handle(tracker_event<tracker_alone_event> &e)
+void bindsnoop_tracker::prometheus_event_handler::handle(tracker_event<tracker_alone_event> &e)
 {
-  static std::stringstream ss;
+  thread_local static std::stringstream ss;
   int pid;
   int ret;
   int IF;
@@ -41,7 +41,7 @@ void opensnoop_tracker::prometheus_event_handler::handle(tracker_event<tracker_a
   issline >> pid >> comm >> ret >> proto >> IF >> port >> addr;
   // get container info from data
   auto container_info = container_manager_ref.get_container_info_for_pid(pid);
-  eunomia_opensnoop_counter
+  eunomia_bind_counter
         .Add(
             { { "task", comm },
               { "container_id", container_info.id },

@@ -45,7 +45,7 @@ all: $(APPS)
 .PHONY: clean
 clean:
 	$(call msg,CLEAN)
-	$(Q)rm -rf $(OUTPUT) $(APPS)
+	$(Q)rm -rf $(OUTPUT) $(APPS) *.o
 
 $(OUTPUT) $(OUTPUT)/libbpf:
 	$(call msg,MKDIR,$@)

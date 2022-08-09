@@ -25,7 +25,7 @@ opensnoop_tracker::prometheus_event_handler::prometheus_event_handler(prometheus
 
 void opensnoop_tracker::prometheus_event_handler::handle(tracker_event<tracker_alone_event> &e)
 {
-  static std::stringstream ss;
+  thread_local static std::stringstream ss;
   std::string comm;
   int pid;
   int fd;

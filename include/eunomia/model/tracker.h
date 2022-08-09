@@ -94,17 +94,25 @@ struct tracker_with_config : public tracker_base
   }
 };
 
-// concept for tracker
-// all tracker should have these types
+/// concept for a single thread tracker
+///
+/// all tracker should have these types
 template<typename TRACKER>
 concept tracker_concept = requires
 {
+  /// type alias for event
   typename TRACKER::event;
+  /// type alias for config_data
   typename TRACKER::config_data;
+  /// type alias for event_handler
   typename TRACKER::tracker_event_handler;
+  /// prometheus_event_handler sub class
   typename TRACKER::prometheus_event_handler;
+  /// json_event_handler sub class
   typename TRACKER::json_event_printer;
+  /// plain_text_event_printer sub class
   typename TRACKER::plain_text_event_printer;
+  /// csv_event_printer sub class
   typename TRACKER::csv_event_printer;
 };
 

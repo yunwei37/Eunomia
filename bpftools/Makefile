@@ -71,8 +71,8 @@ tcp:
 tcpconnlat:
 	@make -C tcpconnlat
 
-# tcprtt:
-# 	@make -C tcprtt
+tcprtt:
+	@make -C tcprtt
 
 capable:
 	@make -C capable
@@ -97,8 +97,9 @@ clean:
 	# @make -C profile clean
 	# @make -C seccomp clean
 	@make -C sigsnoop clean
+	@make -C bindsnoop clean
 	@make -C syscall clean
 	@make -C syscount clean
 	@make -C tcpconnect clean
 	@make -C tcpconnlat clean
-	# @make -C tcprtt clean
+	@make -C tcprtt clean

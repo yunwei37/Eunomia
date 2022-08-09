@@ -3,7 +3,7 @@
 
 #include <string>
 
-// statues of container
+/// statues of container
 enum class container_status
 {
   RUNNING,
@@ -11,6 +11,7 @@ enum class container_status
   INVALID,
 };
 
+/// container info from str
 static container_status container_status_from_str(const std::string &s)
 {
   if (s == "running")
@@ -27,11 +28,14 @@ static container_status container_status_from_str(const std::string &s)
   }
 }
 
-//  container info
+///  container info
 struct container_info
 {
+  /// container id
   std::string id;
+  /// container name
   std::string name;
+  /// container status
   container_status status;
 };
 

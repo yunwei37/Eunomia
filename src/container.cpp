@@ -181,7 +181,7 @@ void container_manager::update_container_map_data(void)
   // check the container list 2 seconds
   constexpr auto duration = std::chrono::seconds(2);
   // init once
-  static auto time = std::chrono::steady_clock::now();
+  thread_local static auto time = std::chrono::steady_clock::now();
   auto current = std::chrono::steady_clock::now();
   if ((current - time) <= duration)
   {

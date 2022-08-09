@@ -88,13 +88,6 @@ struct sec_analyzer_prometheus : sec_analyzer
   static std::shared_ptr<sec_analyzer> create_sec_analyzer_with_additional_rules(const std::vector<sec_rule_describe> &rules, prometheus_server &server);
 };
 
-// all events will need pid
-template<typename EVNET>
-concept event_concept = requires
-{
-  typename EVNET::pid;
-};
-
 // base class for securiy rules
 template<typename EVNET>
 struct rule_base : event_handler<EVNET>

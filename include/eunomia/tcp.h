@@ -23,16 +23,16 @@ union sender
   struct in6_addr x6;
 };
 
-// ebpf tcp tracker interface
-// the true implementation is in tcp/tcp_tracker.h
-//
-// trace tcp start and exit
+/// ebpf tcp tracker interface
+/// the true implementation is in tcp/tcp_tracker.h
+///
+/// trace tcp start and exit
 class tcp_tracker : public tracker_with_config<tcp_env, tcp_event>
 {
 public:
   tcp_tracker(config_data config);
 
-  // create a tracker with deafult config
+  /// create a tracker with deafult config
   static std::unique_ptr<tcp_tracker> create_tracker_with_default_env(tracker_event_handler handler);
   static std::unique_ptr<tcp_tracker> create_tracker_with_args(
       tracker_event_handler handler,
