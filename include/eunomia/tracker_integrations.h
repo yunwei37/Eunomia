@@ -52,6 +52,15 @@ struct capable_tracker final : public tracker_alone_base
   {
   }
 
+  struct prometheus_event_handler : public event_handler<tracker_alone_event>
+  {
+    prometheus::Family<prometheus::Counter> &eunomia_capable_counter;
+    const container_manager &container_manager_ref;
+
+    prometheus_event_handler(prometheus_server &server);
+    void handle(tracker_event<tracker_alone_event> &e);
+  };
+
   static std::unique_ptr<capable_tracker> create_tracker_with_default_env(tracker_event_handler handler);
   static std::unique_ptr<capable_tracker> create_tracker_with_args(
       tracker_event_handler handler,
@@ -76,6 +85,15 @@ struct mountsnoop_tracker final : public tracker_alone_base
   {
   }
 
+  struct prometheus_event_handler : public event_handler<tracker_alone_event>
+  {
+    prometheus::Family<prometheus::Counter> &eunomia_mountsnoop_counter;
+    const container_manager &container_manager_ref;
+
+    prometheus_event_handler(prometheus_server &server);
+    void handle(tracker_event<tracker_alone_event> &e);
+  };
+
   static std::unique_ptr<mountsnoop_tracker> create_tracker_with_default_env(tracker_event_handler handler);
   static std::unique_ptr<mountsnoop_tracker> create_tracker_with_args(
       tracker_event_handler handler,
@@ -87,6 +105,15 @@ struct sigsnoop_tracker final : public tracker_alone_base
   sigsnoop_tracker(config_data config) : tracker_alone_base(config)
   {
   }
+
+  struct prometheus_event_handler : public event_handler<tracker_alone_event>
+  {
+    prometheus::Family<prometheus::Counter> &eunomia_sigsnoop_counter;
+    const container_manager &container_manager_ref;
+
+    prometheus_event_handler(prometheus_server &server);
+    void handle(tracker_event<tracker_alone_event> &e);
+  };
 
   static std::unique_ptr<sigsnoop_tracker> create_tracker_with_default_env(tracker_event_handler handler);
   static std::unique_ptr<sigsnoop_tracker> create_tracker_with_args(
@@ -100,6 +127,15 @@ struct opensnoop_tracker final : public tracker_alone_base
   {
   }
 
+  struct prometheus_event_handler : public event_handler<tracker_alone_event>
+  {
+    prometheus::Family<prometheus::Counter> &eunomia_opensnoop_counter;
+    const container_manager &container_manager_ref;
+
+    prometheus_event_handler(prometheus_server &server);
+    void handle(tracker_event<tracker_alone_event> &e);
+  };
+
   static std::unique_ptr<opensnoop_tracker> create_tracker_with_default_env(tracker_event_handler handler);
   static std::unique_ptr<opensnoop_tracker> create_tracker_with_args(
       tracker_event_handler handler,
@@ -111,6 +147,15 @@ struct bindsnoop_tracker final : public tracker_alone_base
   bindsnoop_tracker(config_data config) : tracker_alone_base(config)
   {
   }
+
+  struct prometheus_event_handler : public event_handler<tracker_alone_event>
+  {
+    prometheus::Family<prometheus::Counter> &eunomia_bind_counter;
+    const container_manager &container_manager_ref;
+
+    prometheus_event_handler(prometheus_server &server);
+    void handle(tracker_event<tracker_alone_event> &e);
+  };
 
   static std::unique_ptr<bindsnoop_tracker> create_tracker_with_default_env(tracker_event_handler handler);
   static std::unique_ptr<bindsnoop_tracker> create_tracker_with_args(
