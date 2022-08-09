@@ -1,4 +1,5 @@
 #include "eunomia/tracker_integrations.h"
+#include <string>
 
 extern "C"
 {
@@ -12,6 +13,39 @@ std::unique_ptr<mountsnoop_tracker> mountsnoop_tracker::create_tracker_with_defa
   config.name = "mountsnoop";
   config.env = tracker_alone_env{ .main_func = start_mountsnoop };
   return std::make_unique<mountsnoop_tracker>(config);
+}
+
+mountsnoop_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_server &server)
+    : eunomia_mountsnoop_counter(prometheus::BuildCounter()
+                                        .Name("eunomia_observed_mountsnoop_counter")
+                                        .Help("observed mount record")
+                                        .Register(*server.registry)),
+      container_manager_ref(server.core_container_manager_ref)
+{
+}
+
+void mountsnoop_tracker::prometheus_event_handler::handle(tracker_event<tracker_alone_event> &e)
+{
+  static std::stringstream ss;
+  std::string comm;
+  int pid;
+  int tid;
+  std::string mnt_ns;
+  std::string line;
+  // get a line as data
+  ss << e.data.process_messages;
+  std::getline(ss, line);
+  std::istringstream issline{ line };
+  issline >> comm >> pid >> tid >> mnt_ns;
+  // get container info from data
+  auto container_info = container_manager_ref.get_container_info_for_pid(pid);
+  eunomia_mountsnoop_counter
+      .Add({
+          { "comm", std::string(comm) },
+          { "pid", std::to_string(pid)},
+          { "tid", std::to_string(tid)},
+      })
+      .Increment(stoi(mnt_ns));
 }
 
 std::unique_ptr<mountsnoop_tracker> mountsnoop_tracker::create_tracker_with_args(

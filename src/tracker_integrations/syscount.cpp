@@ -14,15 +14,17 @@ std::unique_ptr<syscount_tracker> syscount_tracker::create_tracker_with_default_
   return std::make_unique<syscount_tracker>(config);
 }
 
-  std::unique_ptr<syscount_tracker> syscount_tracker::create_tracker_with_args(
-      tracker_event_handler handler,
-      const std::vector<std::string> &args)
+
+
+std::unique_ptr<syscount_tracker> syscount_tracker::create_tracker_with_args(
+    tracker_event_handler handler,
+    const std::vector<std::string> &args)
+{
+  auto tracker = syscount_tracker::create_tracker_with_default_env(handler);
+  if (tracker)
   {
-    auto tracker = syscount_tracker::create_tracker_with_default_env(handler);
-    if (tracker)
-    {
-      tracker->current_config.env.process_args = args;
-    }
-    return tracker;
+    tracker->current_config.env.process_args = args;
   }
+  return tracker;
+}
   

@@ -14,6 +14,47 @@ std::unique_ptr<capable_tracker> capable_tracker::create_tracker_with_default_en
   return std::make_unique<capable_tracker>(config);
 }
 
+capable_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_server &server)
+    : eunomia_capable_counter(prometheus::BuildCounter()
+                                        .Name("eunomia_capable_counter")
+                                        .Help("observed process capable")
+                                        .Register(*server.registry)),
+      container_manager_ref(server.core_container_manager_ref)
+{
+}
+
+void capable_tracker::prometheus_event_handler::handle(tracker_event<tracker_alone_event> &e)
+{
+  static std::stringstream ss;
+  std::string comm;
+  std::string time;
+  int pid;
+  int uid;
+  int cap;
+  int audit;
+  std::string name;
+  std::string line;
+  // get a line as data
+  ss << e.data.process_messages;
+  std::getline(ss, line);
+  std::istringstream issline{ line };
+  issline >> time >> uid >> pid >> comm >> cap >> name >> audit;
+  // get container info from data
+  auto container_info = container_manager_ref.get_container_info_for_pid(pid);
+  eunomia_capable_counter
+        .Add(
+            { { "task", comm },
+              { "container_id", container_info.id },
+              { "container_name", container_info.name },
+              { "pid", std::to_string(pid) },
+              { "uid", std::to_string(uid) },
+              { "cap", std::to_string(cap) },
+              { "name", name },
+              { "audit", std::to_string(audit)}
+            })
+        .Increment(pid);
+}
+
 std::unique_ptr<capable_tracker> capable_tracker::create_tracker_with_args(
     tracker_event_handler handler,
     const std::vector<std::string> &args)
