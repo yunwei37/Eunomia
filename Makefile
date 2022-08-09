@@ -35,7 +35,7 @@ generate-tools: ## generate libbpf tools and headers
 
 install-deps: ## install deps
 	sudo apt update
-	sudo apt-get install libcurl4-openssl-dev libelf-dev clang llvm ## libgtest-dev 
+	sudo apt-get install libcurl4-openssl-dev libelf-dev clang llvm ## libgtest-dev
 	mkdir -p third_party/prometheus-cpp/_build
 	cd third_party/prometheus-cpp/_build && sudo cmake .. -DBUILD_SHARED_LIBS=ON -DENABLE_PUSH=OFF -DENABLE_COMPRESSION=OFF
 	cd third_party/prometheus-cpp/_build && sudo cmake --build . --parallel 4
@@ -57,7 +57,7 @@ coverage: generate-tools ## check code coverage quickly GCC
 docs: generate-tools ## generate Doxygen HTML documentation, including API docs
 	rm -rf docs/
 	rm -rf build/
-	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -DProject_ENABLE_DOXYGEN=1
+	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -DProject_ENABLE_DOXYGEN=1 -DCMAKE_BUILD_TYPE=Release
 	cmake --build build --config Release
 	cmake --build build --target doxygen-docs
 	$(BROWSER) docs/html/index.html
