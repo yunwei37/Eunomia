@@ -75,4 +75,5 @@ format: ## format the project sources
 clean: ## clean the project build files
 	rm -rf build/
 	rm -rf docs/
+	rm -rf third_party/prometheus-cpp/_build/
 	make -C bpftools clean
