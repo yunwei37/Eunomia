@@ -370,4 +370,4 @@ healthchecksdb
 MigrationBackup/
 
 errors
-docs/
+doxygens/
