@@ -14,9 +14,10 @@
 #include <map>
 #include "model/tracker.h"
 
-// tracker manager for owning and managing tracker instances
-// provide interface for list, start and exit trackers
-// RAII style
+/// tracker manager for owning and managing tracker instances
+
+/// provide interface for list, start and exit trackers
+/// RAII style
 class tracker_manager
 {
  private:

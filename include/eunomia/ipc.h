@@ -15,6 +15,7 @@ extern "C" {
 #include <ipc/ipc_tracker.h>
 }
 
+/// ebpf LSM ipc tracker
 struct ipc_tracker : public tracker_with_config<ipc_env, ipc_event> {
 
   ipc_tracker(config_data config);

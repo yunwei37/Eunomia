@@ -14,13 +14,14 @@ extern "C"
 #include <process/process.h>
 }
 
-// manager all container or k8s info
-// provide a interface to get container info in handler
-// thread safe for getters and setters
+/// manager all container or k8s info
+
+/// provide a interface to get container info in handler
+/// thread safe for getters and setters
 class container_manager
 {
  public:
-  // use process tracker to track the processes created in the container
+  /// use process tracker to track the processes created in the container
   class container_tracking_handler : public event_handler<process_event>
   {
     container_manager &manager;

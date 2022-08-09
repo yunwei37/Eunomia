@@ -15,6 +15,7 @@
 #include "container_info.h"
 
 /// concept for a eunomia event
+
 /// which will be reported by a tracker
 template<typename EVENT>
 concept event_concept =  requires
@@ -24,6 +25,7 @@ concept event_concept =  requires
 };
 
 /// the basic event type
+
 /// T is the event from C code
 template <typename T>
 struct tracker_event
@@ -44,6 +46,7 @@ public:
 };
 
 /// the event handler for single type
+
 /// all single type event hanlder should inherit from this class
 template <typename T>
 struct event_handler : event_handler_base<T>
@@ -78,7 +81,8 @@ public:
     }
 };
 
-/// type switcher
+/// Event handler type switcher
+
 /// all switch type event hanlder should inherit from this class
 template <typename T1, typename T2>
 struct event_handler_adapter : event_handler_base<T2>

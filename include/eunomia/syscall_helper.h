@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 
+/// syscall table map: from syscall name to syscall number
 /*
  * Syscall table for Linux x86_64.
  *

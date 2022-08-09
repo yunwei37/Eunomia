@@ -14,12 +14,11 @@ std::unique_ptr<sigsnoop_tracker> sigsnoop_tracker::create_tracker_with_default_
   return std::make_unique<sigsnoop_tracker>(config);
 }
 
-
 sigsnoop_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_server &server)
     : eunomia_sigsnoop_counter(prometheus::BuildCounter()
-                                        .Name("eunomia_observed_sigsnoop_counter")
-                                        .Help("observed signals")
-                                        .Register(*server.registry)),
+                                   .Name("eunomia_observed_sigsnoop_counter")
+                                   .Help("observed signals")
+                                   .Register(*server.registry)),
       container_manager_ref(server.core_container_manager_ref)
 {
 }
@@ -42,16 +41,15 @@ void sigsnoop_tracker::prometheus_event_handler::handle(tracker_event<tracker_al
   // get container info from data
   auto container_info = container_manager_ref.get_container_info_for_pid(pid);
   eunomia_sigsnoop_counter
-      .Add(
-          { { "task", comm },
-            { "container_id", container_info.id },
-            { "container_name", container_info.name },
-            { "time", time },
-            { "pid", std::to_string(pid) } ,
-            { "signalId", std::to_string(sig) } ,
-            { "tpid", std::to_string(tpid) } ,
-            { "result", std::to_string(result) } })
-          .Increment();
+      .Add({ { "task", comm },
+             { "container_id", container_info.id },
+             { "container_name", container_info.name },
+             { "time", time },
+             { "pid", std::to_string(pid) },
+             { "signalId", std::to_string(sig) },
+             { "tpid", std::to_string(tpid) },
+             { "result", std::to_string(result) } })
+      .Increment();
 }
 
 std::unique_ptr<sigsnoop_tracker> sigsnoop_tracker::create_tracker_with_args(

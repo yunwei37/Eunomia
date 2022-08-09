@@ -13,6 +13,7 @@
 #include "prometheus_server.h"
 #include "syscall.h"
 
+/// sec rules info level
 enum class sec_rule_level
 {
   event,
@@ -21,6 +22,9 @@ enum class sec_rule_level
   // TODO: add more levels?
 };
 
+/// sec rules type
+
+/// eg. system call, file access, etc.
 enum class sec_rule_type
 {
   syscall,
@@ -31,7 +35,9 @@ enum class sec_rule_type
   // TODO: add more types?
 };
 
-// message for sec_rule
+/// message for sec_rule
+
+/// eg. read from file: xxx
 struct rule_message
 {
   sec_rule_level level;
@@ -43,8 +49,7 @@ struct rule_message
   std::string container_name;
 };
 
-// describe a sec_rule
-// signature: the signature of the rule, for example, process name, syscall, etc.
+/// describe a sec_rule
 struct sec_rule_describe
 {
   sec_rule_level level;
@@ -52,9 +57,11 @@ struct sec_rule_describe
   std::string name;
   std::string message;
 
+  /// signature: the signature of the rule, for example, process name, syscall name, etc.
   std::string signature;
 };
 
+/// sec analyzer manager
 class sec_analyzer
 {
 private:
@@ -74,12 +81,14 @@ public:
   static std::shared_ptr<sec_analyzer> create_sec_analyzer_with_additional_rules(const std::vector<sec_rule_describe> &rules);
 };
 
-struct sec_analyzer_prometheus : sec_analyzer
+/// sec analyzer manager with prometheus exporter
+class sec_analyzer_prometheus : sec_analyzer
 {
+private:
   prometheus::Family<prometheus::Counter> &eunomia_sec_warn_counter;
   prometheus::Family<prometheus::Counter> &eunomia_sec_event_counter;
   prometheus::Family<prometheus::Counter> &eunomia_sec_alert_counter;
-
+public:
   void report_prometheus_event(const struct rule_message &msg);
   void report_event(const rule_message &msg);
   sec_analyzer_prometheus(prometheus_server &server, const std::vector<sec_rule_describe> &rules);
@@ -88,11 +97,12 @@ struct sec_analyzer_prometheus : sec_analyzer
   static std::shared_ptr<sec_analyzer> create_sec_analyzer_with_additional_rules(const std::vector<sec_rule_describe> &rules, prometheus_server &server);
 };
 
-// base class for securiy rules
+/// base class for securiy rules detect handler
 template<typename EVNET>
-struct rule_base : event_handler<EVNET>
+class rule_base : event_handler<EVNET>
 {
   std::shared_ptr<sec_analyzer> analyzer;
+public:
   rule_base(std::shared_ptr<sec_analyzer> analyzer_ptr) : analyzer(analyzer_ptr) {}
   virtual ~rule_base() = default;
 
@@ -114,9 +124,9 @@ struct rule_base : event_handler<EVNET>
   }
 };
 
-// files rule:
-//
-// for example, a read or write to specific file
+/// files rule:
+
+/// for example, a read or write to specific file
 struct files_rule_checker : rule_base<files_event>
 {
   virtual ~files_rule_checker() = default;
@@ -125,9 +135,9 @@ struct files_rule_checker : rule_base<files_event>
   int check_rule(const tracker_event<files_event> &e, rule_message &msg);
 };
 
-// process rule:
-//
-// for example, a specific process is running
+/// process rule:
+
+/// for example, a specific process is running
 struct process_rule_checker : rule_base<process_event>
 {
   virtual ~process_rule_checker() = default;
@@ -136,9 +146,9 @@ struct process_rule_checker : rule_base<process_event>
   int check_rule(const tracker_event<process_event> &e, rule_message &msg);
 };
 
-// syscall rule:
-//
-// for example, a process is using a syscall
+/// syscall rule:
+
+/// for example, a process is using a syscall
 struct syscall_rule_checker : rule_base<syscall_event>
 {
   syscall_rule_checker(std::shared_ptr<sec_analyzer> analyzer_ptr) : rule_base(analyzer_ptr)

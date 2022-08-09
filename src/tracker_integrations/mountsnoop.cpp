@@ -1,5 +1,6 @@
-#include "eunomia/tracker_integrations.h"
 #include <string>
+
+#include "eunomia/tracker_integrations.h"
 
 extern "C"
 {
@@ -17,9 +18,9 @@ std::unique_ptr<mountsnoop_tracker> mountsnoop_tracker::create_tracker_with_defa
 
 mountsnoop_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_server &server)
     : eunomia_mountsnoop_counter(prometheus::BuildCounter()
-                                        .Name("eunomia_observed_mountsnoop_counter")
-                                        .Help("observed mount record")
-                                        .Register(*server.registry)),
+                                     .Name("eunomia_observed_mountsnoop_counter")
+                                     .Help("observed mount record")
+                                     .Register(*server.registry)),
       container_manager_ref(server.core_container_manager_ref)
 {
 }
@@ -42,8 +43,8 @@ void mountsnoop_tracker::prometheus_event_handler::handle(tracker_event<tracker_
   eunomia_mountsnoop_counter
       .Add({
           { "comm", std::string(comm) },
-          { "pid", std::to_string(pid)},
-          { "tid", std::to_string(tid)},
+          { "pid", std::to_string(pid) },
+          { "tid", std::to_string(tid) },
       })
       .Increment(stoi(mnt_ns));
 }

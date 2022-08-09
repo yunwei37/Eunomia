@@ -16,6 +16,7 @@ struct tracker_alone_env
 {
   volatile bool *exiting;
   /// wait for the child process to write in the pipe
+
   /// the buffer will collect result for us
   /// avoid busy reading short buffer
   int wait_ms_for_read;
@@ -32,6 +33,7 @@ struct tracker_alone_event
   /// pid for the event
   int pid;
   /// the message for the event
+
   /// note this may be multi-line
   std::string process_messages;
 };

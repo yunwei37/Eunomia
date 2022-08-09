@@ -12,7 +12,7 @@
 
 extern bool verbose;
 
-// libbpf print helper
+/// libbpf print helper
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format,
                            va_list args) {
   if (level == LIBBPF_DEBUG && !verbose)
@@ -20,7 +20,7 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char *format,
   return vfprintf(stderr, format, args);
 }
 
-// get current time helper
+/// get current time helper
 static std::string get_current_time(void) {
   struct tm *tm;
   char ts[32];

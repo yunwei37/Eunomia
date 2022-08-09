@@ -21,15 +21,16 @@ extern "C"
 #include <files/file_tracker.h>
 }
 
-// ebpf files tracker interface
-// the true implementation is in files/file_tracker.h
-//
-// trace files read and write
+/// ebpf files tracker interface
+
+/// the true implementation is in files/file_tracker.h
+///
+/// trace files read and write
 struct files_tracker : public tracker_with_config<files_env, files_event>
 {
   files_tracker(config_data config);
 
-  // create a tracker with deafult config
+  /// create a tracker with deafult config
   static std::unique_ptr<files_tracker> create_tracker_with_default_env(tracker_event_handler handler);
   static std::unique_ptr<files_tracker> create_tracker_with_args(
       tracker_event_handler handler,
@@ -38,19 +39,19 @@ struct files_tracker : public tracker_with_config<files_env, files_event>
     return create_tracker_with_default_env(handler);
   }
 
-  // start files tracker
+  /// start files tracker
   void start_tracker();
 
-  // used for prometheus exporter
+  /// used for prometheus exporter
   struct prometheus_event_handler : public event_handler<files_event>
   {
-    // read times counter for field reads
+    /// read times counter for field reads
     prometheus::Family<prometheus::Counter> &eunomia_files_read_counter;
-    // write times counter for field writes
+    /// write times counter for field writes
     prometheus::Family<prometheus::Counter> &eunomia_files_write_counter;
-    // write bytes counter for field write_bytes
+    /// write bytes counter for field write_bytes
     prometheus::Family<prometheus::Counter> &eunomia_files_write_bytes;
-    // read bytes counter for field read_bytes
+    /// read bytes counter for field read_bytes
     prometheus::Family<prometheus::Counter> &eunomia_files_read_bytes;
     const container_manager &container_manager_ref;
     void report_prometheus_event(const struct files_event &e);
@@ -59,13 +60,13 @@ struct files_tracker : public tracker_with_config<files_env, files_event>
     void handle(tracker_event<files_event> &e);
   };
 
-  // convert event to json
+  /// convert event to json
   struct json_event_handler : public event_handler<files_event>
   {
     std::string to_json(const struct files_event &e);
   };
 
-  // used for json exporter, inherits from json_event_handler
+  /// used for json exporter, inherits from json_event_handler
   struct json_event_printer : public json_event_handler
   {
     void handle(tracker_event<files_event> &e);

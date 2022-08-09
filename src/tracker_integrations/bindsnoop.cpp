@@ -16,9 +16,9 @@ std::unique_ptr<bindsnoop_tracker> bindsnoop_tracker::create_tracker_with_defaul
 
 bindsnoop_tracker::prometheus_event_handler::prometheus_event_handler(prometheus_server &server)
     : eunomia_bind_counter(prometheus::BuildCounter()
-                                        .Name("eunomia_observed_bind_counter")
-                                        .Help("observed open syscall")
-                                        .Register(*server.registry)),
+                               .Name("eunomia_observed_bind_counter")
+                               .Help("observed open syscall")
+                               .Register(*server.registry)),
       container_manager_ref(server.core_container_manager_ref)
 {
 }
@@ -42,17 +42,15 @@ void bindsnoop_tracker::prometheus_event_handler::handle(tracker_event<tracker_a
   // get container info from data
   auto container_info = container_manager_ref.get_container_info_for_pid(pid);
   eunomia_bind_counter
-        .Add(
-            { { "task", comm },
-              { "container_id", container_info.id },
-              { "container_name", container_info.name },
-              { "pid", std::to_string(pid) },
-              { "ret", std::to_string(ret) },
-              { "proto", proto },
-              { "port", std::to_string(port) },
-              { "addr", addr }
-            })
-        .Increment(pid);
+      .Add({ { "task", comm },
+             { "container_id", container_info.id },
+             { "container_name", container_info.name },
+             { "pid", std::to_string(pid) },
+             { "ret", std::to_string(ret) },
+             { "proto", proto },
+             { "port", std::to_string(port) },
+             { "addr", addr } })
+      .Increment(pid);
 }
 
 std::unique_ptr<bindsnoop_tracker> bindsnoop_tracker::create_tracker_with_args(

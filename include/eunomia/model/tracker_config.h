@@ -15,12 +15,13 @@
 template<typename ENV>
 concept env_concept = requires {
     /// is the tracker exiting?
-    ///
+
     /// If this is true, the tracker should exit.
     typename ENV::exiting;
 };
 
 /// config data for tracker
+
 /// pass this to create a tracker
 template <typename ENV, typename EVENT>
 struct tracker_config
