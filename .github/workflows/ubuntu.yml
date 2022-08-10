@@ -21,7 +21,7 @@ jobs:
 
     - name: get submodule
       run:  git submodule update --init --recursive
-    
+
     - name: install deps
       run: |
           make install-deps

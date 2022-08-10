@@ -22,13 +22,14 @@
 class tracker_base
 {
   /// base thread
-  std::thread jthread;
-  /// is the tracker exiting
-  volatile bool exiting;
+  std::jthread thread;
   /// for sync use
   std::mutex mutex;
+  friend class tracker_manager;
 
  public:
+  /// is the tracker exiting
+  volatile bool exiting;
   /// constructor
   virtual ~tracker_base()
   {

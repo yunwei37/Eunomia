@@ -64,10 +64,9 @@ struct sec_rule_describe
 /// sec analyzer manager
 class sec_analyzer
 {
-private:
+public:
   // EVNETODO: use the mutex
   std::mutex mutex;
-public:
   const std::vector<sec_rule_describe> rules;
 
   sec_analyzer(const std::vector<sec_rule_describe> &in_rules) : rules(in_rules)
@@ -82,7 +81,7 @@ public:
 };
 
 /// sec analyzer manager with prometheus exporter
-class sec_analyzer_prometheus : sec_analyzer
+class sec_analyzer_prometheus : public sec_analyzer
 {
 private:
   prometheus::Family<prometheus::Counter> &eunomia_sec_warn_counter;
@@ -99,10 +98,10 @@ public:
 
 /// base class for securiy rules detect handler
 template<typename EVNET>
-class rule_base : event_handler<EVNET>
+class rule_base :public event_handler<EVNET>
 {
-  std::shared_ptr<sec_analyzer> analyzer;
 public:
+  std::shared_ptr<sec_analyzer> analyzer;
   rule_base(std::shared_ptr<sec_analyzer> analyzer_ptr) : analyzer(analyzer_ptr) {}
   virtual ~rule_base() = default;
 
@@ -127,8 +126,9 @@ public:
 /// files rule:
 
 /// for example, a read or write to specific file
-struct files_rule_checker : rule_base<files_event>
+class files_rule_checker : public rule_base<files_event>
 {
+public:
   virtual ~files_rule_checker() = default;
   files_rule_checker(std::shared_ptr<sec_analyzer> analyzer_ptr) : rule_base(analyzer_ptr)
   {}
@@ -138,8 +138,9 @@ struct files_rule_checker : rule_base<files_event>
 /// process rule:
 
 /// for example, a specific process is running
-struct process_rule_checker : rule_base<process_event>
+class process_rule_checker : public rule_base<process_event>
 {
+public:
   virtual ~process_rule_checker() = default;
   process_rule_checker(std::shared_ptr<sec_analyzer> analyzer_ptr) : rule_base(analyzer_ptr)
   {}
@@ -149,8 +150,9 @@ struct process_rule_checker : rule_base<process_event>
 /// syscall rule:
 
 /// for example, a process is using a syscall
-struct syscall_rule_checker : rule_base<syscall_event>
+class syscall_rule_checker : public rule_base<syscall_event>
 {
+public:
   syscall_rule_checker(std::shared_ptr<sec_analyzer> analyzer_ptr) : rule_base(analyzer_ptr)
   {}
   int check_rule(const tracker_event<syscall_event> &e, rule_message &msg);

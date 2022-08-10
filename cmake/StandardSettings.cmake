@@ -50,7 +50,7 @@ option(${PROJECT_NAME}_ENABLE_CODE_COVERAGE "Enable code coverage through GCC." 
 # Doxygen
 #
 
-option(${PROJECT_NAME}_ENABLE_DOXYGEN "Enable Doxygen documentation builds of source." OFF)
+option(${PROJECT_NAME}_ENABLE_DOXYGEN "Enable Doxygen documentation builds of source." ON)
 
 #
 # Miscelanious options
