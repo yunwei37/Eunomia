@@ -14,7 +14,9 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 
 ### Describe
 
-`Eunomia` 是一个使用 C/C++ 开发的基于 eBPF的轻量级，高性能云原生监控工具，旨在帮助用户了解容器的各项行为、监控可疑的容器安全事件，力求提供覆盖容器全生命周期的轻量级开源监控解决方案。它使用 `Linux` `eBPF` 技术在运行时跟踪您的系统和应用程序，并分析收集的事件以检测可疑的行为模式。目前，它包含性能分析、容器集群网络可视化分析*、容器安全感知告警、一键部署、持久化存储监控等功能，提供了多样化的 ebpf 追踪点。其核心导出器/命令行工具最小仅需要约 4MB 大小的二进制程序，即可在支持的 Linux 内核上启动。
+`Eunomia` 是一个使用 C/C++ 开发的基于 eBPF的轻量级，高性能云原生监控工具框架，旨在帮助用户了解容器的各项行为、监控可疑的容器安全事件，力求提供覆盖容器全生命周期的轻量级开源监控解决方案。
+
+它使用 `Linux` `eBPF` 技术在运行时跟踪您的系统和应用程序，并分析收集的事件以检测可疑的行为模式。目前，它包含性能分析、容器集群网络可视化分析*、容器安全感知告警、一键部署、持久化存储监控等功能，提供了多样化的 ebpf 追踪点，并可以轻松拓展。其核心导出器/命令行工具最小仅需要约 4MB 大小的二进制程序，即可在支持的 Linux 内核上启动。
 
 * [X] 开箱即用：以单一二进制文件或镜像方式分发，一次编译，到处运行，一行代码即可启动，包含多种 ebpf 工具和多种监测点，支持多种输出格式（json, csv, etc) 并保存到文件；
 * [X] 轻量级，高性能：编译成的二进制大小仅 `4MB`;
@@ -22,7 +24,8 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 * [X] 可集成 `prometheus` 和 `Grafana`，作为监控可视化和预警平台；也可作为 `OpenTelemetry` 的 collector 使用；
 * [X] 可自定义运行时安全预警规则, 并通过 prometheus 等实现监控告警;
 * [X] 可以自动收集进程行为并通过 `seccomp`/`capability` 进行限制；
-* [X] 提供远程的 http API 和前端进行控制，可自行定制插件进行数据分析;
+* [X] 提供远程的 http API 进行控制，实现 ebpf 跟踪器的热插拔，也可自行定制插件进行数据分析;
+* [X] 其核心框架高度可扩展，可以非常轻松地集成其他的 libbpf ebpf C 程序； 
 
 ### Why Eunomia
 
@@ -32,7 +35,8 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 2. 轻量级：不想安装一大堆 `BCC` 或者 `systemTap` 的环境？无法使用内核模块？因为网络不好镜像拉不下来？得益于 `Libbpf` + BPF `CO-RE`（一次编译，到处运行）的强大性能，仅需安装一个 agent 就可以收集这台主机所有相关的系统数据，约 4MB 即可在支持的内核上或容器中启动跟踪，避免繁琐的依赖项和配置项；也可以通过镜像打包 Prometheus & Grafana 等监控可视化工具, 一站式开箱即用。
 3. 高性能：得益于 `ebpf` 的可编程特性，`Eunomia` 直接在内核中使用 eBPF 执行过滤、聚合、度量统计和直方图收集，避免向用户空间 agent 发送大量的低信号事件，大大减少了系统的开销；此外，`Eunomia` 使用了 C/C++ 高效的数据结构和多线程分析处理，以提供高效和快速的数据收集手段，在大多数情况下仅使用不到 2% 的 CPU。
 4. 可用性：一般而言，可观测性工具需要比被观测系统至少可靠一个数量级。我们使用了大量的静态分析和动态分析工具，如 clang tidy、cppcheck、Addresssanitizer、Clang Static Analyzer 等，同时进行了大量的测试以保证系统的可用性以及稳定性。
-5. 可配置、可扩展、可参考：Eunomia 完全开源，可通过配置文件或开放的 http API 进行插件拓展；也提供了大量关于 ebpf 开发的文档和教程，以供 ebpf 的初学者学习参考。
+5. 热插拔：Eunomia 完全开源，可通过配置文件或开放的 http API 进行插件拓展，可以在运行时随时启动和停止特定的跟踪器；
+6. 可扩展：Eunomia 的核心框架高度模块化，可扩展，可以轻松接入其他的 libbpf ebpf C 程序，实现自定义跟踪器；也提供了大量关于使用 libbpf 进行 ebpf 开发的文档和教程，以供 ebpf 的初学者学习参考。
 
 除了收集容器中的一般系统运行时内核指标，例如系统调用、网络连接、文件访问、进程执行等，我们在探索实现过程中还发现目前对于 `lua` 和 `nginx` 相关用户态 `profile` 工具和指标可观测性开源工具存在一定的空白，但又有相当大的潜在需求；因此我们还计划添加一系列基于 uprobe 的用户态 `nginx/lua` 追踪器，作为可选的扩展方案；请参考 https://github.com/yunwei37/nginx-lua-ebpf-toolkit 仓库。
 
@@ -59,6 +63,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 - `mountsnoop` 跟踪 mount() 和 umount 系统调用
 - `memleak` 跟踪和匹配内存分配和释放请求*
 - `oomkill`: 跟踪 Linux 内存不足 (OOM) 终止
+- `syscount`: 追踪慢系统调用并进行统计
 
 我们参考了 bcc/libbpf-tools 定制实现了我们自己的 ebpf 追踪器，所有的 ebpf 跟踪点都可以通过 pid、namespace、cgroups 等信息和 docker、Kubernetes 元信息相关联，完成端到端可观测数据的覆盖。每个追踪点都有相应的测试和文档，还有源代码解读，可供学习或进一步拓展开发使用。
 
@@ -70,12 +75,8 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 
 > 教程目前还在完善中。
 
-1. [eBPF介绍](doc/tutorial/0_eBPF介绍.md)
-2. [eBPF开发工具介绍: BCC/Libbpf，以及其他](doc/tutorial/1_eBPF开发工具介绍.md)
-3. [基于libbpf的内核级别跟踪和监控: syscall, process, files 和其他](doc/tutorial/2_基于libbpf的内核级别跟踪和监控.md)
-4. [基于uprobe的用户态nginx相关指标监控](doc/tutorial/3_基于uprobe的用户态nginx相关指标监控.md)
-5. [seccomp权限控制](doc/tutorial/4_seccomp权限控制.md)
-6. [上手Eunomia: 基于Eunomia捕捉内核事件](doc/tutorial/x_基于Eunomia捕捉内核事件.md)
+1. [eBPF介绍与 libbpf 基础教程](doc/tutorial/tutorial.md)
+2. [ebpf 跟踪器源码解析与使用教程](doc/trackers_doc/)
 
 ## Quickstart
 
