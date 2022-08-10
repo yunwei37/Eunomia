@@ -14,7 +14,7 @@ if(${PROJECT_NAME}_ENABLE_DOXYGEN)
     set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
     set(DOXYGEN_GENERATE_TREEVIEW YES)
     set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs)
-    set(DOXYGEN_EXCLUDE_PATTERNS */vmlinux/* */third_party/* */libbpf/* */libbpf/* */bpftools/* */cmake/* */.github/* */.vscode/* */build/* */include/clipp.h */include/httplib.h */include/json.hpp */include/toml.hpp */include/spdlog/*)
+    set(DOXYGEN_EXCLUDE_PATTERNS */doc/develop_doc/* */vmlinux/* */third_party/* */libbpf/* */libbpf/* */bpftools/* */cmake/* */.github/* */.vscode/* */build/* */include/clipp.h */include/httplib.h */include/json.hpp */include/toml.hpp */include/spdlog/*)
 
     find_package(Doxygen REQUIRED dot)
     doxygen_add_docs(doxygen-docs ${PROJECT_SOURCE_DIR})

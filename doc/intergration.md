@@ -1,4 +1,4 @@
-# Intergration
+# 集成
 
 Describe how to intergrate with other apps.
 

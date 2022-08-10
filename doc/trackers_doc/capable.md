@@ -1,12 +1,14 @@
-## Capable工具讲解
+## Eunomia - capable: 使用基于 eBPF 的云原生监控工具监控 Capabilities 机制检查
 
 ### 背景
+
 `Capabilities` 机制是在 Linux 内核 2.2 之后引入的一种功能组划分机制。当线程需要执行某样操作时，
 内核便会对其检查，该机制可以避免普通线程越级操作，影响内核。因此，对 capability 检查的追踪可以让
 开发者更好的掌握系统中线程的操作情况。Capable 工具通过追踪内核中 `cap_capable()` 函
 数，实现了对于 capability 检查的追踪。
 
 ### 实现原理
+
 Capable 在 `kprobe/cap_capable` 挂载点下挂载了执行函数。当`cap_capable()` 函数被
 调用时，该执行函数便会运行，获取调用线程的信息。
 ```c
@@ -88,5 +90,6 @@ int BPF_KPROBE(kprobe__cap_capable, const struct cred *cred, struct user_namespa
 
 
 ### 总结
+
 Capable 工具可以在内核的 capability check 环节捕获调用线程的信息并进行呈现，
 这使得使用者可以对内核安全由更好的掌握。

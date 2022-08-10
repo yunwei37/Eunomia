@@ -1,12 +1,14 @@
-## llcstat工具讲解
+## Eunomia - llcstat: 使用基于 eBPF 的云原生监控工具监控 cache miss 和 cache reference
 
 ### 背景
+
 为了能更好地优化程序性能，开发者有时需要考虑如何更好地减少cache miss的发生。
 但是程序到底可能发生多少次cache miss这是一个难以回答的问题。`llcstat` 通过
-ebpf技术，实现了对cache miss和cache reference的准确追踪，可以极大方便开发者
+ebpf技术，实现了对 cache miss 和 cache reference 的准确追踪，可以极大方便开发者
 调试程序，优化性能。
 
 ### 实现原理
+
 `llcstat` 引入了linux中的 `perf_event` 机制，程序在用户态载入的时候，
 会将现有的c `perf_event` attach到指定的位置。
 ```c
@@ -18,8 +20,10 @@ ebpf技术，实现了对cache miss和cache reference的准确追踪，可以极
 					env.sample_period,
 					obj->progs.on_cache_ref, rlinks))
 ```
+
 同时，`llcstat` 在内核态中会在`perf_event`下挂载执行函数，当程序运行到了
 挂载点，执行函数会启动并开始计数，将结果写入对应的map中。
+
 ```c
 static __always_inline
 int trace_event(__u64 sample_period, bool miss)
@@ -59,6 +63,7 @@ int on_cache_ref(struct bpf_perf_event_data *ctx)
 	return trace_event(ctx->sample_period, false);
 }
 ```
+
 用户态程序会读取map存入的 cache miss 和 cache reference 的计数信息，并
 逐进程的进行展示。
 

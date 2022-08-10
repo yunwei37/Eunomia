@@ -1,10 +1,12 @@
-## Bitesize工具讲解
+## Eunomia - Bitesize: 使用基于 eBPF 的云原生监控工具监控块设备 I/O
 
 ### 背景
+
 为了能更好的获得 I/O 操作需要的磁盘块大小相关信息，Bitesize 工具被开发。它可以在启动后追踪
 不同进程所需要的块大小，并以直方图的形式显示分布
 
 ### 实现原理
+
 Biteszie 在 block_rq_issue 追踪点下挂在了处理函数。当进程对磁盘发出了块 I/O 请求操作时，
 系统会经过此挂载点，此时处理函数或许请求的信息，将其存入对应的map中。
 ```c
@@ -51,7 +53,9 @@ int BPF_PROG(block_rq_issue)
 		return trace_rq_issue((void *)ctx[1]);
 }
 ```
+
 当用户发出中止工具的指令后，其用户态代码会将map中存储的数据读出并逐进程的展示追踪结果
+
 ### Eunomia中使用方式
 
 

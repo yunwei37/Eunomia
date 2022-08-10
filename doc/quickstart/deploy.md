@@ -1,4 +1,4 @@
-# eunomia
+# quick start depoly
 
 sudo docker build -t eunomia:v0.1 .
 sudo docker run eunomia:v0.1 

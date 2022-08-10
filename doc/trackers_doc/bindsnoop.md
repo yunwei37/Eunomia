@@ -1,10 +1,12 @@
-## Bindsnoop 工具讲解
+## Eunomia - Bindsnoop: 使用基于 eBPF 的云原生监控工具监控 socket 端口绑定事件
 
 ### 背景
+
 Bindsnoop 会跟踪操作 socket 端口绑定的内核函数，并且在可能会影响端口绑定的系统调用发生之前，打印
 现有的 socket 选项。
 
 ### 实现原理
+
 Bindsnoop 通过kprobe实现。其主要挂载点为 inet_bind 和 inet6_bind。inet_bind 为处理 IPV4 类型
 socket 端口绑定系统调用的接口，inet6_bind 为处理IPV6类型 socket 端口绑定系统调用的接口。
 ```c
