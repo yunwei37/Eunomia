@@ -178,17 +178,6 @@ void container_manager::get_all_process_info(void)
 
 void container_manager::update_container_map_data(void)
 {
-  // check the container list 2 seconds
-  constexpr auto duration = std::chrono::seconds(2);
-  // init once
-  thread_local static auto time = std::chrono::steady_clock::now();
-  auto current = std::chrono::steady_clock::now();
-  if ((current - time) <= duration)
-  {
-    return;
-  }
-  time = current;
-
   auto response = client.list_all_containers();
   json containers_json = json::parse(response);
   for (const auto c : containers_json)
@@ -265,20 +254,9 @@ void container_manager::container_tracking_handler::handle(tracker_event<process
     }
     // no parent info, no this info
     spdlog::info("No parent info and this pid container info: pid {} name {}", e.data.common.pid, e.data.comm);
-    manager.update_container_map_data();
-    this_info = manager.info_map.get(e.data.common.pid);
-    if (this_info)
-    {
-      // insert new info to the map
-      manager.info_map.insert(
-          e.data.common.pid, process_container_info_data{ .common = e.data.common, .info = this_info->info });
-    }
-    else
-    {
-      // no info, insert os info to the map
-      manager.info_map.insert(
-          e.data.common.pid, process_container_info_data{ .common = e.data.common, .info = manager.os_info });
-    }
+    // no info, insert os info to the map
+    manager.info_map.insert(
+        e.data.common.pid, process_container_info_data{ .common = e.data.common, .info = manager.os_info });
     // add new info to ppid
     manager.info_map.insert(
         e.data.common.ppid, process_container_info_data{ get_process_common_event(e.data.common.ppid), manager.os_info });
