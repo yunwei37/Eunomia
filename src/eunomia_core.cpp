@@ -235,14 +235,15 @@ void eunomia_core::check_auto_exit(void)
   }
   else
   {
-    static bool is_exiting = false;
-    signal(SIGINT, [](int x) {
-      spdlog::info("Ctrl C exit...");
-      is_exiting = true;
-    });
     if (core_config.run_selected != "server")
     {
       spdlog::info("press 'Ctrl C' key to exit...");
+      static bool is_exiting = false;
+      signal(SIGINT, [](int x) {
+        spdlog::info("Ctrl C exit...");
+        is_exiting = true;
+        signal(SIGINT, SIG_DFL);
+      });
       while (!is_exiting)
       {
         std::this_thread::sleep_for(std::chrono::seconds(1));
