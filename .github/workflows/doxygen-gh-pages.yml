@@ -1,22 +1,35 @@
-name: Doxygen
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
 
 on:
-  repository_dispatch:
+  # Runs on pushes targeting the default branch
   push:
-    branches:
-      - master
-      - gh-pages
+    branches: ["master"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 # In that case do the job 'make_and_deploy_doxygen'
 jobs:
-  make_and_deploy_doxygen:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    # which needs the following steps to be executed:
     steps:
-      # 1. Checkout current branch of GitHub repository.
-      - name: Checkout current branch
-        uses: actions/checkout@v2
-      # 2. Install doxygen and its auxiliary components.
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Install doxygen and latex components
         run: sudo apt-get update; sudo apt-get install -y doxygen graphviz texlive-full
       # 3. Create the doxygen pages.
@@ -35,9 +48,13 @@ jobs:
       - name: generate doxygen
         run:  make docs
 
-      # Deploy to GitHub Pages
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v1
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/html
+          # Upload entire repository
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@main
