@@ -33,10 +33,11 @@ jobs:
         run:  make generate-tools
 
       - name: generate doxygen
-        run:  make generate-tools
+        run:  make docs
 
-      - uses: DenverCoder1/doxygen-github-pages-action@v1
+      # Deploy to GitHub Pages
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: gh-pages
-          folder: docs/html
+          publish_dir: docs/html

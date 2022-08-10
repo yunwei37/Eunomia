@@ -57,7 +57,7 @@ coverage: generate-tools ## check code coverage quickly GCC
 docs: generate-tools ## generate Doxygen HTML documentation, including API docs
 	rm -rf docs/
 	rm -rf build/
-	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -DProject_ENABLE_DOXYGEN=1 -DCMAKE_BUILD_TYPE=Release
+	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -Deunomia_ENABLE_DOXYGEN=1 -DCMAKE_BUILD_TYPE=Release
 	cmake --build build --target doxygen-docs
 	$(BROWSER) docs/html/index.html
 
