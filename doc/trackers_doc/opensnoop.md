@@ -112,8 +112,10 @@ int tracepoint__syscalls__sys_exit_openat(struct trace_event_raw_sys_exit* ctx)
 会根据pid读出之前存入的数据，再结合捕获的其他数据，输出到用户态处理函数中，展现给用户。
 
 ### Eunomia中使用方式
+![result](../imgs/opensnoop-prometheus.png)
+![result](../imgs/opensnoop-prometheus2.png)
 
 
 ### 总结
-`opensnoop` 通过对 open 系统调用的追踪，使得用户可以较为方便地掌握目前系统中调用了 open 系统调用的
-进程信息。
+`opensnoop` 通过对 open 系统调用的追踪，使得用户可以较为方便地掌握目前系统中调用了 open 系统调用的进程信息。
+

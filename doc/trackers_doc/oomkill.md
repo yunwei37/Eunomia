@@ -26,6 +26,7 @@ int BPF_KPROBE(oom_kill_process, struct oom_control *oc, const char *message)
 
 ### Eunomia中使用方式
 
+![result](../imgs/oomkill.png)
 
 ### 总结
 `oomkill` 通过一个简便的方式，使得对内存耗尽的进程的监控成为了可能，这能方便开发者在开发时更好地掌握

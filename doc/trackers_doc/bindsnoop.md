@@ -82,7 +82,8 @@ struct bind_event {
 
 ### Eunomia中使用方式
 
-
+![result](../imgs/mountsnoop.jpg)
+![result](../imgs/bindsnoop-prometheus.png)
 
 ### 总结
 Bindsnoop 通过 kprobe 挂载点，实现了对 socket 端口的监视，增强了 Eunomia 的应用范围。

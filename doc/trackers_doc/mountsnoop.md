@@ -118,6 +118,9 @@ int umount_exit(struct trace_event_raw_sys_exit *ctx)
 
 ### Eunomia中使用方式
 
+![result](../imgs/mountsnoop.jpg)
+![result](../imgs/mountsnoop-prometheus.png)
+
 
 ### 总结
 `mountsnoop` 通过对 mount 和 umount 两个系统调用的追踪，快速方便地实现了对系统范围内的文件系统挂载

@@ -88,6 +88,8 @@ int BPF_KPROBE(kprobe__cap_capable, const struct cred *cred, struct user_namespa
 
 ### Eunomia中使用方式
 
+![result](../imgs/capable.png)
+![result](../imgs/capable-prometheus.png)
 
 ### 总结
 
