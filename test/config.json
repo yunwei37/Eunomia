@@ -1,6 +1,21 @@
 {
     "run_selected": "server",
     "enabled_trackers": [
+	{
+            "name": "ipc",
+            "export_handlers": [],
+            "args": []
+        },
+	{
+            "name": "syscall",
+            "export_handlers": [],
+            "args": []
+        },
+	{
+            "name": "container",
+            "export_handlers": [],
+            "args": []
+        },
         {
             "name": "process",
             "export_handlers": [],
@@ -8,6 +23,41 @@
         },
         {
             "name": "tcpconnect",
+            "export_handlers": [],
+            "args": []
+        },
+        {
+            "name": "tcpconnlat",
+            "export_handlers": [],
+            "args": []
+        },
+        {
+            "name": "sigsnoop",
+            "export_handlers": [],
+            "args": []
+        },
+        {
+            "name": "bindsnoop",
+            "export_handlers": [],
+            "args": []
+        },
+        {
+            "name": "mountsnoop",
+            "export_handlers": [],
+            "args": []
+        },
+        {
+            "name": "opensnoop",
+            "export_handlers": [],
+            "args": []
+        },
+        {
+            "name": "capable",
+            "export_handlers": [],
+            "args": []
+        },
+        {
+            "name": "syscount",
             "export_handlers": [],
             "args": []
         },

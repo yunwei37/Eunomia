@@ -89,6 +89,8 @@ int sig_trace(struct trace_event_raw_signal_generate *ctx)
 
 ### Eunomia中使用方式
 
+![result](../imgs/sigsnoop.png)
+![result](../imgs/sigsnoop-prometheus.png)
 
 ### 总结
 `sigsnoop` 通过linux中的tracepoint机制，成功地实现了对于系统范围内syscall的追踪。
