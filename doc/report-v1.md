@@ -1,4 +1,3 @@
-#! https://zhuanlan.zhihu.com/p/538979204
 # 操作系统大赛：基于 eBPF 的容器监控工具 Eunomia 初赛报告
 
 基于 eBPF 的轻量级 CloudNative Monitor 工具，用于容器安全性和可观察性
