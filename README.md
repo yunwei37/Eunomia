@@ -53,6 +53,8 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
   > - 最少仅需继承和修改三四十行代码，即可在 Eunomia 中基于 libbpf-bootstrap 脚手架添加自定义 ebpf 追踪器、匹配安全告警规则、获取容器元信息、导出数据至 prometheus 和 grafana，实现高效的时序数据存储和可视化，轻松体验云原生监控；
   > - 提供了丰富的文档和开发教程，力求降低 ebpf 程序的开发门槛；
 
+**操作系统大赛决赛报告**：[doc/report-index.md](doc/report-index.md)
+
 ### Describe
 
 `Eunomia` 是一个使用 C/C++ 开发的基于 eBPF的轻量级，高性能云原生监控工具框架，旨在帮助用户了解容器的各项行为、监控可疑的容器安全事件，力求提供覆盖容器全生命周期的轻量级开源监控解决方案。
@@ -273,9 +275,9 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 Eunomia的完整文档在 doc 目录中：
 
 - [develop documents](doc/develop_doc)
-- [design documents](doc/design_doc)
+- [tracker documents](doc/trackers_doc)
 - [tutorial](doc/tutorial)
-- [文档主目录](doc)
+- [main folder](doc)
 
 ## benchmark
 
