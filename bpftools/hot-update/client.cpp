@@ -57,7 +57,7 @@ int main(int argc, char **argv)
             \"name\": \"hotupdate\",\
             \"export_handlers\": [\
                 {\
-                    \"name\": \"stdout\",\
+                    \"name\": \"plain_text\",\
                     \"args\": []\
                 }\
             ],\

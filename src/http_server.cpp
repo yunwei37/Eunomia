@@ -36,7 +36,7 @@ eunomia_server::eunomia_server(eunomia_config_data &config, int p) : core(config
 void eunomia_server::serve()
 {
   server.Post("/start", [=](const httplib::Request &req, httplib::Response &res) {
-    spdlog::info("accept http start request: {}", req.body);
+    spdlog::info("accept http start request: {:12}", req.body);
     const std::lock_guard<std::mutex> lock(seq_mutex);
     std::string req_str;
     tracker_config_data data;

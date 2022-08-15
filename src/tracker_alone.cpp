@@ -31,13 +31,15 @@ void tracker_alone_base::start_child_process()
 
   std::vector<char*> argv;
   argv.push_back(const_cast<char*>(current_config.name.c_str()));
+  spdlog::info("argc: {}", 1 + env.process_args.size());
   for (auto& arg : env.process_args)
   {
+    spdlog::info("arg[{:12}]: {}", argv.size(), arg.c_str());
     argv.push_back(const_cast<char*>(arg.c_str()));
   }
   argv.push_back(nullptr);
   // start child process ebpf program
-  res = env.main_func(static_cast<int>(env.process_args.size()), argv.data());
+  res = env.main_func(static_cast<int>(env.process_args.size() + 1), argv.data());
   // exit child process
   exit(res);
 }

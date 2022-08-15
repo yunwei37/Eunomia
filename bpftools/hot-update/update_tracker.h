@@ -138,7 +138,7 @@ static int start_updatable(int argc, char **argv)
 
   if (argc != 2)
   {
-    printf("invalid arg count!\n");
+    printf("invalid arg count %d\n", argc);
     return 1;
   }
   std::string json_str = argv[1];
