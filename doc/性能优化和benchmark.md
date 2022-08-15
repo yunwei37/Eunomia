@@ -1,5 +1,18 @@
 # peformance and benchmarking
 
+<!-- TOC -->
+
+- [performance](#performance)
+  - [基于 ebpf](#基于-ebpf)
+  - [基于 libbpf](#基于-libbpf)
+  - [C/C++](#cc)
+  - [对 libbpf-tools 进行的优化：添加选项进行聚合](#对-libbpf-tools-进行的优化添加选项进行聚合)
+  - [在内核态和用户态中采用环形缓冲器进行通信](#在内核态和用户态中采用环形缓冲器进行通信)
+  - [在内核态进行 syscall 规则过滤](#在内核态进行-syscall-规则过滤)
+- [benchmark](#benchmark)
+
+<!-- /TOC -->
+
 ## performance
 
 ### 基于 ebpf

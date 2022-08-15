@@ -1,6 +1,12 @@
 # eunomia http API Documentation
 
+<!-- TOC -->
 
+- [start ebpf tracker](#start-ebpf-tracker)
+- [stop ebpf tracker](#stop-ebpf-tracker)
+- [list all running ebpf tracker](#list-all-running-ebpf-tracker)
+
+<!-- /TOC -->
 
 ## start ebpf tracker
 

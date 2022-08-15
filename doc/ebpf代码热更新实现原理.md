@@ -2,7 +2,7 @@
 
 目前 ebpf 程序的热更新还在测试阶段，我们还在探索更好的实现方式；
 
-after compile, you will get a client an a server
+after compile, you will get a client an a server：
 
 ```sh
 ./client > update.json
