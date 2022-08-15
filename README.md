@@ -269,10 +269,11 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 - Eunomia 并不是一个完整的可观测性系统，它主要关注于系统的 Metrics ，即数据的数值表现方向，也收集一部分操作系统和网络层面的日志信息。Metrics 提供的信息用于衡量关于系统整体行为和健康状态。Metrics 通常在 “发生了什么” 中扮演重要角色，有时候是 “为什么”。您可能需要将其与应用程序本身的 logs 和 Traces 信息相结合，以便于更好的了解应用程序的行为或故障原因。
 - 受 ebpf 技术所限，运行 Eunomia 需要确保操作系统内核支持 ebpf，因此它可能并不能在较旧的内核上正常工作。
 
-## Documents & reportd
+## Documents & report
 
 Eunomia的完整文档在 doc 目录中：
 
+- [操作系统大赛决赛报告](doc/Readme.md)
 - [develop documents](doc/develop_doc)
 - [tracker documents](doc/trackers_doc)
 - [tutorial](doc/tutorial)
