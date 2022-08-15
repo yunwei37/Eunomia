@@ -30,6 +30,10 @@
 ### 对 libbpf-tools 进行的优化：添加选项进行聚合
 
 - 例如，我们对 files、 tcpconnect、syscall 等工具，都进行了更进一步的优化，在内核中根据时间间隔、次数来聚合，避免频繁上报事件；
+  - 根据次数进行统计，如 syscall 统计每个进程调用 syscall 的次数并存储在map中，而不是直接上报；
+  - 根据 pid、namespace、cgroup 进行过滤；
+  - process 短于一定时间间隔的短进程不予统计；
+  - 根据一定时间进行统计采样，如 files
 - 尽可能在内核中根据容器 cgroups、pid、uid 等 target ，提供丰富的选项进行过滤；
 
 ### 在内核态和用户态中采用环形缓冲器进行通信

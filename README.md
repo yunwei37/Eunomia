@@ -51,7 +51,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
   > - 最少仅需继承和修改三四十行代码，即可在 Eunomia 中基于 libbpf-bootstrap 脚手架添加自定义 ebpf 追踪器、匹配安全告警规则、获取容器元信息、导出数据至 prometheus 和 grafana，实现高效的时序数据存储和可视化，轻松体验云原生监控；
   > - 提供了丰富的文档和开发教程，力求降低 ebpf 程序的开发门槛；
 
-详细信息可参阅 **操作系统大赛决赛报告**：[doc/report-index.md](doc/report-index.md)
+详细信息可参阅 **操作系统大赛决赛报告**：[doc/Readme.md](doc/Readme.md)
 
 ### Describe
 
