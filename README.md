@@ -172,14 +172,16 @@ see [quickstart/deploy.md](doc/quickstart/deploy.md)
 ### Prometheus and grafana result
 
 <div  align="center">
- <img src="doc/imgs/prometheus1.png" alt="eunomia_prometheus1" align=center />
- <p>文件读取的byte数</p>
- <img src="doc/imgs/prometheus2.png" alt="eunomia_prometheus1" align=center />
-  <p>文件读取的系统调用次数</p>
+ <img src="doc/imgs/prometheus-tcpconnlat.png" alt="eunomia_prometheus1" align=center />
+  <p>在 Promtheus 上展示和容器信息关联的 tcp 连接延时</p>
  <img src="doc/imgs/prometheus3.png" alt="eunomia_prometheus1" align=center />
  <p>对于容器中进程的跟踪结果，记录开始和结束时间</p>
- <img src="doc/imgs/grafana.png" alt="eunomia_grafana1" align=center />
- <p> grafana dashboard 例子，包含了多种监控指标</p>
+ <img src="doc/imgs/tcp-grafana.jpg" alt="eunomia_grafana1" align=center />
+ <p> grafana dashboard: tcp accept\bind\connect 容器相关数据 Grafana 统计面板</p>
+ <img src="doc/imgs/grafana.png" alt="eunomia_grafana2" align=center />
+ <p> grafana dashboard: tcp files syscall 每分钟计数统计图</p>
+ <img src="doc/imgs/files-grafana.jpg" alt="eunomia_grafana3" align=center />
+ <p> grafana dashboard: signal、capability、文件请求读写比较</p>
 </div>
 
 - 对于详细的 Prometheus 监控指标文档，请参考：[prometheus_metrics.md](doc/prometheus_metrics.md)
