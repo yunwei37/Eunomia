@@ -218,3 +218,66 @@ error_message = "Process uses anti-debugging technique to block debugger"
 [seccomp]
 allow = ["read","write", "connect"]
 ```
+
+### 12.2. 命令行工具帮助信息
+
+```sh
+./eunomia 
+SYNOPSIS
+        bin/Debug/eunomia run [tcpconnect|syscall|ipc|process|files] [-c <container id>] [-p
+                          <process id>] [-T <trace time in seconds>] [--config <config file>] [-m
+                          [<path to store dir>]] [--fmt <output format of the program>]
+
+        bin/Debug/eunomia safe [--config <config file>]
+        bin/Debug/eunomia seccomp [-p <process id>] [-T <trace time in seconds>] [--config <config
+                          file>] [-o [<output file name>]]
+
+        ./eunomia safe [--config <config file>]
+        ./eunomia seccomp [-p <process id>] [-T <trace time in seconds>] [--config <config file>]
+        ./eunomia server [--config <config file>] [--no_safe] [--no_prometheus] [--listen <listening
+                  address>]
+
+        bin/Debug/eunomia help
+
+OPTIONS
+        <container id>
+                    The conatienr id of the contaienr the EUNOMIA will monitor
+
+        <process id>
+                    The process id of the process the EUNOMIA will monitor
+
+        -T <trace time in seconds>
+                    The time the ENUNOMIA will monitor for
+
+        --config <config file>
+                    The toml file stores the config data
+
+        --containers
+                    Enable the container manager
+
+        --fmt <output format of the program>
+                    The output format of EUNOMIA, it could be "json", "csv", "plain_txt", and
+                    "plain_txt" is the default choice.
+
+        --config <config file>
+                    The toml file stores the config data
+
+        <process id>
+                    The process id of the process the EUNOMIA will monitor
+
+        -T <trace time in seconds>
+                    The time the ENUNOMIA will monitor for
+
+        --config <config file>
+                    The toml file stores the config data
+
+        --config <config file>
+                    The toml file stores the config data
+
+        --no_safe   Stop safe module
+        --no_prometheus
+                    Stop prometheus server
+
+        --listen <listening address>
+                    Listen http requests on this address, the format is like "127.0.0.1:8528"
+```

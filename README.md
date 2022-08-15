@@ -27,10 +27,8 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
   - [build On Linux](#build-on-linux)
 - [Why is eBPF](#why-is-ebpf)
 - [Why Eunomia](#why-eunomia)
-- [Documents](#documents)
+- [Documents & reportd](#documents--reportd)
 - [benchmark](#benchmark)
-- [Reference](#reference)
-- [Contact](#contact)
 
 <!-- /TOC -->
 
@@ -53,7 +51,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
   > - 最少仅需继承和修改三四十行代码，即可在 Eunomia 中基于 libbpf-bootstrap 脚手架添加自定义 ebpf 追踪器、匹配安全告警规则、获取容器元信息、导出数据至 prometheus 和 grafana，实现高效的时序数据存储和可视化，轻松体验云原生监控；
   > - 提供了丰富的文档和开发教程，力求降低 ebpf 程序的开发门槛；
 
-**操作系统大赛决赛报告**：[doc/report-index.md](doc/report-index.md)
+详细信息可参阅 **操作系统大赛决赛报告**：[doc/report-index.md](doc/report-index.md)
 
 ### Describe
 
@@ -67,7 +65,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 * [X] 可集成 `prometheus` 和 `Grafana`，作为监控可视化和预警平台；也可作为 `OpenTelemetry` 的 collector 使用；
 * [X] 可自定义运行时安全预警规则, 并通过 prometheus 等实现监控告警;
 * [X] 可以自动收集进程行为并通过 `seccomp`/`capability` 进行限制；
-* [X] 提供远程的 http API 进行控制，实现 ebpf 跟踪器的热插拔和热更新，也可自行定制插件进行数据分析;
+* [X] 提供远程的 http API 进行控制，实现 ebpf 跟踪器的热插拔、一键分发和热更新，也可自行定制插件进行数据分析;
 * [X] 其核心框架高度可扩展，可以非常轻松地集成其他的 libbpf ebpf C 程序； 
 
 ### Trace Point
@@ -270,7 +268,7 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 - Eunomia 并不是一个完整的可观测性系统，它主要关注于系统的 Metrics ，即数据的数值表现方向，也收集一部分操作系统和网络层面的日志信息。Metrics 提供的信息用于衡量关于系统整体行为和健康状态。Metrics 通常在 “发生了什么” 中扮演重要角色，有时候是 “为什么”。您可能需要将其与应用程序本身的 logs 和 Traces 信息相结合，以便于更好的了解应用程序的行为或故障原因。
 - 受 ebpf 技术所限，运行 Eunomia 需要确保操作系统内核支持 ebpf，因此它可能并不能在较旧的内核上正常工作。
 
-## Documents
+## Documents & reportd
 
 Eunomia的完整文档在 doc 目录中：
 
@@ -283,9 +281,10 @@ Eunomia的完整文档在 doc 目录中：
 
 使用 top 查看 eunomia 的内存和cpu占用情况
 
-![top](./doc/imgs/top.png)
+![top](./doc/imgs/top2.png)
 
-目前有一些简单的性能对比，使用 openresty 在本机上启动一个网络简单的服务，并且使用 wrk 进行压力测试。测试环境：
+使用 openresty 和 APISIX 在本机上启动一个包含6个容器和负载均衡的网络服务，以及 Prometheus 和 Grafana ，使用 wrk 进行压力测试：
+
 
 ```
 Linux ubuntu 5.13.0-44-generic #49~20.04.1-Ubuntu SMP x86_64 GNU/Linux
@@ -294,42 +293,12 @@ Linux ubuntu 5.13.0-44-generic #49~20.04.1-Ubuntu SMP x86_64 GNU/Linux
 
 这是未开启 eunomia server 的情况：
 
-![no](doc/imgs/openresty_no_eunomia.png)
+![no](doc/imgs/openresty_no_eunomia2.png)
 
 这是启动 eunomia server 后的情况，使用默认配置并启用 process/container、tcp、files、ipc 等探针，在同样环境下进行测试：
 
-![no](doc/imgs/openresty_with_eunomia.png)
+![no](doc/imgs/openresty_with_eunomia2.png)
 
-可以观测到启动 eunomia 之后对于服务仅有大约 2% 的性能损耗。
+可以观测到启动 eunomia 之后对于服务仅有大约 3-4% 的性能损耗。
 
 > OpenResty® 是一个基于 Nginx 与 Lua 的高性能 Web 平台，其内部集成了大量精良的 Lua 库、第三方模块以及大多数的依赖项。用于方便地搭建能够处理超高并发、扩展性极高的动态 Web 应用、Web 服务和动态网关。web开发人员可以使用lua编程语言，对核心以及各种c模块进行编程，可以利用openresty快速搭建超1万并发高性能web应用系统。这里的 benchmark 参考了：https://openresty.org/en/benchmark.html
-
-目前还没有比较完善的 benchmark 测试和性能分析，这是我们接下来要完善的内容。
-
-## Reference
-
-* [BumbleBee: Build, Ship, Run eBPF tools](https://www.solo.io/blog/solo-announces-bumblebee/)
-* [Container traffic visibility library based on eBPF](https://github.com/ntop/libebpfflow)
-* [why-libbpf-bootstrap](https://nakryiko.com/posts/libbpf-bootstrap/#why-libbpf-bootstrap)
-* [bpf-core-reference-guide](https://nakryiko.com/posts/bpf-core-reference-guide/)
-* [bcc to libbpf](https://nakryiko.com/posts/bcc-to-libbpf-howto-guide/#setting-up-user-space-parts)
-* good intro for trace point and kprobe in ebpf
-  https://www.iserica.com/posts/brief-intro-for-tracepoint/
-  https://www.iserica.com/posts/brief-intro-for-kprobe/
-* other
-  https://lockc-project.github.io/book/index.html
-  https://github.com/willfindlay/bpfcontain-rs
-* user space uprobe:
-  [an-ebpf-overview-part-5-tracing-user-processes](https://www.collabora.com/news-and-blog/blog/2019/05/14/an-ebpf-overview-part-5-tracing-user-processes/)
-* ebpf secomp
-  [how_does_the_bpf_recorder_work_](https://developers.redhat.com/articles/2021/12/16/secure-your-kubernetes-deployments-ebpf#how_does_the_bpf_recorder_work_)
-  [recorder.bpf.c](https://github.com/kubernetes-sigs/security-profiles-operator/blob/main/internal/pkg/daemon/bpfrecorder/bpf/recorder.bpf.c)
-* [libbpf-tools](https://github.com/iovisor/bcc/tree/master/libbpf-tools)
-
-## Contact
-
-**成员**
-
-指导老师：程泽睿志（华为）李东昂（浙江大学）
-
-学生：郑昱笙（yunwei37: 1067852565@qq.com），濮雯旭，张典典
