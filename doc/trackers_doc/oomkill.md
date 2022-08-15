@@ -6,7 +6,7 @@
 而被杀死的进程，并将详细信息进行输出反馈。
 
 ### 实现原理
-`oomkill` 的实现逻辑非常简单，它在`kprobe/oom_kill_procee`下挂载了执行函数。每当发生因为内存耗尽，
+`oomkill` 的实现逻辑非常简单，它在`kprobe/oom_kill_process`下挂载了执行函数。每当发生因为内存耗尽，
 进程被杀死的情况时，该执行函数会被触发，此时其会记录数据，并输出到用户态的代码进行展示。
 ```c
 SEC("kprobe/oom_kill_process")

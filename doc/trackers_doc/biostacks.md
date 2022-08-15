@@ -7,8 +7,8 @@
 盘I/O操作耗时以直方图的形式展现。
 
 ### 实现原理
-Biostacks 的挂载点为 fentry/blk_account_io_start, kprobe/blk_account_io_merge_bio 和
-fentry/blk_account_io_done。fentry/blk_account_io_start 和 kprobe/blk_account_io_merge_bio
+Biostacks 的挂载点为 `fentry/blk_account_io_start`, `kprobe/blk_account_io_merge_bio` 和
+`fentry/blk_account_io_done`。`fentry/blk_account_io_start` 和 `kprobe/blk_account_io_merge_bio`
 挂载点均时内核需要发起I/O操作中必经的初始化路径。在经过此处时，Biostacks 会根据 request queue ，将数据存入
 map中。
 ```c

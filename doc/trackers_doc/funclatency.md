@@ -9,8 +9,8 @@
 ### 实现原理
 
 `Funclatency` 定义了 kprobe 和 kretprobe， 分别作用于用户指定的函数被
-执行前和退出后。当调用了函数时，`Funclatency`会进行打点计时操作，将pid和时
-间点数据存入map中。在函数返回时，Funclatency会再进行一次打点计时操作，根据pid
+执行前和退出后。当调用了函数时，`Funclatency` 会进行打点计时操作，将pid和时
+间点数据存入map中。在函数返回时，`Funclatency` 会再进行一次打点计时操作，根据pid
 从map中找到对应的进入时间，通过计算差值得到函数的执行时长。
 ```c
 SEC("kprobe/dummy_kprobe")

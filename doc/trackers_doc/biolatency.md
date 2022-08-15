@@ -7,8 +7,8 @@ Biolatency 可以统计在该工具运行后系统中发生的I/O事件个数，
 
 ### 实现原理
 
-Biolatency 主要通过 tracepoint 实现，其在 block_rq_insert, block_rq_issue, 
-block_rq_complete 挂载点下设置了处理函数。在 block_rq_insert 和 block_rq_issue 挂载点下，
+Biolatency 主要通过 tracepoint 实现，其在 `block_rq_insert`, `block_rq_issue`, 
+`block_rq_complete` 挂载点下设置了处理函数。在 `bock_rq_insert` 和 `block_rq_issue` 挂载点下，
 Biolatency 会将IO操作发生时的request queue和时间计入map中。
 ```c
 int trace_rq_start(struct request *rq, int issue)

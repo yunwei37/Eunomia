@@ -61,7 +61,7 @@ void eunomia_server::serve()
       return;
     }
     res.status = 200;
-    res.set_content(req_str, "text/json");
+    res.set_content(req_str, "text/plain");
   });
 
   server.Post("/stop", [=](const httplib::Request &req, httplib::Response &res) {
@@ -82,7 +82,7 @@ void eunomia_server::serve()
       return;
     }
     res.status = 200;
-    res.set_content(req_str, "text/json");
+    res.set_content(req_str, "text/plain");
   });
 
   server.Get("list", [=](const httplib::Request &req, httplib::Response &res) {
@@ -101,7 +101,7 @@ void eunomia_server::serve()
       return;
     }
     res.status = 200;
-    res.set_content(req_str, "text/json");
+    res.set_content(req_str, "text/plain");
   });
   core.start_eunomia();
   spdlog::info("eunomia server start at port {}", port);

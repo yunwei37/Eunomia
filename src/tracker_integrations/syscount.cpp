@@ -14,8 +14,6 @@ std::unique_ptr<syscount_tracker> syscount_tracker::create_tracker_with_default_
   return std::make_unique<syscount_tracker>(config);
 }
 
-
-
 std::unique_ptr<syscount_tracker> syscount_tracker::create_tracker_with_args(
     tracker_event_handler handler,
     const std::vector<std::string> &args)
@@ -27,4 +25,3 @@ std::unique_ptr<syscount_tracker> syscount_tracker::create_tracker_with_args(
   }
   return tracker;
 }
-  

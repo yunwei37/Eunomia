@@ -7,7 +7,7 @@
 
 ### 实现原理
 
-Biteszie 在 block_rq_issue 追踪点下挂在了处理函数。当进程对磁盘发出了块 I/O 请求操作时，
+Biteszie 在 `block_rq_issue` 追踪点下挂在了处理函数。当进程对磁盘发出了块 I/O 请求操作时，
 系统会经过此挂载点，此时处理函数或许请求的信息，将其存入对应的map中。
 ```c
 static int trace_rq_issue(struct request *rq)

@@ -5,8 +5,8 @@ Biosnoop 会追踪并打印磁盘的 I/O 操作。
 
 ### 实现原理
 
-Biosnoop 在 block_rq_insert, block_rq_issue 和 block_rq_complete 三个 tracepoint 下
-挂载了处理函数。当磁盘I/O操作发生时，block_rq_insert 和 block_rq_issue 两个挂载点下的处理函数
+Biosnoop 在 `block_rq_insert`, `block_rq_issue` 和 `block_rq_complete` 三个 tracepoint 下
+挂载了处理函数。当磁盘I/O操作发生时，`block_rq_insert` 和 `block_rq_issue` 两个挂载点下的处理函数
 会以该操作对应的 request queue 为键，其对应的操作类型和发生时间为值，插入哈希表中。
 ```c
 SEC("tp_btf/block_rq_insert")
@@ -48,6 +48,12 @@ int BPF_PROG(blk_account_io_start, struct request *rq)
 {
 	return trace_pid(rq);
 }
+SEC("kprobe/blk_account_io_merge_bio")
+int BPF_KPROBE(blk_account_io_merge_bio, struct request *rq)
+{
+	return trace_pid(rq);
+}
+
 ```
 在完成I/O操作后, block_rq_complete 挂载点下的处理函数会从两张哈希表中
 根据 request queue 获得对应的信息并输出。

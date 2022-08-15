@@ -7,8 +7,8 @@ Bindsnoop 会跟踪操作 socket 端口绑定的内核函数，并且在可能�
 
 ### 实现原理
 
-Bindsnoop 通过kprobe实现。其主要挂载点为 inet_bind 和 inet6_bind。inet_bind 为处理 IPV4 类型
-socket 端口绑定系统调用的接口，inet6_bind 为处理IPV6类型 socket 端口绑定系统调用的接口。
+Bindsnoop 通过kprobe实现。其主要挂载点为 `inet_bind` 和 `inet6_bind`。`inet_bind` 为处理 IPV4 类型
+socket 端口绑定系统调用的接口，`inet6_bind` 为处理IPV6类型 socket 端口绑定系统调用的接口。
 ```c
 SEC("kprobe/inet_bind")
 int BPF_KPROBE(ipv4_bind_entry, struct socket *socket)

@@ -24,6 +24,7 @@ set(sources
     # src/tracker_integrations/syscount.cpp
     src/tracker_integrations/funclatency.cpp
     src/tracker_integrations/tcprtt.cpp
+    src/tracker_integrations/hotupdate.cpp
     src/btf_helpers.c
     src/trace_helpers.c
     src/uprobe_helpers.c
@@ -51,6 +52,7 @@ set(headers
     bpftools/syscount/syscount_tracker.h
     bpftools/funclatency/funclatency_tracker.h
     bpftools/tcprtt/tcprtt_tracker.h
+    bpftools/hot-update/update_tracker.h
     include/eunomia/myseccomp.h
 )
 
@@ -72,6 +74,7 @@ set(skel_includes
     bpftools/syscount/.output
     bpftools/funclatency/.output
     bpftools/tcprtt/.output
+    bpftools/hot-update/.output
 )
 
 set(test_sources
