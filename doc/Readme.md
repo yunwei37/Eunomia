@@ -22,7 +22,8 @@ This dir contains all our documentations.
 - [usage.md](usage.md) 使用帮助文档
 - [report-v1.md](report-v1.md) 初赛成果报告文档
 
-同时，我们还提供了简单的初赛视频介绍和演示：
+## 初赛视频介绍和演示
 
 链接： https://pan.baidu.com/s/1AnwPyL3wf9TY7H5RKIgJ6Q?pwd=r57d 
 提取码： r57d
+
