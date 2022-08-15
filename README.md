@@ -108,7 +108,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
  <p>系统架构</p>
 </div>
 
-关于详细的系统架构设计和模块划分，请参考 [系统设计报告](doc/report-v1.md)
+关于详细的系统架构设计和模块划分，请参考 [系统设计报告](doc/Readme.md)
 
 ## Quickstart
 
@@ -247,7 +247,6 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 * 缺点：很新
 
   eBPF 仅在较新版本的 Linux 内核上可用，这对于在版本更新方面稍有滞后的组织来说可能是令人望而却步的。如果您没有运行 Linux 内核，那么 eBPF 根本不适合您。
-
 
 ## Why Eunomia
 

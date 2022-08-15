@@ -4,10 +4,6 @@
 
 after compile, you will get a client an a server：
 
-```sh
-./client > update.json
-sudo ./update $(cat update.json)
-```
 
 This program seprated the libbpf load skeleton and exec code into 2 parts, and use json to pass the base64-encoded ebpf program between them.
 
@@ -53,6 +49,15 @@ the exec ebpf code part:
 		fprintf(stderr, "Failed to load and verify BPF skeleton\n");
 		goto cleanup;
 	}
+```
+
+## 测试
+
+概念性验证：在 bpftools\hot-update 目录中
+
+```sh
+./client > update.json
+sudo ./update $(cat update.json)
 ```
 
 with the http API of eunomia, we can hot update the ebpf code using POST json to this program:
