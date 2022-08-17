@@ -39,13 +39,13 @@ else
 	MAKEFLAGS += --no-print-directory
 endif
 
-.PHONY: all
+.PHONY: all client
 all: $(APPS) client
 
 .PHONY: clean
 clean:
 	$(call msg,CLEAN)
-	$(Q)rm -rf $(OUTPUT) $(APPS)
+	$(Q)rm -rf $(OUTPUT) $(APPS) client *.json
 
 $(OUTPUT) $(OUTPUT)/libbpf:
 	$(call msg,MKDIR,$@)
@@ -82,9 +82,9 @@ $(APPS): %: $(OUTPUT)/%.o $(LIBBPF_OBJ) | $(OUTPUT)
 	$(call msg,BINARY,$@)
 	$(Q)$(CXX) $(CFLAGS) $^ -lelf -lz -o $@
 
-client: client.cpp $(LIBBPF_OBJ) | $(OUTPUT)
+client: %: $(OUTPUT)/%.o $(LIBBPF_OBJ) $(OUTPUT)/$(APPS).skel.h | $(OUTPUT)
 	$(call msg,BINARY,$@)
-	$(Q)$(CXX) $(CFLAGS) $(INCLUDES) $^ -lelf -lz -o $@
+	$(Q)$(CXX) $(CFLAGS) $(INCLUDES) client.cpp $(LIBBPF_OBJ) -lelf -lz -o $@
 
 # delete failed targets
 .DELETE_ON_ERROR:

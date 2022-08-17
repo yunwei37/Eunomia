@@ -7,6 +7,7 @@
 #include "eunomia/eunomia_core.h"
 
 #include <spdlog/spdlog.h>
+#include <filesystem>
 
 #include "eunomia/sec_analyzer.h"
 #include "eunomia/tracker_integrations.h"
@@ -16,6 +17,10 @@ eunomia_core::eunomia_core(eunomia_config_data& config)
     : core_config(config),
       core_prometheus_server(config.prometheus_listening_address, core_container_manager)
 {
+  if (!std::filesystem::exists("/var/run/docker.pid")) {
+    spdlog::warn("Failed to find container daemon. Disabling container tracking.");
+    core_config.enable_container_manager = false;
+  }
   core_config.load_config_options_to_trackers();
 }
 

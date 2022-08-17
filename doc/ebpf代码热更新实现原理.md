@@ -132,7 +132,7 @@ the exec ebpf code part:
 
 限制：
 - 可以使用不同的 tracepoint，但 ebpf 程序数量和 map 数量有限制必须相同；
-- 必须事先有 libbpf 的用户态框架； 
+- 必须事先有 libbpf 的用户态框架；
 
 ## 测试
 
