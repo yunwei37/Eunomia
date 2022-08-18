@@ -85,7 +85,7 @@ void eunomia_server::serve()
     res.set_content(req_str, "text/plain");
   });
 
-  server.Get("list", [=](const httplib::Request &req, httplib::Response &res) {
+  server.Get("/list", [=](const httplib::Request &req, httplib::Response &res) {
     spdlog::info("accept http request for list");
     const std::lock_guard<std::mutex> lock(seq_mutex);
     std::string req_str;

@@ -43,7 +43,7 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 
 2. 让 ebpf 程序的分发和使用像网页和 web 服务一样自然：
 
-  > - 数百个节点的集群难以分发和部署 ebpf 程序？bpftrace 脚本很方便，但是功能有限？Eunomia 支持通过 http API 直接进行本地编译后的 ebpf 代码的分发和热更新，仅需约数百毫秒和几乎可以忽略的 CPU 内存占用即可完成复杂 ebpf 追踪器的部署和更新；
+  > - 数百个节点的集群难以分发和部署 ebpf 程序？bpftrace 脚本很方便，但是功能有限？Eunomia 支持通过 http RESTful API 直接进行本地编译后的 ebpf 代码的分发和热更新，仅需约数百毫秒和几乎可以忽略的 CPU 内存占用即可完成复杂 ebpf 追踪器的部署和更新；
   > - 可以通过 http API 高效热插拔 ebpf 追踪器（约 100ms），实现按需追踪；
 
 3. 提供一个新手友好的 ebpf 云原生监控框架：
