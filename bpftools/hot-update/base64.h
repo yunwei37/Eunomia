@@ -19,7 +19,9 @@
  * See README for more details.
  */
 
-#include "stdlib.h"
+#include <string>
+#include <vector>
+#include <cstdlib>
 
 static const unsigned char base64_table[65] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -36,11 +38,11 @@ static const unsigned char base64_table[65] =
  * nul terminated to make it easier to use as a C string. The nul terminator is
  * not included in out_len.
  */
-static unsigned char * base64_encode(const unsigned char *src, size_t len,
-			      size_t *out_len)
+static std::string base64_encode(const unsigned char *src, size_t len)
 {
 	unsigned char *out, *pos;
 	const unsigned char *end, *in;
+	std::string str ={};
 	size_t olen;
 	int line_len;
 
@@ -48,10 +50,10 @@ static unsigned char * base64_encode(const unsigned char *src, size_t len,
 	olen += olen / 72; /* line feeds */
 	olen++; /* nul termination */
 	if (olen < len)
-		return NULL; /* integer overflow */
+		return str; /* integer overflow */
 	out = (unsigned char*)malloc(olen);
 	if (out == NULL)
-		return NULL;
+		return str;
 
 	end = src + len;
 	in = src;
@@ -88,9 +90,10 @@ static unsigned char * base64_encode(const unsigned char *src, size_t len,
 		*pos++ = '\n';
 
 	*pos = '\0';
-	if (out_len)
-		*out_len = pos - out;
-	return out;
+	auto out_len = pos - out;
+	str = std::string(reinterpret_cast<char*>(out), out_len);
+	free(out);
+	return str;
 }
 
 
@@ -104,9 +107,9 @@ static unsigned char * base64_encode(const unsigned char *src, size_t len,
  *
  * Caller is responsible for freeing the returned buffer.
  */
-static unsigned char * base64_decode(const unsigned char *src, size_t len,
-			      size_t *out_len)
+static std::vector<char> base64_decode(const unsigned char *src, size_t len)
 {
+	std::vector<char> str = {};
 	unsigned char dtable[256], *out, *pos, block[4], tmp;
 	size_t i, count, olen;
 	int pad = 0;
@@ -123,12 +126,12 @@ static unsigned char * base64_decode(const unsigned char *src, size_t len,
 	}
 
 	if (count == 0 || count % 4)
-		return NULL;
+		return str;
 
 	olen = count / 4 * 3;
 	pos = out = (unsigned char*)malloc(olen);
 	if (out == NULL)
-		return NULL;
+		return str;
 
 	count = 0;
 	for (i = 0; i < len; i++) {
@@ -153,15 +156,17 @@ static unsigned char * base64_decode(const unsigned char *src, size_t len,
 				else {
 					/* Invalid padding */
 					free(out);
-					return NULL;
+					return str;
 				}
 				break;
 			}
 		}
 	}
 
-	*out_len = pos - out;
-	return out;
+	auto out_len = pos - out;
+	str = std::vector<char>(out, out + out_len);
+	free(out);
+	return str;
 }
 
 #endif // BASE64_H

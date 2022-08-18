@@ -120,7 +120,8 @@ int main(int argc, char* argv[])
       (clipp::option("--fmt") & clipp::value("output format of the program", core_config.fmt)) %
           "The output format of EUNOMIA, it could be \"json\", \"csv\", "
           "\"plain_txt\", and \"plain_txt\" is the default "
-          "choice.", run_opt_cmd_args);
+          "choice.",
+      run_opt_cmd_args);
 
   auto safe_mode = (clipp::command("safe").set(selected, eunomia_mode::safe), config_cmd);
 
@@ -155,8 +156,7 @@ int main(int argc, char* argv[])
 
   switch (selected)
   {
-    case eunomia_mode::run:
-      run_mode_operation(run_tracker_selected, run_with_extra_args, core_config); break;
+    case eunomia_mode::run: run_mode_operation(run_tracker_selected, run_with_extra_args, core_config); break;
     case eunomia_mode::safe:
       core_config.enable_sec_rule_detect = true;
       safe_mode_opertiaon(core_config);

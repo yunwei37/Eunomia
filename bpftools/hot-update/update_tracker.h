@@ -7,16 +7,15 @@ extern "C"
 // SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
 /* Copyright (c) 2020 Facebook */
 #include <argp.h>
+#include <bpf/libbpf.h>
 #include <signal.h>
 #include <stdio.h>
-#include <time.h>
 #include <sys/resource.h>
-#include <bpf/libbpf.h>
+#include <time.h>
+
 #include "update.h"
-#include "update.skel.h"
-#include "base64.h"
 }
-#include "hot_update.h"
+#include "single_prog_update_skel.h"
 
 static const char argp_program_doc[] =
     "BPF update demo application.\n"
@@ -25,9 +24,6 @@ static const char argp_program_doc[] =
     "information (filename, process duration, PID and PPID, etc).\n"
     "\n"
     "USAGE: ./update [-d <min-duration-ms>] [-v]\n";
-
-// need to be freed after used
-const unsigned char *base64_decode_buffer = NULL;
 
 static volatile bool exiting = false;
 
@@ -49,91 +45,22 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 
   if (e->exit_event)
   {
-    printf("%-8s %-5s %-16s %-7d %-7d [%u]", ts, "EXIT", e->comm, e->pid, e->ppid, e->exit_code);
+    printf("%-8s %-5s %-16s %-7d %-7d [%u]", ts, "", e->comm, e->pid, e->ppid, e->exit_code);
     if (e->duration_ns)
       printf(" (%llums)", e->duration_ns / 1000000);
     printf("\n");
   }
   else
   {
-    printf("%-8s %-5s %-16s %-7d %-7d %s\n", ts, "EXEC", e->comm, e->pid, e->ppid, e->filename);
+    printf("%-8s %-5s %-16s %-7d %-7d %s\n", ts, "", e->comm, e->pid, e->ppid, e->filename);
   }
   return 0;
-}
-
-static inline int create_skeleton_from_json(struct update_bpf *obj, const struct ebpf_update_data &ebpf_data)
-{
-  struct bpf_object_skeleton *s;
-  size_t out_len;
-
-  s = (struct bpf_object_skeleton *)calloc(1, sizeof(*s));
-  if (!s)
-    return -1;
-  obj->skeleton = s;
-
-  s->sz = sizeof(*s);
-  s->name = ebpf_data.name.c_str();
-  s->obj = &obj->obj;
-
-  /* maps */
-  s->map_cnt = ebpf_data.maps_name.size();
-  s->map_skel_sz = sizeof(*s->maps);
-  s->maps = (struct bpf_map_skeleton *)calloc(s->map_cnt, s->map_skel_sz);
-  if (!s->maps)
-    goto err;
-
-  for (int i = 0; i < s->map_cnt; i++)
-  {
-    s->maps[i].name = ebpf_data.maps_name[i].c_str();
-    s->maps[i].map = &obj->maps.rb;
-  }
-
-  /* programs */
-  s->prog_cnt = ebpf_data.progs_name.size();
-  s->prog_skel_sz = sizeof(*s->progs);
-  s->progs = (struct bpf_prog_skeleton *)calloc(s->prog_cnt, s->prog_skel_sz);
-  if (!s->progs)
-    goto err;
-  for (int i = 0; i < s->prog_cnt; i++)
-  {
-    s->progs[i].name = ebpf_data.progs_name[i].c_str();
-    s->progs[i].prog = &obj->progs.handle_exec;
-    s->progs[i].link = &obj->links.handle_exec;
-  }
-
-  s->data_sz = ebpf_data.data_sz;
-  base64_decode_buffer = base64_decode((const unsigned char *)ebpf_data.data.c_str(), ebpf_data.data.size(), &out_len);
-  // s->data = ebpf_raw_data;
-  s->data = (void *)base64_decode_buffer;
-
-  return 0;
-err:
-  bpf_object__destroy_skeleton(s);
-  return -1;
-}
-
-static inline struct update_bpf *update_bpf__open_from_json(const struct ebpf_update_data &ebpf_data)
-{
-  struct update_bpf *obj;
-
-  obj = (struct update_bpf *)calloc(1, sizeof(*obj));
-  if (!obj)
-    return NULL;
-  if (create_skeleton_from_json(obj, ebpf_data))
-    goto err;
-  if (bpf_object__open_skeleton(obj->skeleton, NULL))
-    goto err;
-
-  return obj;
-err:
-  update_bpf__destroy(obj);
-  return NULL;
 }
 
 static int start_updatable(int argc, char **argv)
 {
   struct ring_buffer *rb = NULL;
-  struct update_bpf *skel;
+  struct single_prog_update_bpf *skel;
   int err;
 
   if (argc != 2)
@@ -151,9 +78,9 @@ static int start_updatable(int argc, char **argv)
   signal(SIGTERM, sig_handler);
 
   /* Load and verify BPF application */
-  struct ebpf_update_data ebpf_data;
+  struct ebpf_update_meta_data ebpf_data;
   ebpf_data.from_json_str(json_str);
-  skel = update_bpf__open_from_json(ebpf_data);
+  skel = single_prog_update_bpf__open_from_json(ebpf_data);
   if (!skel)
   {
     fprintf(stderr, "Failed to open and load BPF skeleton\n");
@@ -186,7 +113,7 @@ static int start_updatable(int argc, char **argv)
   }
 
   /* Process events */
-  printf("%-8s %-5s %-16s %-7s %-7s %s\n", "TIME", "EVENT", "COMM", "PID", "PPID", "FILENAME/EXIT CODE");
+  printf("%-8s %-16s %-7s %-7s %s\n", "TIME", "COMM", "PID", "PPID", "FILENAME/EXIT CODE");
   while (!exiting)
   {
     err = ring_buffer__poll(rb, 100 /* timeout, ms */);

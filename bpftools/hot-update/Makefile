@@ -40,7 +40,7 @@ else
 endif
 
 .PHONY: all client
-all: $(APPS) client
+all: $(APPS)
 
 .PHONY: clean
 clean:
