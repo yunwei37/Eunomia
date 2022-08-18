@@ -36,7 +36,7 @@ eunomia_server::eunomia_server(eunomia_config_data &config, int p) : core(config
 void eunomia_server::serve()
 {
   server.Post("/start", [=](const httplib::Request &req, httplib::Response &res) {
-    spdlog::info("accept http start request: {:12}", req.body);
+    spdlog::info("accept http start request");
     const std::lock_guard<std::mutex> lock(seq_mutex);
     std::string req_str;
     tracker_config_data data;
@@ -65,7 +65,7 @@ void eunomia_server::serve()
   });
 
   server.Post("/stop", [=](const httplib::Request &req, httplib::Response &res) {
-    spdlog::info("accept http request to stop tracker {}", req.body);
+    spdlog::info("accept http request to stop tracker");
     const std::lock_guard<std::mutex> lock(seq_mutex);
     std::string req_str;
     try
@@ -86,7 +86,7 @@ void eunomia_server::serve()
   });
 
   server.Get("list", [=](const httplib::Request &req, httplib::Response &res) {
-    spdlog::info("accept http request for list {}", req.body);
+    spdlog::info("accept http request for list");
     const std::lock_guard<std::mutex> lock(seq_mutex);
     std::string req_str;
     try

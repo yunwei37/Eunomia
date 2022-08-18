@@ -15,7 +15,7 @@ extern "C"
 
 #include "update.h"
 }
-#include "single_prog_update_skel.h"
+#include "../../include/hot_update_templates/single_prog_update_skel.h"
 
 static const char argp_program_doc[] =
     "BPF update demo application.\n"
@@ -69,7 +69,6 @@ static int start_updatable(int argc, char **argv)
     return 1;
   }
   std::string json_str = argv[1];
-  printf("%s", argv[1]);
 
   libbpf_set_strict_mode(LIBBPF_STRICT_ALL);
 
@@ -80,7 +79,7 @@ static int start_updatable(int argc, char **argv)
   /* Load and verify BPF application */
   struct ebpf_update_meta_data ebpf_data;
   ebpf_data.from_json_str(json_str);
-  skel = single_prog_update_bpf__open_from_json(ebpf_data);
+  skel = single_prog_update_bpf__decode_open(ebpf_data);
   if (!skel)
   {
     fprintf(stderr, "Failed to open and load BPF skeleton\n");

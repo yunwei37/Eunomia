@@ -11,44 +11,27 @@ extern "C"
 #include "update.skel.h"
 }
 
-#include "base64.h"
 #include "update.h"
 #include <fstream>
 
 #include "../../include/httplib.h"
-#include "hot_update.h"
+#include "../../include/hot_update_templates/hot_update.h"
 
 int main(int argc, char **argv)
 {
-  struct single_prog_update_bpf *obj = NULL;
-  struct ebpf_update_meta_data data;
+  struct update_bpf obj;
   json j;
 
-  obj = (struct single_prog_update_bpf *)calloc(1, sizeof(*obj));
-  if (!obj)
-    return 1;
-  if (update_bpf__create_skeleton(obj))
+  if (update_bpf__create_skeleton(&obj))
   {
     return 1;
-  }
-
-  data.name = obj->skeleton->name;
-  data.data_sz = obj->skeleton->data_sz;
-  data.data = base64_encode((const unsigned char *)obj->skeleton->data, data.data_sz);
-  for (int i = 0; i < obj->skeleton->map_cnt; i++)
-  {
-    data.maps_name.push_back(obj->skeleton->maps[i].name);
-  }
-  for (int i = 0; i < obj->skeleton->prog_cnt; i++)
-  {
-    data.progs_name.push_back(obj->skeleton->progs[i].name);
   }
   if (argc < 2)
   {
-    std::cout << data.to_json();
+    std::cout << bpf_skeleton_encode(obj.skeleton);
     return 0;
   }
-  std::string harg = data.to_json();
+  std::string harg = bpf_skeleton_encode(obj.skeleton);
   json http_data = json::parse(
       "{\
             \"name\": \"hotupdate\",\

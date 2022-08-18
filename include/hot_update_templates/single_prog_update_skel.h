@@ -1,12 +1,13 @@
 #ifndef __HOT_UPDATE_SKEL_H__
 #define __HOT_UPDATE_SKEL_H__
 
-extern "C" {
+extern "C"
+{
 #include <bpf/libbpf.h>
 #include <stdlib.h>
 }
 
-#include "base64.h"
+#include "../base64.h"
 #include "hot_update.h"
 
 struct single_prog_update_bpf
@@ -88,8 +89,7 @@ err:
   return -1;
 }
 
-static inline struct single_prog_update_bpf *single_prog_update_bpf__open_from_json(
-    struct ebpf_update_meta_data &ebpf_data)
+static inline struct single_prog_update_bpf *single_prog_update_bpf__decode_open(struct ebpf_update_meta_data &ebpf_data)
 {
   struct single_prog_update_bpf *obj;
 

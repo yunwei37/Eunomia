@@ -21,7 +21,6 @@ struct {
 // 	__type(value, u64);
 // } exec_start SEC(".maps");
 
-
 SEC("tracepoint/syscalls/sys_enter_open")
 int handle_exec(struct trace_event_raw_sys_enter* ctx)
 {
