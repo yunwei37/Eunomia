@@ -12,24 +12,23 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 
 <!-- TOC -->
 
-- [Eunomia](#eunomia)
-  - [What is Eunomia](#what-is-eunomia)
-    - [Three Main Ideas](#three-main-ideas)
-    - [Describe](#describe)
-    - [Trace Point](#trace-point)
-    - [Tutorial and Documents](#tutorial-and-documents)
-  - [Architecture](#architecture)
-  - [Quickstart](#quickstart)
-    - [Prequest](#prequest)
-    - [run as binary](#run-as-binary)
-    - [Docker, Prometheus and Grafana](#docker-prometheus-and-grafana)
-    - [Prometheus and grafana result](#prometheus-and-grafana-result)
-    - [security rules](#security-rules)
-    - [build On Linux](#build-on-linux)
-  - [Why is eBPF](#why-is-ebpf)
-  - [Why Eunomia](#why-eunomia)
-  - [Documents & report](#documents--report)
-  - [benchmark](#benchmark)
+- [What is Eunomia](#what-is-eunomia)
+  - [Three Main Ideas](#three-main-ideas)
+  - [Describe](#describe)
+  - [Trace Point](#trace-point)
+  - [Tutorial and Documents](#tutorial-and-documents)
+- [Architecture](#architecture)
+- [Quickstart](#quickstart)
+  - [Prequest](#prequest)
+  - [run as binary](#run-as-binary)
+  - [Docker, Prometheus and Grafana](#docker-prometheus-and-grafana)
+  - [Prometheus and grafana result](#prometheus-and-grafana-result)
+  - [security rules](#security-rules)
+  - [build On Linux](#build-on-linux)
+- [Why is eBPF](#why-is-ebpf)
+- [Why Eunomia](#why-eunomia)
+- [Documents & report](#documents--report)
+- [benchmark](#benchmark)
 
 <!-- /TOC -->
 
@@ -173,15 +172,15 @@ see [quickstart/deploy.md](doc/quickstart/deploy.md)
 ### Prometheus and grafana result
 
 <div  align="center">
- <img src="doc/imgs/prometheus-tcpconnlat.png" alt="eunomia_prometheus1" style="width:100%;" align=center />
+ <img src="doc/imgs/prometheus-tcpconnlat.png" alt="eunomia_prometheus1" style="width:90%;" align=center />
   <p>在 Promtheus 上展示和容器信息关联的 tcp 连接延时</p>
- <img src="doc/imgs/prometheus3.png" alt="eunomia_prometheus1" style="width:100%;" align=center />
+ <img src="doc/imgs/prometheus3.png" alt="eunomia_prometheus1" style="width:90%;" align=center />
  <p>对于容器中进程的跟踪结果，记录开始和结束时间</p>
- <img src="doc/imgs/tcp-grafana.jpg" alt="eunomia_grafana1" style="width:100%;" align=center />
+ <img src="doc/imgs/tcp-grafana.jpg" alt="eunomia_grafana1" style="width:90%;" align=center />
  <p> grafana dashboard: tcp accept\bind\connect 容器相关数据 Grafana 统计面板</p>
- <img src="doc/imgs/grafana.png" alt="eunomia_grafana2" style="width:100%;" align=center />
+ <img src="doc/imgs/grafana.png" alt="eunomia_grafana2" style="width:90%;" align=center />
  <p> grafana dashboard: tcp files syscall 每分钟计数统计图</p>
- <img src="doc/imgs/files-grafana.jpg" alt="eunomia_grafana3" style="width:100%;" align=center />
+ <img src="doc/imgs/files-grafana.jpg" alt="eunomia_grafana3" style="width:90%;" align=center />
  <p> grafana dashboard: signal、capability、文件请求读写比较</p>
 </div>
 
@@ -286,7 +285,6 @@ Eunomia的完整文档在 doc 目录中：
 ![top](./doc/imgs/top2.png)
 
 使用 openresty 和 APISIX 在本机上启动一个包含6个容器和负载均衡的网络服务，以及 Prometheus 和 Grafana ，使用 wrk 进行压力测试：
-
 
 ```
 Linux ubuntu 5.13.0-44-generic #49~20.04.1-Ubuntu SMP x86_64 GNU/Linux
