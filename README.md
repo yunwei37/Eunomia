@@ -12,23 +12,24 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 
 <!-- TOC -->
 
-- [What is Eunomia](#what-is-eunomia)
-  - [Three Main Ideas](#three-main-ideas)
-  - [Describe](#describe)
-  - [Trace Point](#trace-point)
-  - [Tutorial and Documents](#tutorial-and-documents)
-- [Architecture](#architecture)
-- [Quickstart](#quickstart)
-  - [Prequest](#prequest)
-  - [run as binary](#run-as-binary)
-  - [Docker, Prometheus and Grafana](#docker-prometheus-and-grafana)
-  - [Prometheus and grafana result](#prometheus-and-grafana-result)
-  - [security rules](#security-rules)
-  - [build On Linux](#build-on-linux)
-- [Why is eBPF](#why-is-ebpf)
-- [Why Eunomia](#why-eunomia)
-- [Documents & reportd](#documents--reportd)
-- [benchmark](#benchmark)
+- [Eunomia](#eunomia)
+  - [What is Eunomia](#what-is-eunomia)
+    - [Three Main Ideas](#three-main-ideas)
+    - [Describe](#describe)
+    - [Trace Point](#trace-point)
+    - [Tutorial and Documents](#tutorial-and-documents)
+  - [Architecture](#architecture)
+  - [Quickstart](#quickstart)
+    - [Prequest](#prequest)
+    - [run as binary](#run-as-binary)
+    - [Docker, Prometheus and Grafana](#docker-prometheus-and-grafana)
+    - [Prometheus and grafana result](#prometheus-and-grafana-result)
+    - [security rules](#security-rules)
+    - [build On Linux](#build-on-linux)
+  - [Why is eBPF](#why-is-ebpf)
+  - [Why Eunomia](#why-eunomia)
+  - [Documents & report](#documents--report)
+  - [benchmark](#benchmark)
 
 <!-- /TOC -->
 
@@ -88,23 +89,23 @@ We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Euno
 - `oomkill`: 跟踪 Linux 内存不足 (OOM) 终止
 - `syscount`: 追踪慢系统调用并进行统计
 
-我们参考了 bcc/libbpf-tools 定制实现了我们自己的 ebpf 追踪器，所有的 ebpf 跟踪点都可以通过 pid、namespace、cgroups 等信息和 docker、Kubernetes 元信息相关联，完成端到端可观测数据的覆盖。每个追踪点都有相应的测试和文档，还有源代码解读，可供学习或进一步拓展开发使用。请参考我们的追踪器文档：[doc/trackers_doc](doc/trackers_doc)
+我们参考了 bcc/libbpf-tools 定制实现了我们自己的 ebpf 追踪器，所有的 ebpf 跟踪点都可以通过 pid、namespace、cgroups 等信息和 docker、Kubernetes 元信息相关联，完成端到端可观测数据的覆盖。每个追踪点都有相应的测试和文档，还有源代码解读，可供学习或进一步拓展开发使用。请参考我们的追踪器文档：[doc/tracker_docs.md](doc/tracker_docs.md)
 
 > 注：标记*的功能和追踪点还在 alpha 测试阶段，可能存在一些不完善之处，敬请期待。
 
 ### Tutorial and Documents
 
-`Eunomia` 的 `ebpf` 追踪器部分是从 `libbpf-tools` 中得到了部分灵感，但是目前关于 ebpf 的资料还相对零散且过时，这也导致了我们在前期的开发过程中走了不少的弯路。因此, 我们也提供了一系列教程，以及丰富的参考资料，旨在降低新手学习eBPF技术的门槛，试图通过大量的例程解释、丰富对 `eBPF、libbpf、bcc` 等内核技术和容器相关原理的认知，让后来者能更深入地参与到 ebpf 的技术开发中来。另外，`Eunomia` 也可以被单独编译为 C++ 二进制库进行分发，可以很方便地添加自定义 libbpf检查器，或者直接利用已有的功能来对 syscall 等指标进行监测，教程中也会提供一部分 `EUNOMIA` 扩展开发接口教程。
+`Eunomia` 的 `ebpf` 追踪器部分是从 `libbpf-tools` 中得到了部分灵感，但是目前关于 ebpf 的资料还相对零散且过时，这也导致了我们在前期的开发过程中走了不少的弯路。因此, 我们也提供了一系列教程，以及丰富的参考资料，旨在降低新手学习eBPF技术的门槛，试图通过大量的例程解释、丰富对 `eBPF、libbpf、bcc` 等内核技术和容器相关原理的认知，让后来者能更深入地参与到 ebpf 的技术开发中来。另外，`Eunomia` 也可以被单独编译为 C++ 二进制库进行分发，可以很方便地添加自定义 libbpf检查器，或者直接利用已有的功能来对 syscall 等指标进行监测，教程中也会提供一部分 `Eunomia` 扩展开发接口教程。
 
-1. [eBPF介绍与 libbpf 基础教程](doc/tutorial/tutorial.md)
-2. [ebpf 跟踪器源码解析与使用教程](doc/trackers_doc/)
+1. [eBPF介绍与 libbpf 基础教程](doc/tutorial.md)
+2. [ebpf 跟踪器源码解析与使用教程](doc/tracker_docs.md)
 
 更多详细的教程和文档，请参考我们的网站： https://yunwei37.github.io/Eunomia/
 
 ## Architecture
 
-<div  align="center">  
- <img src="doc/imgs/new_arch.png" width = "600" height = "400" alt="eunomia_architecture" align=center />
+<div  align="center">
+ <img src="doc/imgs/new_arch.png" width = "600" alt="eunomia_architecture" align=center />
  <p>系统架构</p>
 </div>
 
@@ -131,7 +132,7 @@ You can use our pre-compiled binary(see [release](https://github.com/yunwei37/Eu
 sudo ./eunomia server
 ```
 
-Now the server is ready to accept requests! For HTTP API, see: [doc/API.md](doc/API.md). Hot update is in alpha state, you can see the [doc/hot-update.md](doc/hot-update.md).
+Now the server is ready to accept requests! For HTTP API, see: [doc/API.md](doc/API.md). Hot update is in alpha state, you can see the [doc/hot-update-new-start.md](doc/hot-update-new-start.md).
 
 This will enable our core ebpf trackers including `process`, `tcp` and `files`, it will also start our security engine to detect potential security issues.
 
@@ -150,11 +151,11 @@ will trace all files read or write in the system at a defaut interval of 3s, and
 [2022-05-28 11:23:10.699] [info] press 'Ctrl C' key to exit...
 [2022-06-02 11:18:20.173] [info] pid    container_name reads  writes read_bytes write_bytes type   comm         filename
 [2022-06-02 11:18:20.173] [info] 142326 ubuntu          0      1          0          1      R      postgres     oom_score_adj
-[2022-06-02 11:18:20.173] [info]   5824 ubuntu          1      0         16          0      R      code         state.vscdb 
-[2022-06-02 11:18:20.173] [info]   5453 ubuntu          1      0         16          0      R      grafana-server grafana.db  
-[2022-06-02 11:18:20.173] [info] 142327 ubuntu          1      0         18          0      R      git          .gitignore  
-[2022-06-02 11:18:20.173] [info] 142327 ubuntu          1      0         18          0      R      git          .gitignore  
-[2022-06-02 11:18:20.173] [info] 142327 ubuntu          1      0         18          0      R      git          .gitignore  
+[2022-06-02 11:18:20.173] [info]   5824 ubuntu          1      0         16          0      R      code         state.vscdb
+[2022-06-02 11:18:20.173] [info]   5453 ubuntu          1      0         16          0      R      grafana-server grafana.db
+[2022-06-02 11:18:20.173] [info] 142327 ubuntu          1      0         18          0      R      git          .gitignore
+[2022-06-02 11:18:20.173] [info] 142327 ubuntu          1      0         18          0      R      git          .gitignore
+[2022-06-02 11:18:20.173] [info] 142327 ubuntu          1      0         18          0      R      git          .gitignore
 [2022-06-02 11:18:20.173] [info]   5824 ubuntu          1      1          8         12      R      code         state.vscdb-journal
 ....
 ```
@@ -172,15 +173,15 @@ see [quickstart/deploy.md](doc/quickstart/deploy.md)
 ### Prometheus and grafana result
 
 <div  align="center">
- <img src="doc/imgs/prometheus-tcpconnlat.png" alt="eunomia_prometheus1" align=center />
+ <img src="doc/imgs/prometheus-tcpconnlat.png" alt="eunomia_prometheus1" style="width:100%;" align=center />
   <p>在 Promtheus 上展示和容器信息关联的 tcp 连接延时</p>
- <img src="doc/imgs/prometheus3.png" alt="eunomia_prometheus1" align=center />
+ <img src="doc/imgs/prometheus3.png" alt="eunomia_prometheus1" style="width:100%;" align=center />
  <p>对于容器中进程的跟踪结果，记录开始和结束时间</p>
- <img src="doc/imgs/tcp-grafana.jpg" alt="eunomia_grafana1" align=center />
+ <img src="doc/imgs/tcp-grafana.jpg" alt="eunomia_grafana1" style="width:100%;" align=center />
  <p> grafana dashboard: tcp accept\bind\connect 容器相关数据 Grafana 统计面板</p>
- <img src="doc/imgs/grafana.png" alt="eunomia_grafana2" align=center />
+ <img src="doc/imgs/grafana.png" alt="eunomia_grafana2" style="width:100%;" align=center />
  <p> grafana dashboard: tcp files syscall 每分钟计数统计图</p>
- <img src="doc/imgs/files-grafana.jpg" alt="eunomia_grafana3" align=center />
+ <img src="doc/imgs/files-grafana.jpg" alt="eunomia_grafana3" style="width:100%;" align=center />
  <p> grafana dashboard: signal、capability、文件请求读写比较</p>
 </div>
 
@@ -273,11 +274,10 @@ eBPF是一项革命性的技术，可以在Linux内核中运行沙盒程序，�
 
 Eunomia的完整文档在 doc 目录中：
 
-- [操作系统大赛决赛报告](doc/Readme.md)
-- [develop documents](doc/develop_doc)
-- [tracker documents](doc/trackers_doc)
-- [tutorial](doc/tutorial)
-- [main folder](doc)
+- [操作系统大赛决赛报告目录](doc/Readme.md)
+- [develop documents](doc/develop_doc/Readme.md): doc/develop_doc 目录下的所有文档
+- [tracker documents](doc/tracker_docs.md)
+- [tutorial](doc/tutorial.md)
 
 ## benchmark
 

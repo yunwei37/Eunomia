@@ -2,23 +2,24 @@
 
 <!-- TOC -->
 
-- [1. 什么是eBPF](#1-什么是ebpf)
-  - [1.1. 起源](#11-起源)
-  - [1.2. 执行逻辑](#12-执行逻辑)
-  - [1.3. 架构](#13-架构)
-    - [1.3.1. 寄存器设计](#131-寄存器设计)
-    - [1.3.2. 指令编码格式](#132-指令编码格式)
-  - [1.4. 本节参考文章](#14-本节参考文章)
-- [2. 如何使用eBPF编程](#2-如何使用ebpf编程)
-  - [2.1. BCC](#21-bcc)
-  - [2.2. libbpf-bootstrap](#22-libbpf-bootstrap)
-- [3. 基于libbpf的内核级别跟踪和监控](#3-基于libbpf的内核级别跟踪和监控)
-  - [3.1. process追踪模块](#31-process追踪模块)
-  - [3.2. syscall追踪模块](#32-syscall追踪模块)
-  - [3.3. file追踪模块](#33-file追踪模块)
-  - [3.4. ipc追踪模块](#34-ipc追踪模块)
-  - [3.5. tcp追踪模块](#35-tcp追踪模块)
-- [4. seccomp](#4-seccomp)
+- [eBPF 入门开发教程](#ebpf-入门开发教程)
+  - [1. 什么是eBPF](#1-什么是ebpf)
+    - [1.1. 起源](#11-起源)
+    - [1.2. 执行逻辑](#12-执行逻辑)
+    - [1.3. 架构](#13-架构)
+      - [1.3.1. 寄存器设计](#131-寄存器设计)
+      - [1.3.2. 指令编码格式](#132-指令编码格式)
+    - [1.4. 本节参考文章](#14-本节参考文章)
+  - [2. 如何使用eBPF编程](#2-如何使用ebpf编程)
+    - [2.1. BCC](#21-bcc)
+    - [2.2. libbpf-bootstrap](#22-libbpf-bootstrap)
+  - [3. 基于libbpf的内核级别跟踪和监控](#3-基于libbpf的内核级别跟踪和监控)
+    - [3.1. process追踪模块](#31-process追踪模块)
+    - [3.2. syscall追踪模块](#32-syscall追踪模块)
+    - [3.3. file追踪模块](#33-file追踪模块)
+    - [3.4. ipc追踪模块](#34-ipc追踪模块)
+    - [3.5. tcp追踪模块](#35-tcp追踪模块)
+  - [4. seccomp](#4-seccomp)
 
 <!-- /TOC -->
 
@@ -36,7 +37,7 @@
         eBPF的雏形是BPF(Berkeley Packet Filter, 伯克利包过滤器)。BPF于
 1992年被Steven McCanne和Van Jacobson在其[论文](https://www.tcpdump.org/papers/bpf-usenix93.pdf)
 提出。二人提出BPF的初衷是是提供一种新的数据包过滤方法，该方法的模型如下图所示。   
-![](../imgs/original_bpf.png)
+![](imgs/original_bpf.png)
         相较于其他过滤方法，BPF有两大创新点，首先是它使用了一个新的虚拟机，可以
 有效地工作在基于寄存器结构的CPU之上。其次是其不会全盘复制数据包的所有信息，只会复制相关数据，可以有效地
 提高效率。这两大创新使得BPF在实际应用中得到了巨大的成功，在被移植到Linux系统后，其被上层的`libcap`
@@ -62,7 +63,7 @@ eBPF相较于BPF有了革命性的变化。首先在于eBPF支持了更多领域
 eBPF程序是由事件驱动的，我们在程序中需要提前确定程序的执行点。编译好的程序被注入内核后，如果提前确定的执行点
 被调用，那么注入的程序就会被触发，按照既定方式处理。  
         eBPF的整体执行逻辑由图1所示。
-![](../imgs/exec_logic.png)
+![](imgs/exec_logic.png)
 
 ### 1.3. 架构
 #### 1.3.1. 寄存器设计
@@ -228,4 +229,4 @@ int BPF_KRETPROBE(tcp_v6_connect_ret, int ret) {
 
 seccomp在过滤系统调用(调用号和参数)的时候，借助了BPF定义的过滤规则，以及处于内核的用BPF language写的mini-program。Seccomp-BPF在原来的基础上增加了过滤规则，大致流程如下：
 
-<img src="../imgs/seccomp.png" weight=100% height=100%>
+<img src="imgs/seccomp.png" weight=100% height=100%>
