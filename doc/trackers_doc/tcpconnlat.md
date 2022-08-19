@@ -14,7 +14,7 @@ tcpconnlat 这个工具跟踪执行活动TCP连接的内核函数 (例如，通�
 
 tcp 连接的整个过程如图所示：
 
-![tcpconnlate](tcpconnlat1.png)
+![tcpconnlate](../imgs/tcpconnlat1.png)
 
 在这个连接过程中，我们来简单分析一下每一步的耗时：
 
@@ -170,7 +170,7 @@ PID    COMM        IP  SRC              DEST             PORT  LAT(ms) CONATINER
 
 结果：
 
-![result](tcpconnlat_p.png)
+![result](../imgs/tcpconnlat_p.png)
 
 ### 总结
 

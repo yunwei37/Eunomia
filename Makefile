@@ -59,6 +59,10 @@ docs: generate-tools ## generate Doxygen HTML documentation, including API docs
 	rm -rf build/
 	cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$(INSTALL_LOCATION) -Deunomia_ENABLE_DOXYGEN=1 -Deunomia_ENABLE_UNIT_TESTING=0 -Deunomia_USE_GTEST=0 -DCMAKE_BUILD_TYPE=Release
 	cmake --build build --target doxygen-docs
+	mkdir docs/html/doc/
+	cp -r doc/imgs docs/
+	cp -r doc/imgs docs/html/
+	cp -r doc/imgs docs/html/doc/
 	$(BROWSER) docs/html/index.html
 
 install: generate-tools ## install the package to the `INSTALL_LOCATION`
