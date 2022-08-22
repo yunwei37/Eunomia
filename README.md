@@ -2,11 +2,16 @@
 
 A lightweight eBPF-based CloudNative Monitor tool for Container Security and Observability
 
-> NOTE: This repo is under heavily development and `NOT YET COMPLETE`, it shall not be used in product environments now.
-
 [![Actions Status](https://github.com/filipdutescu/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/yunwei37/Eunomia/actions)
 [![codecov](https://codecov.io/gh/filipdutescu/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/filipdutescu/modern-cpp-template)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/yunwei37/Eunomia?include_prereleases)](https://github.com/yunwei37/Eunomia/releases)
+
+#### 这个项目是为了 2022 年操作系统大赛而设计的，它仅适用于概念验证和教学内容。关于更进一步的开源开发计划，请移步 [eunomia-bpf](https://github.com/eunomia-bpf/eunomia-bpf)
+
+eunomia-bpf 将会关注两个方面：
+
+- `eBPF 即服务`：https://github.com/eunomia-bpf/eunomia-bpf
+- `一个工具链和包管理器`：https://github.com/eunomia-bpf/ebpm
 
 We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Eunomia) which runs CI. We also have a mirror on [GitLab](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436), for faster access in China and OS comp.
 
