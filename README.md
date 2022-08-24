@@ -11,7 +11,7 @@ A lightweight eBPF-based CloudNative Monitor tool for Container Security and Obs
 eunomia-bpf 将会关注两个方面：
 
 - `eBPF 即服务`：https://github.com/eunomia-bpf/eunomia-bpf
-- `一个工具链和包管理器`：https://github.com/eunomia-bpf/ebpm
+- `一个工具链和包管理器`：https://github.com/eunomia-bpf/ebpm-bootstrap
 
 We have a mirror of the source code on [GitHub](https://github.com/yunwei37/Eunomia) which runs CI. We also have a mirror on [GitLab](https://gitlab.eduxiji.net/zhangdiandian/project788067-89436), for faster access in China and OS comp.
 
