@@ -4,13 +4,20 @@ This guide helps you compile the Eunomia project from a fresh git clone.
 
 ## Prerequisites
 
+### Build Tools
+
+Ensure you have the following build tools installed:
+
+- **CMake** >= 3.15 (required by CMakeLists.txt)
+- **C++ Compiler** with C++20 support (e.g., GCC 10+, Clang 10+)
+
 ### System Dependencies
 
 Install the required system packages:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y libelf-dev clang llvm libcurl4-openssl-dev
+sudo apt-get install -y cmake libelf-dev clang llvm libcurl4-openssl-dev
 ```
 
 ### Initialize Git Submodules
@@ -38,7 +45,8 @@ make install-deps
 # Generate BPF tools
 make generate-tools
 
-# Build the project
+# Build and install the project (installs to ~/.local by default)
+# To change install location, set INSTALL_LOCATION variable
 make install
 ```
 
@@ -109,4 +117,4 @@ If you encounter "missing header" errors, it's likely due to:
 2. Missing system dependencies
 3. Incomplete build of BPF tools (`make generate-tools` not run)
 
-The issue is usually not missing committed project header files; instead, ensure submodules are initialized and the generation steps have been run.
+Eunomia's own headers are committed to the repository; missing-header errors are usually caused by submodules, system dependencies, or tool-generated headers not being available yet.
