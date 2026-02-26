@@ -93,14 +93,20 @@ make docs
 
 ## Note on Header Files
 
-All required header files are included in the repository:
-- Core headers: `include/eunomia/`
-- Helper headers: `include/helpers/`
-- Tracker headers: `bpftools/*/`
+All required header files are provided either directly in this repository, via initialized git submodules, or generated during the build:
+
+- Project headers (committed in this repo):
+  - Core headers: `include/eunomia/`
+  - Helper headers: `include/helpers/`
+  - Tracker interface headers: `bpftools/*/` (source and interface headers for BPF tools)
+- Submodule headers (pulled in via `git submodule update --init --recursive`):
+  - For example, libbpf headers such as `bpf/libbpf.h`
+- Generated headers:
+  - Produced by `make generate-tools` as part of the BPF tool build process
 
 If you encounter "missing header" errors, it's likely due to:
 1. Uninitialized git submodules (most common)
 2. Missing system dependencies
 3. Incomplete build of BPF tools (`make generate-tools` not run)
 
-The issue is NOT missing committed header files - all are present in the repository.
+The issue is usually not missing committed project header files; instead, ensure submodules are initialized and the generation steps have been run.
