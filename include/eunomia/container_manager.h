@@ -2,6 +2,7 @@
 #define CONTAINER_MANAGER_EUNOMIA_H
 
 #include <httplib.h>
+#include <cstdint>
 #include <optional>
 #include <mutex>
 #include <shared_mutex>

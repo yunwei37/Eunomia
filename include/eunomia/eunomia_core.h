@@ -7,6 +7,7 @@
 #ifndef EUNOMIA_TRACKER_FACTORY_H
 #define EUNOMIA_TRACKER_FACTORY_H
 
+#include <cstddef>
 #include <optional>
 
 #include "config.h"

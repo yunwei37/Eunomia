@@ -11,7 +11,7 @@
 #include "maps.bpf.h"
 #include "tcp.h"
 
-SEC(".rodata") int filter_ports[MAX_PORTS];
+const volatile int filter_ports[MAX_PORTS];
 const volatile int filter_ports_len = 0;
 const volatile uid_t filter_uid = -1;
 const volatile pid_t filter_pid = 0;
@@ -57,7 +57,7 @@ static __always_inline bool filter_port(uint16_t port) {
   if (filter_ports_len == 0)
     return false;
 
-  for (i = 0; i < filter_ports_len; i++) {
+  for (i = 0; i < filter_ports_len && i < MAX_PORTS; i++) {
     if (port == filter_ports[i])
       return false;
   }

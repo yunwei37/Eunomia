@@ -2,6 +2,7 @@
 #ifndef __SYSCALL_HELPERS_H
 #define __SYSCALL_HELPERS_H
 
+#include <cstddef>
 #include <stdlib.h>
 
 /// syscall table map: from syscall name to syscall number

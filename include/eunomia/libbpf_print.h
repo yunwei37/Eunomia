@@ -8,6 +8,7 @@
 #define LIBBPF_PRINT_H
 
 #include <bpf/libbpf.h>
+#include <ctime>
 #include <string>
 
 extern bool verbose;
@@ -22,13 +23,13 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char *format,
 
 /// get current time helper
 static std::string get_current_time(void) {
-  struct tm *tm;
+  std::tm *tm;
   char ts[32];
-  time_t t;
+  std::time_t t;
 
-  time(&t);
-  tm = localtime(&t);
-  strftime(ts, sizeof(ts), "%H:%M:%S", tm);
+  std::time(&t);
+  tm = std::localtime(&t);
+  std::strftime(ts, sizeof(ts), "%H:%M:%S", tm);
   return std::string(ts);
 }
 
