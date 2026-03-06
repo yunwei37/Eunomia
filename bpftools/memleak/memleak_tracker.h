@@ -51,7 +51,7 @@ static struct env
   .interval = 5,
   .count = 0,
   .show_allocs = false,
-  .min_age_ns = 500 * 1e6,
+  .min_age_ns = 500ULL * 1000000ULL,
   .command = NULL,
   .combined_only = false,
   .wa_missing_free = false,
@@ -147,7 +147,7 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
         fprintf(stderr, "Invalid time: %s\n", arg);
         argp_usage(state);
       }
-      env.min_age_ns = older * 1e6;
+      env.min_age_ns = (uint64_t)older * 1000000ULL;
       break;
     case 'C': env.combined_only = true; break;
     case 'W': env.wa_missing_free = true; break;
@@ -433,7 +433,7 @@ static void print_outstanding_allocations(struct ksyms *ksyms, struct syms_cache
 
   struct timespec monotime;
   clock_gettime(CLOCK_MONOTONIC, &monotime);
-  uint64_t now_ns = monotime.tv_sec * 1e9 + monotime.tv_nsec;
+  uint64_t now_ns = (uint64_t)monotime.tv_sec * 1000000000ULL + monotime.tv_nsec;
 
   time(&now);
   timeinfo = localtime(&now);
