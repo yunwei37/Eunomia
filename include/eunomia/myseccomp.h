@@ -20,6 +20,7 @@
 #include <unistd.h>
 
 #include <string>
+#include <cstdint>
 #include <vector>
 
 #include "config.h"

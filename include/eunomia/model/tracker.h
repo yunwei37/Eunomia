@@ -7,6 +7,7 @@
 #ifndef TRAKER_H
 #define TRAKER_H
 
+#include <cstddef>
 #include <iostream>
 #include <mutex>
 #include <thread>

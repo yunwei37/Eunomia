@@ -7,6 +7,7 @@
 #ifndef TRACKER_MANAGER_H
 #define TRACKER_MANAGER_H
 
+#include <cstddef>
 #include <condition_variable>
 #include <iostream>
 #include <mutex>
