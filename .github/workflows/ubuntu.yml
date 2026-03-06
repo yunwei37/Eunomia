@@ -8,7 +8,6 @@ on:
 
 env:
   BUILD_TYPE: Release
-  INSTALL_LOCATION: .local
 
 jobs:
   build:
@@ -29,23 +28,6 @@ jobs:
 
     - name: generate bpf headers
       run:  make generate-tools
-
-    - name: cache dependencies
-      uses: actions/cache@v4
-      id: cache
-      with:
-        path: ${{ github.workspace }}/${{ env.INSTALL_LOCATION }}
-        key: ${{ runner.os }}-dependencies
-
-    - name: install GoogleTest
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        cd ..
-        git clone https://github.com/google/googletest.git --branch release-1.10.0
-        cd googletest
-        cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/$INSTALL_LOCATION
-        cmake --build build --config Release
-        cmake --build build --target install --config Release
 
     - name: configure
       run: cmake -Bbuild -Deunomia_ENABLE_UNIT_TESTING=0 -Deunomia_USE_GTEST=0
